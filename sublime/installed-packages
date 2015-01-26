@@ -1,0 +1,15 @@
+{
+    "installed_packages":
+    [
+        "Autoprefixer",
+        "Can I Use",
+        "CSS3",
+        "Djaneiro",
+        "HTML5",
+        "Jinja2",
+        "LiveReload",
+        "Markdown Preview",
+        "nginx",
+        "Nodejs"
+    ]
+}

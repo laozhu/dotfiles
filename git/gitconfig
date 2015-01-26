@@ -1,0 +1,32 @@
+[user]
+    name = Ritchie Zhu
+    email = laozhu.me@gmail.com
+[core]
+    editor = vim
+    pager = less -FRSX
+    excludesfile = ~/.gitignore
+    whitespace = fix,-indent-with-non-tab,trailing-space,cr-at-eol
+    autocrlf = input
+[diff]
+    tool = vimdiff
+[merge]
+    tool = vimdiff
+[alias]
+    ci = commit
+    co = checkout
+    st = status
+    br = branch
+    mg = merge
+    df = diff
+    lg = log --all --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
+[color]
+    diff = auto
+    status = auto
+    branch = auto
+    interactive = auto
+[rerere]
+    enabled = true
+[filter "media"]
+    clean = git media clean %f
+    smudge = git media smudge %f
+    required = true

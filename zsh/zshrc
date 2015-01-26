@@ -1,0 +1,39 @@
+export ZSH=$HOME/.oh-my-zsh
+
+# Alias Definition
+alias ll="ls -lh"
+alias la="ls -lha"
+alias cls="clear"
+alias du="du -sh *"
+alias da="du -sh .* *"
+alias fd="find . -type d -name"
+alias ff="find . -type f -name"
+alias j="jobs"
+alias p="ps aux"
+alias t="xtail -f"
+alias pep8="autopep8 --in-place --aggressive --aggressive"
+alias pup="pip freeze --local | grep -v '^\-e' | cut -d = -f 1 | xargs pip install -U"
+alias vi="vim"
+alias grep="grep --color"
+alias bower="noglob bower"
+alias rm="rm -i"
+alias cp="cp -i"
+alias mv="mv -i"
+alias zips="unzip -O CP936"
+alias -s gz="tar -xzvf"
+alias -s tgz="tar -xzvf"
+alias -s bz2="tar -xjvf"
+alias -s zip="unzip"
+
+HIST_STAMPS="yyyy-mm-dd"
+ZSH_THEME="kennethreitz"
+
+# Plugin Tuple
+plugins=(autopep8 bower celery coffee debian django docker encode64 extract 
+fabric gem git-extras git-flow git github gitignore history iwhois node npm 
+nvm pip postgres python pyenv rbenv redis-cli rsync ruby sublime sudo tmux 
+urltools virtualenv vagrant virtualenvwrapper vundle web-search zsh_reload)
+
+source $ZSH/oh-my-zsh.sh
+
+# User Configuration

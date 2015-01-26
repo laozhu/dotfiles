@@ -1,0 +1,21 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  config.vm.box = "ubuntu/trusty64"
+  config.vm.boot_timeout = 300
+  config.vm.hostname = "yourhostname"
+  config.vm.network "forwarded_port", guest: 5432, host: 5050
+  config.vm.network "forwarded_port", guest: 8000, host: 8080
+  # config.vm.network "public_network", bridge: "wlan0"
+
+  config.vm.provider "virtualbox" do |v|
+  	v.name = "yourboxname"
+  	v.memory = 1024
+  	v.cpus = 2
+  end
+
+end
