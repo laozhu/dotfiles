@@ -30,9 +30,9 @@ ZSH_THEME="kennethreitz"
 
 # Plugin Tuple
 plugins=(autopep8 bower celery coffee debian django docker encode64 extract 
-fabric gem git-extras git-flow git github gitignore history iwhois node npm 
-nvm pip postgres python pyenv rbenv redis-cli rsync ruby sublime sudo tmux 
-urltools virtualenv vagrant virtualenvwrapper vundle web-search zsh_reload)
+fabric gem git-extras git-flow git github gitignore history node npm nvm osx 
+pip postgres python pyenv rbenv redis-cli rsync ruby sublime sudo urltools 
+virtualenv vagrant virtualenvwrapper vundle web-search zsh_reload)
 
 source $ZSH/oh-my-zsh.sh
 
