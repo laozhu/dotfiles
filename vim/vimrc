@@ -24,7 +24,7 @@ set t_Co=256
 " colorscheme molokai
 colorscheme Tomorrow-Night-Eighties
 set ruler
-set textwidth=80
+set textwidth=99
 set wildmenu
 set wildmode=list:longest,full
 set wildignore=*.o,*~,*.pyc
