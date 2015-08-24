@@ -7,10 +7,6 @@
     excludesfile = ~/.gitignore
     whitespace = fix,-indent-with-non-tab,trailing-space,cr-at-eol
     autocrlf = input
-[diff]
-    tool = vimdiff
-[merge]
-    tool = vimdiff
 [alias]
     ci = commit
     co = checkout
@@ -26,7 +22,3 @@
     interactive = auto
 [rerere]
     enabled = true
-[filter "media"]
-    clean = git media clean %f
-    smudge = git media smudge %f
-    required = true
