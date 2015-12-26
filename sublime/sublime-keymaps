@@ -1,0 +1,4 @@
+[
+  { "keys": ["alt+m"], "command": "markdown_preview", "args": {"target": "browser", "parser":"markdown"} },
+  { "keys": [ "ctrl+alt+m" ], "command": "un_pretty_json" }
+]
