@@ -1,81 +1,79 @@
 #!/bin/sh
 set -e
 
-echo ">> install begin...\n"
+echo ">>> Bootstrap started...\n"
 
-# fix locale
+# Fix locales
 echo 'LANG="en_US.UTF-8"' > /etc/default/locale
 echo 'LANGUAGE="en_US:en"' >> /etc/default/locale
 echo 'LC_ALL="en_US.UTF-8"' >> /etc/default/locale
 dpkg-reconfigure locales
+echo "\n>>> Locales fixed...\n"
 
-# update & upgrade
+# Select fastest mirror
+sed -i '1s/^/deb mirror:\/\/mirrors.ubuntu.com\/mirrors.txt vivid-security main universe\n/' /etc/apt/sources.list
+sed -i '1s/^/deb mirror:\/\/mirrors.ubuntu.com\/mirrors.txt vivid-backports main universe\n/' /etc/apt/sources.list
+sed -i '1s/^/deb mirror:\/\/mirrors.ubuntu.com\/mirrors.txt vivid-updates main universe\n/' /etc/apt/sources.list
+sed -i '1s/^/deb mirror:\/\/mirrors.ubuntu.com\/mirrors.txt vivid main universe\n/' /etc/apt/sources.list
+echo "\n>>> Mirror selected...\n"
+
+# Upgrade task
 apt-get update
 apt-get -y dist-upgrade
 apt-get -y upgrade
+echo "\n>>> Upgrade completed...\n"
 
-# clean
+# Clean task
 apt-get clean
 apt-get autoclean
 apt-get -y autoremove
+echo "\n>>> Clean completed...\n"
 
-# install tools
-apt-get install -y wget curl xtail unzip p7zip exuberant-ctags
+# Install essentials
+apt-get install -y wget curl exuberant-ctags xtail libjpeg-dev
+echo "\n>>> Essentials installed...\n"
 
-# install git
-apt-get install -y git tig git-flow
+# Install git
+apt-get install -y git tig
 wget https://raw.githubusercontent.com/laozhu/dotfiles/master/git/gitconfig -O /home/vagrant/.gitconfig
-wget https://raw.githubusercontent.com/laozhu/dotfiles/master/git/gitignore -O /home/vagrant/.gitignore
+chown vagrant:vagrant /home/vagrant/.gitconfig
+echo "\n>>> Git installed...\n"
 
-# install vim
+# Install vim
 apt-get install -y vim-nox
-git clone https://github.com/gmarik/Vundle.vim.git /home/vagrant/.vim/bundle/Vundle.vim
+mkdir -p /home/vagrant/.vim/colors
 wget https://raw.githubusercontent.com/laozhu/dotfiles/master/vim/vimrc -O /home/vagrant/.vimrc
+wget https://raw.githubusercontent.com/laozhu/dotfiles/master/vim/colors/molokai.vim -O /home/vagrant/.vim/colors/molokai.vim
+wget https://raw.githubusercontent.com/laozhu/dotfiles/master/vim/colors/Tomorrow-Night-Eighties.vim -O /home/vagrant/.vim/colors/Tomorrow-Night-Eighties.vim
+git clone https://github.com/gmarik/Vundle.vim.git /home/vagrant/.vim/bundle/Vundle.vim
+chown vagrant:vagrant /home/vagrant/.vimrc
+chown -R vagrant:vagrant /home/vagrant/.vim
+echo "\n>>> Vim installed...\n"
 
-# install python
-apt-get install -y python python-pip python-dev
-apt-get install -y python3 python3-pip python3-dev
-mkdir /root/.pip
-mkdir /home/vagrant/.pip
-wget https://raw.githubusercontent.com/laozhu/dotfiles/master/pip/pip.conf -O /root/.pip/pip.conf
-wget https://raw.githubusercontent.com/laozhu/dotfiles/master/pip/pip.conf -O /home/vagrant/.pip/pip.conf
-pip install virtualenvwrapper ipython flake8
-pip3 install ipython
-
-# install ruby
-apt-get install -y ruby
-git clone https://github.com/sstephenson/rbenv.git /home/vagrant/.rbenv
-git clone https://github.com/sstephenson/ruby-build.git /home/vagrant/.rbenv/plugins/ruby-build
-wget https://raw.githubusercontent.com/laozhu/dotfiles/master/gem/gemrc -O /home/vagrant/.gemrc
-wget https://raw.githubusercontent.com/laozhu/dotfiles/master/gem/gemrc -O /root/.gemrc
-
-# install nodejs
-git clone https://github.com/creationix/nvm.git /home/vagrant/.nvm
-wget https://raw.githubusercontent.com/laozhu/dotfiles/master/node/npmrc -O /home/vagrant/.npmrc
-
-# install zsh
+# Install zsh
 apt-get install -y zsh
-git clone git://github.com/robbyrussell/oh-my-zsh.git /home/vagrant/.oh-my-zsh
 wget https://raw.githubusercontent.com/laozhu/dotfiles/master/zsh/zshrc -O /home/vagrant/.zshrc
-chown -R vagrant:vagrant /home/vagrant/
+git clone git://github.com/robbyrussell/oh-my-zsh.git /home/vagrant/.oh-my-zsh
+chown vagrant:vagrant /home/vagrant/.zshrc
+chown -R vagrant:vagrant /home/vagrant/.oh-my-zsh
+echo "\n>>> Zsh installed...\n"
 
-# install nginx
+# Install python
+apt-get install -y python-dev python3-dev python-setuptools
+easy_install pip
+pip install virtualenvwrapper flake8 autopep8
+echo "\n>>> Python installed...\n"
+
+# Install nginx
 apt-get install -y nginx
-mkdir /etc/nginx/h5bp
+rm /etc/nginx/nginx.conf
 wget https://raw.githubusercontent.com/laozhu/dotfiles/master/nginx/nginx.conf -O /etc/nginx/nginx.conf
-wget https://raw.githubusercontent.com/laozhu/dotfiles/master/nginx/h5bp/cross-domain-fonts.conf -O /etc/nginx/h5bp/cross-domain-fonts.conf
-wget https://raw.githubusercontent.com/laozhu/dotfiles/master/nginx/h5bp/cross-domain-insecure.conf -O /etc/nginx/h5bp/cross-domain-insecure.conf
-wget https://raw.githubusercontent.com/laozhu/dotfiles/master/nginx/h5bp/expires.conf -O /etc/nginx/h5bp/expires.conf
-wget https://raw.githubusercontent.com/laozhu/dotfiles/master/nginx/h5bp/no-transform.conf -O /etc/nginx/h5bp/no-transform.conf
-wget https://raw.githubusercontent.com/laozhu/dotfiles/master/nginx/h5bp/protect-system-files.conf -O /etc/nginx/h5bp/protect-system-files.conf
-wget https://raw.githubusercontent.com/laozhu/dotfiles/master/nginx/h5bp/x-ua-compatible.conf -O /etc/nginx/h5bp/x-ua-compatible.conf
-sed -i "s/user nginx nginx;/user www-data;/" /etc/nginx/nginx.conf
-/etc/init.d/nginx restart
+service nginx restart
 
-# install postgresql
+# Install postgresql
 apt-get install -y postgresql postgresql-client libpq-dev
-/etc/init.d/postgresql restart
+service postgresql restart
 
-echo "exec `BundleInstall` in vim manually\n"
-echo "exec `chsh -s /bin/zsh` in shell manually\n"
-echo "\n>> install finish..."
+echo ">>> Bootstrap finished...\n"
+echo "*** exec 'PluginInstall' in vim manually\n"
+echo "*** exec 'chsh -s /bin/zsh' in shell manually\n"
