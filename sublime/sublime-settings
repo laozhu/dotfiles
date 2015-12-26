@@ -1,42 +1,48 @@
 {
-	"color_scheme": "Packages/Color Scheme - Default/Monokai.tmTheme",
-	"default_line_ending": "unix",
-	"draw_white_space": true,
-	"ensure_newline_at_eof_on_save": true,
-	"file_exclude_patterns":
-	[
-		"*.pyc",
-		"*.pyo",
-		".DS_Store",
-		"*.sublime-workspace"
-	],
-	"folder_exclude_patterns":
-	[
-		".svn",
-		".git",
-		".hg",
-		"CVS",
-		".vagrant",
-		".idea",
-		"__pycache__",
-		"node_modules"
-	],
-	"font_face": "Source Code Pro",
-	"font_size": 10,
-	"highlight_line": true,
-	"line_padding_bottom": 1,
-	"line_padding_top": 1,
-	"rulers":
-	[
-		80,
-		100,
-		120
-	],
-	"save_on_focus_lost": true,
-	"scroll_past_end": false,
-	"shift_tab_unindent": true,
-	"show_encoding": true,
-	"show_line_endings": true,
-	"trailing_spaces_trim_on_save": true,
-	"use_simple_full_screen": true
+  "color_scheme": "Packages/Color Scheme - Default/LAZY.tmTheme",
+  "default_line_ending": "unix",
+  "draw_white_space": true,
+  "ensure_newline_at_eof_on_save": true,
+  "file_exclude_patterns":
+  [
+    "*.pyc",
+    "*.pyo",
+    ".DS_Store",
+    "*.sublime-workspace"
+  ],
+  "folder_exclude_patterns":
+  [
+    ".svn",
+    ".git",
+    ".hg",
+    "CVS",
+    ".vagrant",
+    ".idea",
+    "__pycache__",
+    "node_modules"
+  ],
+  "font_face": "Source Code Pro",
+  "font_size": 10,
+  "highlight_line": true,
+  "ignored_packages":
+  [
+    "CSS",
+    "Markdown",
+    "Vintage"
+  ],
+  "line_padding_bottom": 1,
+  "line_padding_top": 1,
+  "rulers":
+  [
+    80,
+    100,
+    120
+  ],
+  "save_on_focus_lost": true,
+  "scroll_past_end": false,
+  "shift_tab_unindent": true,
+  "show_encoding": true,
+  "show_line_endings": true,
+  "trailing_spaces_trim_on_save": true,
+  "use_simple_full_screen": true
 }
