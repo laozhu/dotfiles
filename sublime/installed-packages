@@ -1,15 +1,20 @@
 {
-    "installed_packages":
-    [
-        "Autoprefixer",
-        "Can I Use",
-        "CSS3",
-        "Djaneiro",
-        "HTML5",
-        "Jinja2",
-        "LiveReload",
-        "Markdown Preview",
-        "nginx",
-        "Nodejs"
+  "installed_packages":
+  [
+    "Anaconda",
+    "ColorPicker",
+    "CSS3",
+    "Djaneiro",
+    "GitGutter",
+    "HTML5",
+    "Jinja2",
+    "jQuery",
+    "Markdown Preview",
+    "MarkdownEditing",
+    "nginx",
+    "Nodejs",
+    "Pretty JSON",
+    "Sass",
+    "SideBarEnhancements"
     ]
 }
