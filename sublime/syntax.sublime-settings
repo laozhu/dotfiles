@@ -87,3 +87,14 @@
   "word_wrap": true,
   "wrap_width": 80
 }
+
+// LESS
+
+{
+  "tab_size": 2,
+  "translate_tabs_to_spaces": true,
+  "detect_indentation": false,
+  "rulers": [80],
+  "word_wrap": true,
+  "wrap_width": 80
+}
