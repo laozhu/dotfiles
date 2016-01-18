@@ -32,7 +32,7 @@ ZSH_THEME="kennethreitz"
 
 # Plugin Tuple
 plugins=(adb autojump autopep8 bower brew cp debian django docker emoji emoji-clock encode64
-extract fabric git-extras git-flow git github gitignore gulp httpie iwhois jsontoolsnode npm
+extract fabric git-extras git-flow git github gitignore gulp httpie iwhois jsontools node npm
 nvm osx pep8 pip python sublime sudo ubuntu vagrant virtualenv virtualenvwrapper vundle
 web-search xcode zsh_reload)
 
