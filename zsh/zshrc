@@ -45,3 +45,4 @@ web-search xcode zsh_reload)
 source $ZSH/oh-my-zsh.sh
 
 # User Configuration
+export PHANTOMJS_CDNURL="http://cnpmjs.org/downloads"
