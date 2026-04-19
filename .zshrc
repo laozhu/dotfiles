@@ -1,33 +1,34 @@
-# 环境准备
+# Environment setup
 eval "$(/opt/homebrew/bin/brew shellenv zsh)"
 
-# 环境变量
+# Environment variables
 export ZSH="$HOME/.oh-my-zsh"
 export CLICOLOR=1
 export EDITOR='vim'
 export HOMEBREW_NO_INSTALL_CLEANUP=1
 export PATH=$/opt/homebrew/bin:HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
+export GITHUB_PERSONAL_ACCESS_TOKEN=$(security find-generic-password -s "github-token" -w)
 
-# 禁用主题（Starship 接管）
+# Disable theme (Starship takes over)
 ZSH_THEME=""
 
-# 推荐插件
+# Plugins
 plugins=(git copypath copyfile extract web-search)
 
-# 历史优化
+# History settings
 HISTFILE=~/.zsh_history
 HISTSIZE=10000
 SAVEHIST=10000
 setopt SHARE_HISTORY HIST_IGNORE_DUPS HIST_IGNORE_SPACE
 
-# 加载 OMZ 核心
+# Load Oh My Zsh
 source $ZSH/oh-my-zsh.sh
 
-# 自动补全优化
+# Completion settings
 zstyle ":completion:*" menu select
 zstyle ":completion:*" matcher-list "m:{a-zA-Z}={A-Za-z}"
 
-# 加载外部工具
+# External tools
 eval "$(starship init zsh)"
 eval "$(zoxide init zsh)"
 eval "$(tv init zsh)"
@@ -36,7 +37,7 @@ source <(kubectl completion zsh)
 source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
-# 用户别名
+# Aliases
 alias ~="cd ~"
 alias ..="cd .."
 alias ...="cd ../.."
