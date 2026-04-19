@@ -1,0 +1,24 @@
+# 字体
+font-family = JetBrainsMono Nerd Font Mono
+font-size = 14
+font-thicken = true
+
+# 主题
+# theme = Catppuccin Mocha
+# theme = Everforest Dark Hard
+theme = Gruvbox Dark
+# theme = TokyoNight
+
+# 快速启动
+keybind = global:cmd+`=toggle_quick_terminal
+quick-terminal-position = top
+quick-terminal-animation-duration = 0.2
+
+# 选中即复制
+copy-on-select = true
+
+# 链接自动检测
+link-url = true
+
+# 保存窗口状态
+window-save-state = always

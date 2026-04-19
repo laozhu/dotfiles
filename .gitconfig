@@ -1,0 +1,36 @@
+[user]
+	name = rich
+	email = laozhu.me@gmail.com
+	signingKey = ~/.ssh/id_ed25519.pub
+[core]
+	autocrlf = input
+	pager = delta
+	editor = vim
+[init]
+	defaultBranch = main
+[commit]
+	gpgsign = true
+[push]
+	default = simple
+	autoSetupRemote = true
+[pull]
+	rebase = true
+[fetch]
+	prune = true
+[rebase]
+	autoStash = true
+[merge]
+	conflictStyle = zdiff3
+[gpg]
+	format = ssh
+[color]
+	ui = auto
+[interactive]
+	diffFilter = delta --color-only
+[delta]
+	dark = true
+	hyperlinks = true
+	line-numbers = true
+	navigate = true
+	side-by-side = true
+	syntax-theme = gruvbox-dark
