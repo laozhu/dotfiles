@@ -63,25 +63,25 @@ brew bundle dump --global --force
 
 The `--force` flag overwrites the existing `.Brewfile`. Without it, the command will fail if the file already exists.
 
-To include descriptions as comments:
-
-```sh
-brew bundle dump --global --force --describe
-```
-
 ## Key Tools
 
 | Category | Tools |
 |---|---|
 | Shell | zsh, Oh My Zsh, Starship, zsh-autosuggestions, zsh-syntax-highlighting |
 | Terminal | Ghostty, Zellij |
-| Editor | Vim, VS Code |
+| Editor | Vim, VS Code, Obsidian |
+| Runtime | Node.js, Bun, Python |
 | Git | git-delta (side-by-side diffs), tig, gh |
 | File Navigation | eza, fd, fzf, ripgrep, television, yazi, zoxide |
-| Containers | Podman, Podman Compose, kubectl |
-| AI | Claude Code, Codex, Gemini CLI, GitHub Copilot |
+| Data | jq, yq, qsv, xan |
+| Containers | Podman, Podman Compose, Podman Desktop, kubectl |
+| AI | Claude Code, Codex, Gemini CLI, Google Gemini, GitHub Copilot |
 | Media | ffmpeg, yt-dlp, gallery-dl, you-get |
-| Other | bat, btop, duf, httpie, jq, yq, pandoc, hugo, zola |
+| Publishing | pandoc, hugo, zola, tectonic, mermaid-cli, dprint |
+| Benchmark | hyperfine |
+| Networking | httpie, xh, ngrok |
+| Security | age |
+| Other | bat, btop, duf, rsync, tealdeer, mo, im-select |
 
 ## Notable Shell Aliases
 
