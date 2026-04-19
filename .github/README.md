@@ -80,7 +80,7 @@ The `--force` flag overwrites the existing `.Brewfile`. Without it, the command 
 | Publishing | pandoc, hugo, zola, tectonic, mermaid-cli, dprint |
 | Benchmark | hyperfine |
 | Networking | httpie, xh, ngrok |
-| Security | age |
+| Security | age, gnupg, pass |
 | Other | bat, btop, duf, rsync, tealdeer, mo, im-select |
 
 ## Notable Shell Aliases
