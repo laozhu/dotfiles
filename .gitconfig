@@ -34,3 +34,5 @@
 	navigate = true
 	side-by-side = true
 	syntax-theme = gruvbox-dark
+[safe]
+	directory = *

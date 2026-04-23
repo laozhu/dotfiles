@@ -6,6 +6,8 @@ export ZSH="$HOME/.oh-my-zsh"
 export CLICOLOR=1
 export EDITOR='vim'
 export HOMEBREW_NO_INSTALL_CLEANUP=1
+export HOMEBREW_UPGRADE_GREEDY=1
+export HOMEBREW_UPGRADE_GREEDY_CASKS=1
 export PATH=$/opt/homebrew/bin:HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
 export GITHUB_PERSONAL_ACCESS_TOKEN=$(security find-generic-password -s "github-token" -w)
 
