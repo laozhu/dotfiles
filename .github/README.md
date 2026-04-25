@@ -52,6 +52,7 @@ What it does:
 5. Wires up fzf key bindings and completions
 6. Updates the tealdeer (`tldr`) cache
 7. **(Confirmation required)** Sets Homebrew zsh as the default login shell
+8. Prompts for and saves a GitHub Personal Access Token to the macOS Keychain (used by `.zshrc`)
 
 ### Usage
 
@@ -62,9 +63,21 @@ yadm bootstrap --dry-run        # trace what would happen, no changes made
 yadm bootstrap --help           # show all flags
 ```
 
-### Manual secret setup
+### Providing the GitHub token non-interactively
 
-The `.zshrc` reads a GitHub token from the macOS Keychain. Add it once:
+Step 8 prompts for a GitHub PAT with hidden input. To skip the prompt (e.g. for unattended runs), export `GITHUB_TOKEN` first — bootstrap will pick it up and save it to the Keychain:
+
+```sh
+GITHUB_TOKEN=ghp_xxx yadm bootstrap --yes
+```
+
+Or pipe from a secret manager:
+
+```sh
+GITHUB_TOKEN=$(op read 'op://Personal/GitHub PAT/credential') yadm bootstrap --yes
+```
+
+To add or rotate the token later without re-running bootstrap:
 
 ```sh
 security add-generic-password -s 'github-token' -a "$USER" -w <YOUR_TOKEN>
