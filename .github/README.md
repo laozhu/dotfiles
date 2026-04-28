@@ -122,7 +122,7 @@ The `--force` flag overwrites the existing `.Brewfile`. Without it, the command 
 | Benchmark | hyperfine |
 | Networking | httpie, xh |
 | Security | age, gnupg, pass |
-| Other | bat, btop, duf, qrencode, rsync, tealdeer, mo, im-select |
+| Other | bat, btop, duf, ncdu, qrencode, rsync, tealdeer, mo, im-select |
 
 ### Apps (Homebrew Casks)
 
