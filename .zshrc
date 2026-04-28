@@ -34,6 +34,9 @@ zstyle ":completion:*" matcher-list "m:{a-zA-Z}={A-Za-z}"
 eval "$(starship init zsh)"
 eval "$(zoxide init zsh)"
 eval "$(tv init zsh)"
+if command -v ngrok &>/dev/null; then
+  eval "$(ngrok completion)"
+fi
 source <(fzf --zsh)
 source <(kubectl completion zsh)
 source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
@@ -55,7 +58,7 @@ alias localip="hostname -I 2>/dev/null || ifconfig | grep 'inet ' | grep -v '127
 alias ping="ping -c 5"
 alias fuck="export https_proxy=http://127.0.0.1:7897;export http_proxy=http://127.0.0.1:7897;export all_proxy=socks5://127.0.0.1:7897"
 
-alias brewup="fuck && brew update && brew upgrade && brew cleanup"
+alias brewup="brew update && brew upgrade && brew cleanup"
 alias cleanup="find . -type f -name '*.DS_Store' -ls -delete"
 
 alias docker="podman"
@@ -64,7 +67,3 @@ alias k8s="kubectl"
 
 alias ll="eza -al --icons=auto --git-ignore"
 alias tree="eza -al --tree -L 3 --icons=auto --git-ignore"
-alias fvim="vim \$(fzf)"
-alias fcat="cat \$(fzf)"
-alias fbat="bat \$(fzf)"
-alias fcd="cd \$(find * -type d | fzf)"

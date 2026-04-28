@@ -1,9 +1,10 @@
 {
-  "model": "opus",
-  "skipDangerousModePermissionPrompt": true,
   "permissions": {
     "defaultMode": "bypassPermissions"
   },
+  "skipDangerousModePermissionPrompt": true,
+  "model": "opus",
+  "effortLevel": "medium",
   "hooks": {
     "PreToolUse": [
       {
