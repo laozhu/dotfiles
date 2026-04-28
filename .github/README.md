@@ -120,7 +120,7 @@ The `--force` flag overwrites the existing `.Brewfile`. Without it, the command 
 | Media | ffmpeg, yt-dlp, gallery-dl, you-get |
 | Publishing | pandoc, hugo, zola, tectonic, mermaid-cli, dprint |
 | Benchmark | hyperfine |
-| Networking | httpie, xh |
+| Networking | httpie, sing-box, xh |
 | Security | age, gnupg, pass |
 | Other | bat, btop, duf, ncdu, qrencode, rsync, tealdeer, mo, im-select |
 
@@ -153,11 +153,11 @@ tmux        # aliased to zellij
 
 ## sing-box
 
-`~/.config/sing-box/config.example.json` is a redacted VLESS + REALITY client config (TUN + mixed inbounds, with rule-set routing for Claude/OpenAI/paid.inc/non-CN traffic via an `aws-singapore` outbound). The real `config.json` is gitignored because it contains secrets.
+`~/.config/sing-box/config.example.json` is sing-box example config for personal usage. The real `config.json` is gitignored because it contains secrets.
 
 ### Generate the secrets on the server
 
-Run on the sing-box / xray server, then copy the values into `config.json`:
+Run on the xray server, then copy the values into `config.json`:
 
 ```sh
 xray uuid                  # → UUID
