@@ -200,45 +200,27 @@ openssl rand -hex 8        # → SHORT_ID
 
 ### Run at boot on macOS with launchctl
 
-The TUN inbound needs root (it creates a `utun` interface and writes the routing table), so sing-box must run as a **LaunchDaemon** (system-wide, started at boot) rather than a LaunchAgent (per-user, started at login). The tracked plist lives at `~/.config/sing-box/com.example.sing-box.plist`; install it into `/Library/LaunchDaemons/` and load it with `launchctl`.
+The TUN inbound needs root, so sing-box runs as a **LaunchDaemon** (system-wide) rather than a LaunchAgent (per-user). The plist lives at `~/.config/sing-box/com.example.sing-box.plist`.
+
+Install (launchd requires `root:wheel` ownership and `644` perms):
 
 ```sh
-# 1. Copy the plist into the system LaunchDaemons directory and fix ownership.
-#    launchd refuses to load daemons unless they are owned by root:wheel and
-#    not group/world writable.
-sudo cp ~/.config/sing-box/com.example.sing-box.plist /Library/LaunchDaemons/com.example.sing-box.plist
-sudo chown root:wheel /Library/LaunchDaemons/com.example.sing-box.plist
-sudo chmod 644 /Library/LaunchDaemons/com.example.sing-box.plist
-
-# 2. Bootstrap into the system domain (loads + enables auto-start at boot)
-#    and kickstart it so it runs immediately without a reboot.
+sudo install -o root -g wheel -m 644 \
+  ~/.config/sing-box/com.example.sing-box.plist /Library/LaunchDaemons/
 sudo launchctl bootstrap system /Library/LaunchDaemons/com.example.sing-box.plist
 sudo launchctl kickstart -k system/com.example.sing-box
-
-# 3. Verify it's running.
-sudo launchctl print system/com.example.sing-box | head
 ```
 
-Day-to-day commands:
+Manage:
 
 ```sh
-sudo launchctl kickstart -k system/com.example.sing-box                      # restart (e.g. after editing config.json)
-sudo launchctl bootout system/com.example.sing-box                           # stop + disable auto-start
-sudo launchctl bootstrap system /Library/LaunchDaemons/com.example.sing-box.plist  # re-enable
+sudo launchctl kickstart -k system/com.example.sing-box   # restart (after config edit)
+sudo launchctl print     system/com.example.sing-box      # status
+sudo launchctl bootout   system/com.example.sing-box      # stop + disable
+tail -f /var/log/sing-box.log /var/log/sing-box.err.log   # logs
 ```
 
-Logs (paths defined in the plist):
-
-```sh
-tail -f /var/log/sing-box.log /var/log/sing-box.err.log
-```
-
-Remove commands
-
-```sh
-sudo launchctl bootout system/com.example.sing-box                           # stop
-sudo rm /Library/LaunchDaemons/com.example.sing-box.plist
-```
+Uninstall: `sudo launchctl bootout …` then `sudo rm /Library/LaunchDaemons/com.example.sing-box.plist`.
 
 ### Web dashboard
 
