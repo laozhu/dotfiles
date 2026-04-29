@@ -111,9 +111,9 @@ The `--force` flag overwrites the existing `.Brewfile`. Without it, the command 
 | Shell | zsh, Oh My Zsh, Starship, zsh-autosuggestions, zsh-syntax-highlighting |
 | Multiplexer | Zellij |
 | Editor | Vim |
-| Runtime | Node.js, Bun, Deno, Python, Ruby |
+| Runtime | Node.js, Bun, Deno, Python |
 | Git | git-delta (side-by-side diffs), tig, gh |
-| File Navigation | eza, fd, fzf, ripgrep, television, tree, yazi, zoxide |
+| File Navigation | eza, fd, fzf, ripgrep, television, yazi, zoxide |
 | Data | jq, yq, qsv, xan |
 | Containers | Podman, Podman Compose, kubectl |
 | AI | Gemini CLI |
@@ -128,11 +128,11 @@ The `--force` flag overwrites the existing `.Brewfile`. Without it, the command 
 
 | Category | Apps |
 |---|---|
-| Terminal | Ghostty, cmux (terminal for AI agents) |
-| Editor / IDE | VS Code, Obsidian, Trae |
+| Terminal | Ghostty |
+| Editor / IDE | VS Code, Obsidian |
 | Browser | Google Chrome |
 | Containers | Podman Desktop |
-| AI | Claude, Claude Code, Codex, Codex App, Conductor (Claude Code parallel sessions) |
+| AI | Claude, Claude Code, Codex, Codex App, Google Gemini |
 | Networking | ngrok |
 | Communication | Discord, WeChat |
 | Media | QQ Music |
