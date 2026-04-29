@@ -17,7 +17,7 @@ macOS dotfiles managed with [yadm](https://yadm.io/).
     ├── bat/                 # Bat (cat replacement) config
     ├── btop/                # Btop system monitor config
     ├── ghostty/             # Ghostty terminal config
-    ├── sing-box/            # sing-box proxy config (config.example.json tracked)
+    ├── sing-box/            # sing-box proxy config (config.json encrypted via yadm)
     ├── television/          # Television fuzzy finder config
     ├── yadm/
     │   └── bootstrap        # macOS provisioning script (runs after yadm clone)
@@ -153,11 +153,42 @@ tmux        # aliased to zellij
 
 ## sing-box
 
-`~/.config/sing-box/config.example.json` is sing-box example config for personal usage. The real `config.json` is gitignored because it contains secrets.
+`~/.config/sing-box/config.json` contains server secrets (UUID, public key, short ID), so it's tracked through [yadm encrypt](https://yadm.io/docs/encryption) instead of as plain text. The path is listed in `~/.config/yadm/encrypt`, and the encrypted bundle lives at `~/.config/yadm/archive` (which IS committed). The plain `config.json` itself stays gitignored.
 
-### Generate the secrets on the server
+### Decrypting on a new machine
 
-Run on the xray server, then copy the values into `config.json`:
+After `yadm clone`, the encrypted archive is checked out but the actual `config.json` doesn't exist yet. Run:
+
+```sh
+yadm decrypt
+```
+
+yadm will prompt for the symmetric passphrase used when the archive was created and extract `~/.config/sing-box/config.json` (and any other files listed in `~/.config/yadm/encrypt`) into place. Verify it parses:
+
+```sh
+sing-box check -c ~/.config/sing-box/config.json
+```
+
+### Updating secrets and re-encrypting
+
+After editing `config.json` on any machine, regenerate the archive and commit it:
+
+```sh
+yadm encrypt                                      # regenerate ~/.config/yadm/archive
+yadm add ~/.config/yadm/archive
+yadm commit -m "sing-box: rotate secrets"
+yadm push
+```
+
+On other machines, pull and re-decrypt:
+
+```sh
+yadm pull && yadm decrypt
+```
+
+### Regenerating the secrets on the server
+
+If you need fresh credentials, run these on the xray server and update the matching fields in `config.json`:
 
 ```sh
 xray uuid                  # → UUID
@@ -166,14 +197,6 @@ openssl rand -hex 8        # → SHORT_ID
 ```
 
 `SERVER_DOMAIN` is whatever DNS A/AAAA record you've pointed at the server.
-
-### Create config.json from the example
-
-```sh
-cp ~/.config/sing-box/config.example.json ~/.config/sing-box/config.json
-# then edit and replace YOUR_SERVER_DOMAIN, YOUR_UUID, YOUR_PUBLIC_KEY, YOUR_SHORT_ID
-sing-box check -c ~/.config/sing-box/config.json
-```
 
 ### Run at boot on macOS with launchctl
 
