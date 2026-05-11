@@ -60,6 +60,7 @@ alias fuck="export https_proxy=http://127.0.0.1:7897;export http_proxy=http://12
 
 alias brewup="brew update && brew upgrade && brew cleanup"
 alias cleanup="find . -type f -name '*.DS_Store' -ls -delete"
+alias fix="stty sane; tput reset; clear"
 
 alias docker="podman"
 alias docker-compose="podman-compose"
