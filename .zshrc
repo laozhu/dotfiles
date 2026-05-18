@@ -56,11 +56,9 @@ alias ohmyzsh="$EDITOR ~/.oh-my-zsh"
 alias ip="curl -s https://ipinfo.io/ip && echo"
 alias localip="hostname -I 2>/dev/null || ifconfig | grep 'inet ' | grep -v '127.0.0.1' | head -1 | awk '{print \$2}'"
 alias ping="ping -c 5"
-alias fuck="export https_proxy=http://127.0.0.1:7897;export http_proxy=http://127.0.0.1:7897;export all_proxy=socks5://127.0.0.1:7897"
 
 alias brewup="brew update && brew upgrade && brew cleanup"
 alias cleanup="find . -type f -name '*.DS_Store' -ls -delete"
-alias fix="stty sane; tput reset; clear"
 
 alias docker="podman"
 alias docker-compose="podman-compose"

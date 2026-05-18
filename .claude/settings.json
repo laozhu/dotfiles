@@ -2,9 +2,6 @@
   "permissions": {
     "defaultMode": "bypassPermissions"
   },
-  "skipDangerousModePermissionPrompt": true,
-  "model": "opus",
-  "effortLevel": "medium",
   "hooks": {
     "PreToolUse": [
       {
@@ -65,5 +62,7 @@
         "repo": "openai/codex-plugin-cc"
       }
     }
-  }
+  },
+  "effortLevel": "medium",
+  "skipDangerousModePermissionPrompt": true
 }

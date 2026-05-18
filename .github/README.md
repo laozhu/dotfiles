@@ -198,29 +198,33 @@ openssl rand -hex 8        # → SHORT_ID
 
 `SERVER_DOMAIN` is whatever DNS A/AAAA record you've pointed at the server.
 
-### Run at boot on macOS with launchctl
+### Run at boot on macOS
 
-The TUN inbound needs root, so sing-box runs as a **LaunchDaemon** (system-wide) rather than a LaunchAgent (per-user). The plist lives at `~/.config/sing-box/com.example.sing-box.plist`.
-
-Install (launchd requires `root:wheel` ownership and `644` perms):
+sing-box is installed via Homebrew (`brew install sing-box`). The TUN inbound needs root, so it runs as a **LaunchDaemon** (system-wide) rather than a LaunchAgent (per-user) — you must use `sudo brew services` so the plist lands in `/Library/LaunchDaemons/` instead of `~/Library/LaunchAgents/`:
 
 ```sh
-sudo install -o root -g wheel -m 644 \
-  ~/.config/sing-box/com.example.sing-box.plist /Library/LaunchDaemons/
-sudo launchctl bootstrap system /Library/LaunchDaemons/com.example.sing-box.plist
-sudo launchctl kickstart -k system/com.example.sing-box
+sudo brew services start sing-box
 ```
+
+This creates `/Library/LaunchDaemons/homebrew.mxcl.sing-box.plist` and launches the daemon. Homebrew points it at `/opt/homebrew/etc/sing-box/config.json`, which is a symlink to `~/.config/sing-box/config.json` — so editing the dotfile here is what the daemon actually reads.
 
 Manage:
 
 ```sh
-sudo launchctl kickstart -k system/com.example.sing-box   # restart (after config edit)
-sudo launchctl print     system/com.example.sing-box      # status
-sudo launchctl bootout   system/com.example.sing-box      # stop + disable
-tail -f /var/log/sing-box.log /var/log/sing-box.err.log   # logs
+sudo launchctl kickstart -k system/homebrew.mxcl.sing-box   # restart (after config edit)
+sudo launchctl print     system/homebrew.mxcl.sing-box      # full status
+sudo brew services list                                     # one-line status of all brew services
+sudo brew services restart sing-box                         # equivalent to kickstart -k
+sudo brew services stop    sing-box                         # stop + unload
 ```
 
-Uninstall: `sudo launchctl bootout …` then `sudo rm /Library/LaunchDaemons/com.example.sing-box.plist`.
+View logs via Apple's unified logging (the Homebrew plist doesn't redirect stdout/stderr to a file):
+
+```sh
+log stream --predicate 'process == "sing-box"' --level info
+```
+
+Uninstall: `sudo brew services stop sing-box` (the plist is removed automatically).
 
 ### Web dashboard
 
@@ -230,7 +234,7 @@ The config enables sing-box's Clash-compatible API on `127.0.0.1:9090` with a bu
 http://localhost:9090/ui
 ```
 
-From there you can switch outbound modes, inspect live connections, view per-rule traffic, and ping outbounds. The dashboard assets are downloaded on first launch via the `aws-singapore` outbound (see `external_ui_download_detour` in the config).
+From there you can switch outbound modes, inspect live connections, view per-rule traffic, and ping outbounds. The dashboard assets are downloaded on first launch via the `🇸🇬 aws-singapore-hy2` outbound (see `external_ui_download_detour` in the config — pinned to a specific hy2 outbound rather than `🌐 Proxy-Auto` to avoid the startup-time concurrent-handshake burst that can trigger Reality's anti-detection drops).
 
 ### Foreground run
 
