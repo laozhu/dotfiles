@@ -36,3 +36,5 @@
 	syntax-theme = gruvbox-dark
 [safe]
 	directory = *
+[includeIf "gitdir:~/Developer/paid-inc/"]
+	path = ~/.gitconfig-paid

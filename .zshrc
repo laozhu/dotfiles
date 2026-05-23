@@ -8,7 +8,7 @@ export EDITOR='vim'
 export HOMEBREW_NO_INSTALL_CLEANUP=1
 export HOMEBREW_UPGRADE_GREEDY=1
 export HOMEBREW_UPGRADE_GREEDY_CASKS=1
-export PATH=$/opt/homebrew/bin:HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
+export PATH=/opt/homebrew/bin:/opt/homebrew/share/google-cloud-sdk/bin:$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
 export GITHUB_PERSONAL_ACCESS_TOKEN=$(security find-generic-password -s "github-token" -w)
 
 # Disable theme (Starship takes over)
@@ -66,3 +66,8 @@ alias k8s="kubectl"
 
 alias ll="eza -al --icons=auto --git-ignore"
 alias tree="eza -al --tree -L 3 --icons=auto --git-ignore"
+
+# sing-box: reload after editing ~/.config/sing-box/config.json
+# config is symlinked: /opt/homebrew/etc/sing-box/config.json -> ~/.config/sing-box/config.json
+alias sb-status='sudo launchctl print system/homebrew.mxcl.sing-box | rg "state =|last exit|program =" ; echo "---" ; sudo lsof -nP -iTCP:7777 -sTCP:LISTEN'
+alias sb-reload='sudo launchctl kickstart -kp system/homebrew.mxcl.sing-box && sleep 1 && sb-status'
