@@ -10,22 +10,28 @@ set -euo pipefail
 cd "$HOME"
 
 # ── CLI flags ────────────────────────────────────────────────────────────────
-DRY_RUN=0
+# NOTE: `yadm bootstrap` does NOT forward extra argv to this script — calling
+# `yadm bootstrap --dry-run` will silently ignore the flag and execute for real.
+# To pass options through yadm, use the env vars below; or invoke this script
+# directly: `~/.config/yadm/bootstrap --dry-run`.
+DRY_RUN="${BOOTSTRAP_DRY_RUN:-0}"
 for arg in "$@"; do
     case "$arg" in
         --dry-run|-n) DRY_RUN=1 ;;
         --yes|-y)     BOOTSTRAP_YES=1 ;;
         --help|-h)
             cat <<EOF
-Usage: yadm bootstrap [--dry-run|-n] [--yes|-y] [--help|-h]
+Usage: ~/.config/yadm/bootstrap [--dry-run|-n] [--yes|-y] [--help|-h]
 
   --dry-run, -n   Print what would happen without executing.
   --yes, -y       Auto-approve dangerous steps (chsh, sudo).
                   Equivalent to BOOTSTRAP_YES=1.
   --help, -h      Show this message.
 
-Environment:
-  BOOTSTRAP_YES=1   Same as --yes.
+Environment (use these when invoking via \`yadm bootstrap\`, which doesn't
+forward argv):
+  BOOTSTRAP_DRY_RUN=1   Same as --dry-run.
+  BOOTSTRAP_YES=1       Same as --yes.
 EOF
             exit 0
             ;;
@@ -97,8 +103,9 @@ fi
 # ── 3. Install everything from the Brewfile ──────────────────────────────────
 if [[ -f "$HOME/.Brewfile" ]]; then
     log "Installing formulas, casks, and VS Code extensions from ~/.Brewfile..."
-    # `--no-lock` avoids creating a Brewfile.lock.json next to your tracked file.
-    run brew bundle --global --no-lock || warn "Some packages failed; continuing."
+    # Newer brew-bundle no longer writes a lock file by default, and the
+    # old `--no-lock` flag was removed — don't pass it.
+    run brew bundle --global || warn "Some packages failed; continuing."
 else
     warn "~/.Brewfile not found — skipping brew bundle."
 fi
@@ -126,7 +133,18 @@ if command -v tldr >/dev/null 2>&1; then
     run tldr --update || warn "tldr cache update failed; non-fatal."
 fi
 
-# ── 7. ⚠️  DANGER ZONE: change default login shell ───────────────────────────
+# ── 7. Playwright browsers & Claude skill ────────────────────────────────────
+# `playwright-cli install` downloads the browser binaries into
+# ~/Library/Caches/ms-playwright/ (skipped if already present).
+# `--skills` installs the Claude skill into ~/.claude/skills.
+if command -v playwright-cli >/dev/null 2>&1; then
+    log "Installing Playwright browser binaries..."
+    run playwright-cli install || warn "playwright-cli install failed; non-fatal."
+    log "Installing Playwright Claude skill..."
+    run playwright-cli install --skills || warn "playwright-cli install --skills failed; non-fatal."
+fi
+
+# ── 8. ⚠️  DANGER ZONE: change default login shell ───────────────────────────
 # Switches your login shell to the Homebrew zsh (newer than /bin/zsh).
 # This modifies /etc/shells (sudo) and dscl user record — hence the prompt.
 ZSH_PATH="$BREW_PREFIX/bin/zsh"
@@ -143,7 +161,7 @@ if [[ -x "$ZSH_PATH" || "$DRY_RUN" == "1" ]] && [[ "$CURRENT_SHELL" != "$ZSH_PAT
     fi
 fi
 
-# ── 8. GitHub token in macOS Keychain ────────────────────────────────────────
+# ── 9. GitHub token in macOS Keychain ────────────────────────────────────────
 # .zshrc reads GITHUB_PERSONAL_ACCESS_TOKEN from the Keychain via:
 #   security find-generic-password -s "github-token" -w
 # Prompt for the token (or pick up GITHUB_TOKEN env var) and save it.

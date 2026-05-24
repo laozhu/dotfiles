@@ -52,21 +52,28 @@ What it does:
 4. Installs Oh My Zsh (without overwriting the tracked `.zshrc`)
 5. Wires up fzf key bindings and completions
 6. Updates the tealdeer (`tldr`) cache
-7. **(Confirmation required)** Sets Homebrew zsh as the default login shell
-8. Prompts for and saves a GitHub Personal Access Token to the macOS Keychain (used by `.zshrc`)
+7. Installs Playwright browser binaries and Claude skill (`playwright-cli install` / `--skills`)
+8. **(Confirmation required)** Sets Homebrew zsh as the default login shell
+9. Prompts for and saves a GitHub Personal Access Token to the macOS Keychain (used by `.zshrc`)
 
 ### Usage
 
+`yadm bootstrap` does **not** forward extra argv to the script — pass options
+via env vars, or invoke the script directly.
+
 ```sh
-yadm bootstrap                  # interactive (default-no on dangerous prompts)
-yadm bootstrap --yes            # auto-approve all prompts (or BOOTSTRAP_YES=1)
-yadm bootstrap --dry-run        # trace what would happen, no changes made
-yadm bootstrap --help           # show all flags
+yadm bootstrap                                    # interactive (default-no on dangerous prompts)
+BOOTSTRAP_YES=1 yadm bootstrap                    # auto-approve all prompts
+BOOTSTRAP_DRY_RUN=1 yadm bootstrap                # trace what would happen, no changes made
+
+~/.config/yadm/bootstrap --dry-run                # equivalent direct invocation
+~/.config/yadm/bootstrap --yes                    # equivalent direct invocation
+~/.config/yadm/bootstrap --help                   # show all flags
 ```
 
 ### Providing the GitHub token non-interactively
 
-Step 8 prompts for a GitHub PAT with hidden input. To skip the prompt (e.g. for unattended runs), export `GITHUB_TOKEN` first — bootstrap will pick it up and save it to the Keychain:
+Step 9 prompts for a GitHub PAT with hidden input. To skip the prompt (e.g. for unattended runs), export `GITHUB_TOKEN` first — bootstrap will pick it up and save it to the Keychain:
 
 ```sh
 GITHUB_TOKEN=ghp_xxx yadm bootstrap --yes
@@ -117,13 +124,14 @@ The `--force` flag overwrites the existing `.Brewfile`. Without it, the command 
 | Data | jq, yq, qsv, xan |
 | Containers | Podman, Podman Compose, kubectl |
 | AI | Gemini CLI, Lark CLI |
+| Browser Automation | playwright-cli |
 | Media | ffmpeg, yt-dlp, gallery-dl, you-get |
 | Images | imagemagick, svgo |
 | Publishing | pandoc, hugo, zola, tectonic, mermaid-cli, dprint |
 | Benchmark | hyperfine |
 | Networking | httpie, sing-box, xh, iperf3, miniserve |
 | Security | age, gnupg, pass |
-| SaaS | acli (Atlassian), googleworkspace-cli |
+| SaaS | acli (Atlassian), googleworkspace-cli, sentry-cli |
 | Other | bat, btop, duf, ncdu, rsync, tealdeer, mo, im-select |
 
 ### Apps (Homebrew Casks)
@@ -140,6 +148,7 @@ The `--force` flag overwrites the existing `.Brewfile`. Without it, the command 
 | Media | QQ Music |
 | Productivity | Google Drive |
 | Fonts | JetBrains Mono Nerd Font |
+| Peripherals | Logitech G HUB |
 | Other | Bambu Studio (3D printing) |
 
 ## Notable Shell Aliases
