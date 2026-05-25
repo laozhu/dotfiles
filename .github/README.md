@@ -210,31 +210,43 @@ fvim        # fuzzy-find then open in vim
 brewup      # update + upgrade + cleanup brew
 docker      # aliased to podman
 tmux        # aliased to zellij
+sb-status   # sing-box LaunchDaemon status
+sb-reload   # reload sing-box after editing config
 ```
 
 ## sing-box
 
-Installed via Homebrew (`brew install sing-box`) and run as a **LaunchDaemon** (`sudo brew services start sing-box`) — the TUN inbound needs root, so a per-user LaunchAgent won't work. Homebrew reads `/opt/homebrew/etc/sing-box/config.json`, which is symlinked to `~/.config/sing-box/config.json` — editing the dotfile is what the daemon picks up.
+### Install & run
 
-Day-to-day, use the `sb-status` and `sb-reload` aliases from `.zshrc` after editing the config. Logs go to Apple's unified logging: `log stream --predicate 'process == "sing-box"' --level info`. To debug interactively, stop the daemon and run in foreground: `sudo sing-box run -c ~/.config/sing-box/config.json`. Uninstall with `sudo brew services stop sing-box`.
+- Installed via Homebrew: `brew install sing-box`.
+- Runs as a **LaunchDaemon**: `sudo brew services start sing-box`. The TUN inbound needs root, so a per-user LaunchAgent won't work.
+- Config path: Homebrew reads `/opt/homebrew/etc/sing-box/config.json`, which is symlinked to `~/.config/sing-box/config.json`. Edit the dotfile — the daemon picks it up.
+- Uninstall: `sudo brew services stop sing-box`.
 
-The Clash-compatible API is exposed on `127.0.0.1:9090` with a bundled dashboard at <http://localhost:9090/ui> — switch outbound modes, inspect live connections, ping outbounds. Dashboard assets are downloaded on first launch via the `🇸🇬 aws-singapore-hy2` outbound (`external_ui_download_detour` in the config — pinned to a specific hy2 outbound rather than `🌐 Proxy-Auto` to avoid the startup-time concurrent-handshake burst that can trigger Reality's anti-detection drops).
+### Daily use
 
-`~/.config/sing-box/config.json` contains server secrets (UUID, public key, short ID), so it's tracked through [yadm encrypt](https://yadm.io/docs/encryption) instead of as plain text. The path is listed in `~/.config/yadm/encrypt`, and the encrypted bundle lives at `~/.config/yadm/archive` (which IS committed). The plain `config.json` itself stays gitignored.
+| Task | Command |
+|---|---|
+| Status / reload after edit | `sb-status` / `sb-reload` (aliases in `.zshrc`) |
+| Tail logs | `log stream --predicate 'process == "sing-box"' --level info` |
+| Debug interactively | Stop the daemon, then `sudo sing-box run -c ~/.config/sing-box/config.json` |
+| Validate config | `sing-box check -c ~/.config/sing-box/config.json` |
 
-### Decrypting on a new machine
+### Dashboard
 
-After `yadm clone`, the encrypted archive is checked out but the actual `config.json` doesn't exist yet. Run:
+The Clash-compatible API is exposed on `127.0.0.1:9090` with a bundled dashboard at <http://localhost:9090/ui> — switch outbound modes, inspect live connections, ping outbounds.
 
-```sh
-yadm decrypt
-```
+Dashboard assets are downloaded on first launch via the `🇸🇬 aws-singapore-hy2` outbound. The config pins `external_ui_download_detour` to that specific hy2 outbound (rather than `🌐 Proxy-Auto`) to avoid the startup-time concurrent-handshake burst that can trigger Reality's anti-detection drops.
 
-yadm will prompt for the symmetric passphrase used when the archive was created and extract `~/.config/sing-box/config.json` (and any other files listed in `~/.config/yadm/encrypt`) into place. Verify it parses:
+### Secrets (encrypted via yadm)
 
-```sh
-sing-box check -c ~/.config/sing-box/config.json
-```
+`~/.config/sing-box/config.json` contains server secrets (UUID, public key, short ID), so it's tracked through [yadm encrypt](https://yadm.io/docs/encryption) instead of plain text:
+
+- `~/.config/yadm/encrypt` — lists which paths to encrypt.
+- `~/.config/yadm/archive` — the encrypted bundle (committed).
+- `config.json` itself — gitignored.
+
+On a new machine after `yadm clone`, run `yadm decrypt` to extract `config.json` (prompts for the symmetric passphrase), then verify with `sing-box check`.
 
 ### Updating secrets and re-encrypting
 
