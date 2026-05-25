@@ -5,9 +5,6 @@ eval "$(/opt/homebrew/bin/brew shellenv zsh)"
 export ZSH="$HOME/.oh-my-zsh"
 export CLICOLOR=1
 export EDITOR='vim'
-export HOMEBREW_NO_INSTALL_CLEANUP=1
-export HOMEBREW_UPGRADE_GREEDY=1
-export HOMEBREW_UPGRADE_GREEDY_CASKS=1
 export PATH=/opt/homebrew/bin:/opt/homebrew/share/google-cloud-sdk/bin:$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
 export GITHUB_PERSONAL_ACCESS_TOKEN=$(security find-generic-password -s "github-token" -w)
 
@@ -71,3 +68,6 @@ alias tree="eza -al --tree -L 3 --icons=auto --git-ignore"
 # config is symlinked: /opt/homebrew/etc/sing-box/config.json -> ~/.config/sing-box/config.json
 alias sb-status='sudo launchctl print system/homebrew.mxcl.sing-box | rg "state =|last exit|program =" ; echo "---" ; sudo lsof -nP -iTCP:7777 -sTCP:LISTEN'
 alias sb-reload='sudo launchctl kickstart -kp system/homebrew.mxcl.sing-box && sleep 1 && sb-status'
+
+# Start claude code with channels
+alias claude-discord='claude --channels plugin:discord@claude-plugins-official'
