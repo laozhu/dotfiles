@@ -236,8 +236,6 @@ sb-reload   # reload sing-box after editing config
 
 The Clash-compatible API is exposed on `127.0.0.1:9090` with a bundled dashboard at <http://localhost:9090/ui> — switch outbound modes, inspect live connections, ping outbounds.
 
-Dashboard assets are downloaded on first launch via the `🇸🇬 aws-singapore-hy2` outbound. The config pins `external_ui_download_detour` to that specific hy2 outbound (rather than `🌐 Proxy-Auto`) to avoid the startup-time concurrent-handshake burst that can trigger Reality's anti-detection drops.
-
 ### Secrets (encrypted via yadm)
 
 `~/.config/sing-box/config.json` contains server secrets (UUID, public key, short ID), so it's tracked through [yadm encrypt](https://yadm.io/docs/encryption) instead of plain text:
