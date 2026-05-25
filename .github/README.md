@@ -191,9 +191,11 @@ Third-party extensions loaded into Claude Code, grouped by install source. Plugi
 
 ### Standalone skills (`~/.claude/skills/`)
 
-- **Lark suite** — installed by `lark-cli`: `lark-im`, `lark-mail`, `lark-doc`, `lark-base`, `lark-sheets`, `lark-slides`, `lark-drive`, `lark-wiki`, `lark-calendar`, `lark-task`, `lark-okr`, `lark-vc`, `lark-vc-agent`, `lark-minutes`, `lark-whiteboard`, `lark-markdown`, `lark-contact`, `lark-approval`, `lark-attendance`, `lark-event`, `lark-openapi-explorer`, `lark-skill-maker`, `lark-shared`, `lark-workflow-meeting-summary`, `lark-workflow-standup-report`.
-- **Playwright** — `playwright-cli` (installed by bootstrap step 7 via `playwright-cli install --skills`).
-- **Matt Pocock's engineering skills** — scaffolded by `setup-matt-pocock-skills`: `tdd`, `diagnose`, `prototype`, `triage`, `to-issues`, `to-prd`, `grill-me`, `grill-with-docs`, `handoff`, `zoom-out`, `zread`, `improve-codebase-architecture`, `write-a-skill`, `find-skills`, `caveman`.
+**[`larksuite/cli`](https://github.com/larksuite/cli)** — Lark/Feishu suite: IM, mail, docs, sheets, base, calendar, tasks, VC, minutes, and other workspace integrations.
+
+**[`mattpocock/skills`](https://github.com/mattpocock/skills)** — Matt Pocock's engineering workflow skills: TDD, diagnose, prototype, triage, grill-me, zoom-out, and more.
+
+**[`microsoft/playwright`](https://github.com/microsoft/playwright)** — Playwright browser automation skill, installed by bootstrap step 7 via `playwright-cli install --skills`.
 
 ### Reinstalling on a fresh machine
 
