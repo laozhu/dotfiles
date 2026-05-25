@@ -12,7 +12,9 @@ macOS dotfiles managed with [yadm](https://yadm.io/).
 ├── .claude/                 # Claude Code settings and scripts
 │   ├── settings.json
 │   ├── fetch-usage.sh
-│   └── statusline.sh
+│   ├── statusline.sh
+│   └── plugins/
+│       └── installed_plugins.json   # tracked: marketplace plugin manifest
 └── .config/
     ├── bat/                 # Bat (cat replacement) config
     ├── btop/                # Btop system monitor config
@@ -53,8 +55,9 @@ What it does:
 5. Wires up fzf key bindings and completions
 6. Updates the tealdeer (`tldr`) cache
 7. Installs Playwright browser binaries and Claude skill (`playwright-cli install` / `--skills`)
-8. **(Confirmation required)** Sets Homebrew zsh as the default login shell
-9. Prompts for and saves a GitHub Personal Access Token to the macOS Keychain (used by `.zshrc`)
+8. Re-adds Claude plugin marketplaces and installs all plugins, then installs standalone skills (`larksuite/cli`, `mattpocock/skills`) via `npx skills add`
+9. **(Confirmation required)** Sets Homebrew zsh as the default login shell
+10. Prompts for and saves a GitHub Personal Access Token to the macOS Keychain (used by `.zshrc`)
 
 ### Usage
 
@@ -73,7 +76,7 @@ BOOTSTRAP_DRY_RUN=1 yadm bootstrap                # trace what would happen, no 
 
 ### Providing the GitHub token non-interactively
 
-Step 9 prompts for a GitHub PAT with hidden input. To skip the prompt (e.g. for unattended runs), export `GITHUB_TOKEN` first — bootstrap will pick it up and save it to the Keychain:
+Step 10 prompts for a GitHub PAT with hidden input. To skip the prompt (e.g. for unattended runs), export `GITHUB_TOKEN` first — bootstrap will pick it up and save it to the Keychain:
 
 ```sh
 GITHUB_TOKEN=ghp_xxx yadm bootstrap --yes
@@ -150,6 +153,51 @@ The `--force` flag overwrites the existing `.Brewfile`. Without it, the command 
 | Fonts | JetBrains Mono Nerd Font |
 | Peripherals | Logitech G HUB |
 | Other | Bambu Studio (3D printing) |
+
+## Claude Code Skills & Plugins
+
+Third-party extensions loaded into Claude Code, grouped by install source. Plugin manifests live in `~/.claude/plugins/installed_plugins.json` (tracked by yadm); standalone skills live under `~/.claude/skills/`.
+
+### Plugins (`/plugin` marketplaces)
+
+**[`claude-plugins-official`](https://github.com/anthropics/claude-plugins-official)**
+
+| Plugin | Purpose |
+|---|---|
+| `superpowers` | Core workflow skills (TDD, debugging, brainstorming, plans, git worktrees) |
+| `frontend-design` | Opinionated frontend UI generation |
+| `skill-creator` | Author and benchmark new skills |
+| `claude-md-management` | Audit / improve / revise CLAUDE.md files |
+| `claude-code-setup` | Recommend hooks, subagents, MCP servers for a repo |
+| `commit-commands` | `/commit`, `/commit-push-pr`, branch cleanup |
+| `pr-review-toolkit` | Multi-agent PR review (style, tests, comments, types, silent failures) |
+| `code-modernization` | Legacy-code discovery, brief, transform, harden |
+| `mcp-server-dev` | Build MCP servers / apps / MCPBs |
+| `chrome-devtools-mcp` | Browser debugging via Chrome DevTools MCP |
+| `typescript-lsp` | LSP-backed TS navigation |
+| `context7` | Up-to-date library docs lookup |
+| `greptile` | Semantic codebase search |
+| `playground` | Interactive single-file HTML explorers |
+| `hyperframes` | Motion graphics / video composition |
+| `expo` | Expo / React Native workflows |
+| `resend` | Email composition + Resend API |
+| `discord` | Discord channel as Claude chat surface |
+| `security-guidance` | Defensive security guidance |
+| `learning-output-style` | Educational interactive output style |
+
+**[`openai-codex`](https://github.com/openai/codex-plugin-cc)** — `codex` (delegate to Codex CLI for rescue / second-opinion runs)
+
+**[`understand-anything`](https://github.com/Lum1104/Understand-Anything)** — `understand-anything` (knowledge-graph codebase analysis + dashboard)
+
+### Standalone skills (`~/.claude/skills/`)
+
+- **Lark suite** — installed by `lark-cli`: `lark-im`, `lark-mail`, `lark-doc`, `lark-base`, `lark-sheets`, `lark-slides`, `lark-drive`, `lark-wiki`, `lark-calendar`, `lark-task`, `lark-okr`, `lark-vc`, `lark-vc-agent`, `lark-minutes`, `lark-whiteboard`, `lark-markdown`, `lark-contact`, `lark-approval`, `lark-attendance`, `lark-event`, `lark-openapi-explorer`, `lark-skill-maker`, `lark-shared`, `lark-workflow-meeting-summary`, `lark-workflow-standup-report`.
+- **Playwright** — `playwright-cli` (installed by bootstrap step 7 via `playwright-cli install --skills`).
+- **Matt Pocock's engineering skills** — scaffolded by `setup-matt-pocock-skills`: `tdd`, `diagnose`, `prototype`, `triage`, `to-issues`, `to-prd`, `grill-me`, `grill-with-docs`, `handoff`, `zoom-out`, `zread`, `improve-codebase-architecture`, `write-a-skill`, `find-skills`, `caveman`.
+
+### Reinstalling on a fresh machine
+
+Bootstrap step 8 re-adds the three marketplaces, installs every plugin listed above, and runs `npx skills add larksuite/cli` + `npx skills add mattpocock/skills` for the standalone skills. The `playwright-cli` skill is handled separately in step 7. All commands are idempotent — safe to re-run after `yadm clone` or whenever this list changes.
 
 ## Notable Shell Aliases
 

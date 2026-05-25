@@ -144,7 +144,63 @@ if command -v playwright-cli >/dev/null 2>&1; then
     run playwright-cli install --skills || warn "playwright-cli install --skills failed; non-fatal."
 fi
 
-# ── 8. ⚠️  DANGER ZONE: change default login shell ───────────────────────────
+# ── 8. Claude Code plugins & skills ──────────────────────────────────────────
+# Plugin marketplaces and plugins aren't restored by yadm clone — only the
+# manifest (~/.claude/plugins/installed_plugins.json) is tracked. Re-add the
+# marketplaces and install each plugin; both commands are idempotent.
+if command -v claude >/dev/null 2>&1; then
+    log "Re-adding Claude plugin marketplaces..."
+    for repo in \
+        anthropics/claude-plugins-official \
+        openai/codex-plugin-cc \
+        Lum1104/Understand-Anything; do
+        run claude plugin marketplace add "$repo" \
+            || warn "marketplace add $repo failed; non-fatal."
+    done
+
+    log "Installing Claude plugins..."
+    while IFS= read -r plugin; do
+        [[ -z "$plugin" || "$plugin" == \#* ]] && continue
+        run claude plugin install "$plugin" \
+            || warn "plugin install $plugin failed; non-fatal."
+    done <<'PLUGINS'
+chrome-devtools-mcp@claude-plugins-official
+claude-code-setup@claude-plugins-official
+claude-md-management@claude-plugins-official
+code-modernization@claude-plugins-official
+commit-commands@claude-plugins-official
+context7@claude-plugins-official
+discord@claude-plugins-official
+expo@claude-plugins-official
+frontend-design@claude-plugins-official
+greptile@claude-plugins-official
+hyperframes@claude-plugins-official
+learning-output-style@claude-plugins-official
+mcp-server-dev@claude-plugins-official
+playground@claude-plugins-official
+pr-review-toolkit@claude-plugins-official
+resend@claude-plugins-official
+security-guidance@claude-plugins-official
+skill-creator@claude-plugins-official
+superpowers@claude-plugins-official
+typescript-lsp@claude-plugins-official
+codex@openai-codex
+understand-anything@understand-anything
+PLUGINS
+fi
+
+# `npx skills add` pulls standalone Claude skills into ~/.agents/skills/,
+# which Claude Code reads alongside ~/.claude/skills/. larksuite/cli covers
+# the lark-* suite; mattpocock/skills covers tdd/diagnose/prototype/etc.
+if command -v npx >/dev/null 2>&1; then
+    log "Installing standalone Claude skills (lark + mattpocock)..."
+    run npx -y skills add larksuite/cli -g -y \
+        || warn "lark skills install failed; non-fatal."
+    run npx -y skills add mattpocock/skills -g -y \
+        || warn "mattpocock skills install failed; non-fatal."
+fi
+
+# ── 9. ⚠️  DANGER ZONE: change default login shell ───────────────────────────
 # Switches your login shell to the Homebrew zsh (newer than /bin/zsh).
 # This modifies /etc/shells (sudo) and dscl user record — hence the prompt.
 ZSH_PATH="$BREW_PREFIX/bin/zsh"
@@ -161,7 +217,7 @@ if [[ -x "$ZSH_PATH" || "$DRY_RUN" == "1" ]] && [[ "$CURRENT_SHELL" != "$ZSH_PAT
     fi
 fi
 
-# ── 9. GitHub token in macOS Keychain ────────────────────────────────────────
+# ── 10. GitHub token in macOS Keychain ───────────────────────────────────────
 # .zshrc reads GITHUB_PERSONAL_ACCESS_TOKEN from the Keychain via:
 #   security find-generic-password -s "github-token" -w
 # Prompt for the token (or pick up GITHUB_TOKEN env var) and save it.
