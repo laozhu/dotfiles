@@ -1,39 +1,80 @@
 {
-  description = "dotfiles";
+  description = "Nix-darwin configuration for macOS";
 
   inputs = {
-    # Use `github:NixOS/nixpkgs/nixpkgs-26.05-darwin` to use Nixpkgs 26.05.
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-26.05-darwin";
-    # Use `github:nix-darwin/nix-darwin/nix-darwin-26.05` to use Nixpkgs 26.05.
-    nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-26.05";
-    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
+    # 核心包集合 (使用稳定版或 unstable 均可，这里保留 unstable)
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    
+    # Nix-darwin (修复了拼写错误)
+    darwin = {
+      url = "github:nix-darwin/nix-darwin";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
-    home-manager.url = "github:nix-community/home-manager/release-26.05";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    # Home Manager
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
-    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
+    # Nix-Homebrew 及国内清华源 Taps
+    nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
+    homebrew-core = {
+      url = "git+https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-core.git";
+      flake = false;
+    };
+    homebrew-cask = {
+      url = "git+https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-cask.git";
+      flake = false;
+    };
   };
 
-  outputs = inputs@{ self, nix-darwin, nix-homebrew, home-manager, nixpkgs }:
+  outputs = inputs@{ self, darwin, nixpkgs, home-manager, nix-homebrew, ... }:
     let
-      # The one username line to change if this isn't your machine.
-      # bootstrap.sh offers to rewrite this for you if your macOS username differs.
       user = "rich";
+      # M4 芯片架构统一为 aarch64-darwin
+      system = "aarch64-darwin"; 
+      
+      # 💡 提取共享模块：笔记本和台式机共用的所有配置
+      sharedModules = [
+        ./configuration.nix
+
+        home-manager.darwinModules.home-manager
+        {
+          home-manager.useGlobalPkgs = true;
+          home-manager.useUserPackages = true;
+          home-manager.extraSpecialArgs = { inherit user; };
+          home-manager.users.${user} = import ./home.nix;
+        }
+
+        nix-homebrew.darwinModules.nix-homebrew
+        {
+          nix-homebrew = {
+            enable = true;
+            user = user;
+            # 注入清华源的 Taps
+            taps = {
+              "homebrew/homebrew-core" = inputs.homebrew-core;
+              "homebrew/homebrew-cask" = inputs.homebrew-cask;
+            };
+            mutableTaps = false;
+          };
+        }
+      ];
     in
     {
-      darwinConfigurations."mac" = nix-darwin.lib.darwinSystem {
-        specialArgs = { inherit user; };
-        modules = [
-          ./configuration.nix
-          nix-homebrew.darwinModules.nix-homebrew
-          home-manager.darwinModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.extraSpecialArgs = { inherit user; };
-            home-manager.users.${user} = import ./home.nix;
-          }
-        ];
+      # 💻 笔记本电脑配置
+      darwinConfigurations."mac-laptop" = darwin.lib.darwinSystem {
+        inherit system;
+        specialArgs = { inherit user inputs; };
+        modules = sharedModules;
+      };
+
+      # 🖥️ 台式机电脑配置 (复用完全相同的模块)
+      darwinConfigurations."mac-desktop" = darwin.lib.darwinSystem {
+        inherit system;
+        specialArgs = { inherit user inputs; };
+        modules = sharedModules;
       };
     };
 }
