@@ -382,6 +382,7 @@ jq -e '
   ([.outbounds[].tag] | index("us-vless") != null) and
   ([.outbounds[].tag] | index("us-hy2") != null) and
   .route.final == "direct" and
+  .route.default_domain_resolver == "proxy-dns" and
   .experimental.cache_file.enabled == true
 ' home/.config/sing-box/config.json
 ```
@@ -442,7 +443,7 @@ Expected: 因模板和映射文件不存在而失败。
 11. 两个 VLESS: `flow = "xtls-rprx-vision"`、REALITY、uTLS `chrome`。
 12. 两个 Hysteria2: 保留旧配置的端口、上下行带宽和 Salamander obfs。
 13. `direct` 出站。
-14. 路由顺序严格为 sniff、DNS hijack、代理服务器目标直连、私网直连、`custom-reject`、`custom-direct`、`custom-proxy`、OpenAI、Claude、Google Meet UDP、Google Meet 通用、GFWList、final direct。
+14. `route.default_domain_resolver = "proxy-dns"`，避免 1.13.14 的缺失解析器错误，并让未被更具体 DNS 规则覆盖的域名继续使用防污染的代理 DoH。路由规则顺序严格为 sniff、DNS hijack、代理服务器目标直连、私网直连、`custom-reject`、`custom-direct`、`custom-proxy`、OpenAI、Claude、Google Meet UDP、Google Meet 通用、GFWList、final direct。
 15. `custom-reject`、`custom-direct` 和 `custom-proxy` 是可编辑的 inline rule-set。sing-box 1.13.14 拒绝空的 inline rule-set，因此三个 `rules` 数组初始都包含一个精确匹配保留域名 `sing-box-placeholder.invalid` 的无害哨兵规则。用户以后向对应 `rules` 数组追加自定义规则，不要删除哨兵。
 15.1. `proxy-server` 是包含四个加密服务器 IP 的 inline rule-set；DNS 规则和路由规则都引用它，避免在两处重复保存服务器列表。
 16. Google Meet inline rule-set 包含 `meet.google.com`、`meetings.googleapis.com`、`stun.l.google.com`、`workspace.turns.goog`、`meet.turns.goog`，以及 `74.125.250.0/24`、`142.250.82.0/24`、`2001:4860:4864:5::/64`、`2001:4860:4864:6::/64`。UDP `3478` 和 `19302:19309` 在该服务规则中经 `proxy`。
