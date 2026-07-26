@@ -76,6 +76,7 @@
     casks = [
       "antigravity-ide"
       "bitwarden"
+      "sfm"
       "chatgpt"
       "claude"
       "google-chrome"

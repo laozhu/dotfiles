@@ -25,6 +25,10 @@ in
     pkgs.neovim
     pkgs.github-cli       # GitHub 命令行工具
     pkgs.nerd-fonts.hack
+    pkgs.age
+    pkgs.bitwarden-cli
+    pkgs.sops
+    pkgs.sing-box
 
     # -----------------------------------------------------------
     # 🛠️ Neovim 核心底层依赖 (Treesitter & Mason 必需)
@@ -120,6 +124,8 @@ in
     ".config/wezterm".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/wezterm";
     ".config/nvim".source    = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/nvim";
     ".config/herdr".source   = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/herdr";
+    ".config/sing-box/config.json".source = config.lib.file.mkOutOfStoreSymlink
+      "${config.home.homeDirectory}/.local/state/sing-box/config.json";
 
     # AI Agents 配置文件注入
     ".claude/settings.json".source      = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.claude/settings.json";
