@@ -1,0 +1,7 @@
+keys:
+  - &dotfiles_age age1danryk0gjz7mqtcm8xzxf4hzqkwns74ejfj08cw3vqkfskmn8vrscyepsu
+creation_rules:
+  - path_regex: ^secrets/.*\.yaml$
+    key_groups:
+      - age:
+          - *dotfiles_age
