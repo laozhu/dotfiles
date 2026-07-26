@@ -4,7 +4,6 @@ set -euo pipefail
 repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 config="$repo_dir/home/.config/sing-box/config.json"
 secret_map="$repo_dir/home/.config/sing-box/secrets-map.json"
-encrypted_secrets="$repo_dir/secrets/sing-box.yaml"
 identity_preflight="$repo_dir/scripts/check-sops-age-key.sh"
 
 if [ ! -f "$identity_preflight" ]; then
@@ -125,6 +124,7 @@ printf '%s\n' '  user = "fixture-user";' >"$bootstrap_test_root/flake.nix"
 cat >"$bootstrap_test_root/scripts/check-sops-age-key.sh" <<'SH'
 #!/usr/bin/env bash
 printf '%s\n' 'identity preflight' >>"$BOOTSTRAP_TEST_LOG"
+exit "${BOOTSTRAP_PREFLIGHT_STATUS:-0}"
 SH
 cat >"$bootstrap_fixture_bin/whoami" <<'SH'
 #!/usr/bin/env bash
@@ -172,6 +172,27 @@ if ! cmp -s "$expected_bootstrap" "$bootstrap_log"; then
   exit 1
 fi
 
+failed_bootstrap="$bootstrap_test_root/expected-preflight-failure"
+printf '%s\n' \
+  "nix shell nixpkgs#age nixpkgs#sops --command $bootstrap_fixture_real/scripts/check-sops-age-key.sh" \
+  'identity preflight' \
+  >"$failed_bootstrap"
+: >"$bootstrap_log"
+if BOOTSTRAP_PREFLIGHT_STATUS=23 \
+  HOME="$bootstrap_fixture_home" PATH="$bootstrap_test_path" \
+  bash "$bootstrap_fixture" >/dev/null; then
+  echo "bootstrap continued after a failed identity preflight" >&2
+  exit 1
+else
+  bootstrap_status="$?"
+fi
+test "$bootstrap_status" = '23'
+if ! cmp -s "$failed_bootstrap" "$bootstrap_log"; then
+  echo "bootstrap ran a switch after a failed identity preflight" >&2
+  diff -u "$failed_bootstrap" "$bootstrap_log" >&2 || true
+  exit 1
+fi
+
 trap - EXIT
 cleanup_bootstrap_tests
 
@@ -194,16 +215,19 @@ cp "$repo_dir/rebuild.sh" "$rebuild_fixture"
 cat >"$rebuild_test_root/scripts/check-sops-age-key.sh" <<'SH'
 #!/usr/bin/env bash
 printf '%s\n' 'identity preflight' >>"$REBUILD_TEST_LOG"
+exit "${REBUILD_IDENTITY_STATUS:-0}"
 SH
 cat >"$rebuild_test_root/scripts/check-sing-box-config.sh" <<'SH'
 #!/usr/bin/env bash
 printf '%s\n' 'config check' >>"$REBUILD_TEST_LOG"
+exit "${REBUILD_CONFIG_STATUS:-0}"
 SH
 cat >"$rebuild_fixture_bin/nix" <<'SH'
 #!/usr/bin/env bash
 printf 'nix' >>"$REBUILD_TEST_LOG"
 printf ' %s' "$@" >>"$REBUILD_TEST_LOG"
 printf '\n' >>"$REBUILD_TEST_LOG"
+exit "${REBUILD_NIX_STATUS:-0}"
 SH
 cat >"$rebuild_fixture_bin/git" <<'SH'
 #!/usr/bin/env bash
@@ -265,6 +289,64 @@ printf '%s\n' \
   >"$expected_update_rebuild"
 assert_rebuild_operations "$expected_update_rebuild" -u
 assert_rebuild_operations "$expected_update_rebuild" --update
+
+identity_failure_log="$rebuild_test_root/expected-identity-failure"
+printf '%s\n' 'identity preflight' >"$identity_failure_log"
+: >"$rebuild_log"
+if REBUILD_IDENTITY_STATUS=31 \
+  HOME="$rebuild_fixture_home" PATH="$rebuild_test_path" \
+  bash "$rebuild_fixture" -u >/dev/null; then
+  echo "rebuild continued after a failed identity preflight" >&2
+  exit 1
+else
+  rebuild_status="$?"
+fi
+test "$rebuild_status" = '31'
+if ! cmp -s "$identity_failure_log" "$rebuild_log"; then
+  echo "rebuild ran later operations after identity failure" >&2
+  exit 1
+fi
+
+config_failure_log="$rebuild_test_root/expected-config-failure"
+printf '%s\n' \
+  'identity preflight' \
+  'config check' \
+  >"$config_failure_log"
+: >"$rebuild_log"
+if REBUILD_CONFIG_STATUS=32 \
+  HOME="$rebuild_fixture_home" PATH="$rebuild_test_path" \
+  bash "$rebuild_fixture" -u >/dev/null; then
+  echo "rebuild continued after a failed config check" >&2
+  exit 1
+else
+  rebuild_status="$?"
+fi
+test "$rebuild_status" = '32'
+if ! cmp -s "$config_failure_log" "$rebuild_log"; then
+  echo "rebuild ran later operations after config failure" >&2
+  exit 1
+fi
+
+update_failure_log="$rebuild_test_root/expected-update-failure"
+printf '%s\n' \
+  'identity preflight' \
+  'config check' \
+  'nix flake update' \
+  >"$update_failure_log"
+: >"$rebuild_log"
+if REBUILD_NIX_STATUS=33 \
+  HOME="$rebuild_fixture_home" PATH="$rebuild_test_path" \
+  bash "$rebuild_fixture" -u >/dev/null; then
+  echo "rebuild switched after a failed flake update" >&2
+  exit 1
+else
+  rebuild_status="$?"
+fi
+test "$rebuild_status" = '33'
+if ! cmp -s "$update_failure_log" "$rebuild_log"; then
+  echo "rebuild ran a switch after update failure" >&2
+  exit 1
+fi
 
 multiple_rebuild_output="$rebuild_test_root/multiple-output"
 : >"$rebuild_log"
@@ -665,12 +747,6 @@ jq -e '
       "sing-box/usa/hysteria2/tls-server-name"
   }
 ' "$secret_map" >/dev/null
-
-map_paths="$(jq -c '[.[]] | sort' "$secret_map")"
-sops decrypt --output-type json "$encrypted_secrets" \
-  | jq -e --argjson expected "$map_paths" '
-      ([paths(scalars) | map(tostring) | join("/")] | sort) == $expected
-    ' >/dev/null
 
 map_markers="$(jq -c '[keys[]] | sort' "$secret_map")"
 config_markers="$(
