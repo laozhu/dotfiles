@@ -837,10 +837,10 @@ Expected path: ~/Library/Application Support/sops/age/keys.txt
 目标固定为：
 
 ```bash
-switch --flake ~/.dotfiles#mac
+switch --flake "$DIR#mac"
 ```
 
-bootstrap 不登录 Bitwarden、不生成 identity、不启动 SFM。
+bootstrap 不登录 Bitwarden、不生成 identity、不启动 SFM。identity preflight 和 switch 必须使用同一个由脚本位置解析出的绝对 `DIR`，避免从一个 checkout 校验后切换另一个 checkout。
 
 - [ ] **Step 4: 修改 rebuild**
 
@@ -858,10 +858,10 @@ set -euo pipefail
 检查 identity
 检查模板和秘密
 可选 nix flake update
-sudo darwin-rebuild switch --flake ~/.dotfiles#mac
+sudo darwin-rebuild switch --flake "$DIR#mac"
 ```
 
-删除目标参数、`mac-desktop` 默认值和 `git add .`。重建不启动、不停止、不重启 SFM。
+删除目标参数、`mac-desktop` 默认值和 `git add .`。重建不启动、不停止、不重启 SFM。所有检查、可选 update 和 switch 必须使用同一个 `DIR` checkout；测试必须从一个与 `$HOME/.dotfiles` 不同的临时脚本目录执行，并断言 switch 目标是该脚本目录的 `#mac`，而不是 HOME 中的另一个仓库。
 
 - [ ] **Step 5: 运行脚本测试**
 
