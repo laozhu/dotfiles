@@ -79,14 +79,18 @@ darwinConfigurations.mac
 Home Manager 从 nixpkgs 安装以下命令行软件包：
 
 - `age`
+- `bitwarden-cli`
 - `sops`
 - `sing-box`
 
-nix-darwin 的 Homebrew cask 列表加入：
+nix-darwin 的 Homebrew cask 列表声明：
 
+- `bitwarden`
 - `sfm`
 
-必须声明 SFM，因为 Homebrew 激活配置使用了 `cleanup = "zap"`。
+Bitwarden 桌面应用属于 GUI，继续由 `configuration.nix` 中的 Homebrew cask 管理。`bw` 属于命令行工具，由 `home.nix` 中的 `pkgs.bitwarden-cli` 管理，与其他 CLI 保持一致。当前锁定的 nixpkgs 已确认提供该包。
+
+必须声明 Bitwarden 和 SFM，因为 Homebrew 激活配置使用了 `cleanup = "zap"`。全新 Mac 在首次 bootstrap 完成前还没有声明式安装的 `bw`，因此第一次恢复 age identity 不能强制依赖 CLI；后续机器迁移和恢复可优先使用 CLI。
 
 ### 运行时所有权
 
@@ -111,9 +115,9 @@ Home Manager 不得运行 `sing-box run`，不得创建自动启动服务，也�
 
 ## 秘密管理
 
-### 加密模型
+### 通用 dotfiles 加密模型
 
-sops-nix 使用 age 作为加密后端。两台 Mac 共用同一个 age identity。
+sops-nix 使用 age 作为加密后端。两台 Mac 共用同一个 age identity。该 identity 属于整个个人 dotfiles，而不是 sing-box 专用，因此未来其他适合共用同一安全边界的 SOPS 文件也可使用它解密。
 
 age 私钥存放在本机：
 
@@ -126,13 +130,52 @@ age 私钥存放在本机：
 - 所在目录：`0700`
 - 私钥文件：`0600`
 
-私钥绝不能提交到 Git。新 Mac 必须通过密码管理器、加密移动存储或其他安全的带外渠道恢复私钥。
+私钥绝不能提交到 Git。每台 Mac 还必须启用 FileVault，以降低设备遗失后离线读取本地明文私钥的风险。
+
+Bitwarden Password Manager 是该 identity 的备份和跨机器分发渠道。保存方式如下：
+
+- 创建名为 `dotfiles - sops age identity` 的安全笔记；
+- 开启主密码重新提示；
+- 优先将完整的 `keys.txt` 作为加密附件保存；
+- Bitwarden 计划不支持附件时，才将完整文件内容保存在安全笔记正文；
+- 不使用 Bitwarden Send、普通云盘、邮件、聊天工具或截图传输私钥；
+- 不在 Downloads、剪贴板或终端输出中长期保留私钥副本。
+
+Bitwarden 项目的 ID 使用用途明确的名称：
+
+```text
+BITWARDEN_SOPS_AGE_IDENTITY_ITEM_ID
+```
+
+Shell 脚本内部不需要导出时，使用对应的小写局部变量：
+
+```text
+bitwarden_sops_age_identity_item_id
+```
+
+Bitwarden item ID 不是秘密，但不得将它误命名为密钥或 identity 本身。`rebuild.sh` 和 `bootstrap.sh` 不自动登录 Bitwarden，也不自动下载私钥，避免让非交互式构建依赖密码管理器会话。私钥恢复是新机器初始化前的显式人工步骤。
 
 以下文件可以且应当提交：
 
 - `.sops.yaml`，其中只包含 age 公钥接收者；
 - `secrets/sing-box.yaml`，其中的值均已加密；
 - 非秘密配置模板。
+
+未来可在 `secrets/` 下增加其他 SOPS 文件，并通过 `.sops.yaml` 的 creation rules 使用同一个 age recipient。工作凭据、生产密钥或需要机器级撤销能力的秘密不得复用该 identity，必须建立独立的 age identity 和 recipient。当前共用方案的已知代价是，任意一台 Mac 或该私钥失陷时，所有使用它加密的个人 dotfiles secrets 都必须轮换。
+
+### Bitwarden 恢复与验证
+
+Bitwarden 官方 CLI 已经可用时，优先将 `keys.txt` 附件直接写入最终位置，避免在 Downloads 产生额外明文副本。全新 Mac 在首次 Nix 构建前尚未具备声明式安装的 Bitwarden 和 CLI，因此可通过 Bitwarden 官方应用、Web Vault 或另一台受信任设备访问安全笔记。使用应用或浏览器保存附件时，必须直接选择最终路径，并确认没有遗留下载副本。
+
+恢复完成后必须执行以下验证：
+
+1. 确认目录权限为 `0700`；
+2. 确认 `keys.txt` 权限为 `0600`；
+3. 使用 `age-keygen -y` 从 identity 推导 recipient；
+4. 确认推导出的 recipient 与 `.sops.yaml` 中的公钥完全一致；
+5. 使用 SOPS 对 `secrets/sing-box.yaml` 进行只验证、不输出明文的解密测试。
+
+恢复命令和错误信息不得包含私钥内容。Bitwarden CLI 的会话变量只在当前 Shell 中短暂存在，恢复后立即清除。
 
 ### 加密字段
 
@@ -168,10 +211,12 @@ age 私钥存放在本机：
 
 ```text
 1. 克隆仓库。
-2. 将共享 age 私钥恢复到 macOS 的标准 SOPS 路径。
-3. 运行 ./bootstrap.sh。
-4. 由 sops-nix 解密并渲染 sing-box 配置。
-5. 将通过校验的运行配置导入 SFM。
+2. 通过 Bitwarden 官方应用、Web Vault 或另一台受信任设备访问 identity 备份。
+3. 将共享 dotfiles age 私钥直接恢复到 macOS 的标准 SOPS 路径。
+4. 校验文件权限、公钥 recipient 和 SOPS 解密能力。
+5. 运行 ./bootstrap.sh。
+6. 由 sops-nix 解密并渲染 sing-box 配置。
+7. 将通过校验的运行配置导入 SFM。
 ```
 
 `bootstrap.sh` 和 `rebuild.sh` 均使用 `darwinConfigurations.mac`。
@@ -184,7 +229,7 @@ age 私钥存放在本机：
 ./rebuild.sh --update
 ```
 
-age 私钥缺失时，脚本必须提前失败并显示准确的恢复路径。不得自动生成替代密钥，因为新 identity 无法解密仓库中已有的 SOPS 文件。
+age 私钥缺失、权限不正确、公钥不匹配或无法解密时，脚本必须提前失败并显示准确的恢复路径和 Bitwarden 项目名称。不得自动生成替代密钥，因为新 identity 无法解密仓库中已有的 SOPS 文件。
 
 ## SFM Profile 同步
 
@@ -459,6 +504,9 @@ SFM 提供：
 
 - 两台 Mac 均构建同一个 `darwinConfigurations.mac`；
 - 加密秘密可以安全提交，并能使用共享 age 私钥解密；
+- 从 Bitwarden 恢复到新 Mac 的 identity 能推导出 `.sops.yaml` 中相同的 recipient；
+- age 私钥缺失、权限错误或 recipient 不匹配时，初始化会在 Nix 构建前安全失败；
+- 私钥恢复过程不会在 Git、Nix Store、Downloads、日志或终端输出中留下额外明文副本；
 - 最终配置具备 Schema 辅助、是有效 JSON，并通过 sing-box 1.13.14 校验；
 - SFM 通过声明式方式安装，并使用唯一的 Network Extension 实例运行配置；
 - FakeIP、双栈、GFWList、自定义规则和服务例外均按设计工作；
