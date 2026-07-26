@@ -469,4 +469,12 @@ assert.throws(
 );
 NODE
 
+nix eval --raw \
+  "$repo_dir#darwinConfigurations.mac.config.sops.templates.sing-box-candidate.path" \
+  | grep -Fx '/run/secrets/rendered/sing-box-candidate.json'
+
+nix eval --raw \
+  "$repo_dir#darwinConfigurations.mac.config.sops.age.keyFile" \
+  | grep -Fx '/Users/rich/Library/Application Support/sops/age/keys.txt'
+
 printf '%s\n' "sing-box static checks passed"
