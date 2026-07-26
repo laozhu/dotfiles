@@ -1,25 +1,38 @@
-cd ~/.dotfiles
+#!/usr/bin/env bash
+set -euo pipefail
 
-# 解析参数
-UPDATE_ALL=false
-TARGET=""
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 
-for arg in "$@"; do
-  if [ "$arg" == "--update" ] || [ "$arg" == "-u" ]; then
-    UPDATE_ALL=true
-  else
-    TARGET="$arg"
-  fi
-done
+usage() {
+  printf 'Usage: %s [--update|-u]\n' "${0##*/}" >&2
+}
 
-TARGET=${TARGET:-mac-desktop}
+update_inputs=false
+case "$#" in
+  0)
+    ;;
+  1)
+    case "$1" in
+      -u | --update)
+        update_inputs=true
+        ;;
+      *)
+        usage
+        exit 2
+        ;;
+    esac
+    ;;
+  *)
+    usage
+    exit 2
+    ;;
+esac
 
-if [ "$UPDATE_ALL" = true ]; then
-  echo "🚀 正在更新所有 Flake Inputs (nixpkgs, llm-agents, homebrew)..."
+"$DIR/scripts/check-sops-age-key.sh"
+"$DIR/scripts/check-sing-box-config.sh"
+
+if [ "$update_inputs" = true ]; then
   nix flake update
 fi
 
-git add .
-
-echo "🛠️ 正在重建 Nix 配置目标: $TARGET ..."
-exec sudo darwin-rebuild switch --flake ~/.dotfiles#$TARGET
+exec sudo darwin-rebuild switch --flake ~/.dotfiles#mac

@@ -5,6 +5,295 @@ repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 config="$repo_dir/home/.config/sing-box/config.json"
 secret_map="$repo_dir/home/.config/sing-box/secrets-map.json"
 encrypted_secrets="$repo_dir/secrets/sing-box.yaml"
+identity_preflight="$repo_dir/scripts/check-sops-age-key.sh"
+
+if [ ! -f "$identity_preflight" ]; then
+  echo "identity preflight script is missing" >&2
+  exit 1
+fi
+
+preflight_test_root="$(mktemp -d)"
+cleanup_preflight_tests() {
+  rm -rf "$preflight_test_root"
+}
+trap cleanup_preflight_tests EXIT
+
+missing_home="$preflight_test_root/missing-home"
+mkdir -p "$missing_home"
+missing_output="$preflight_test_root/missing-output"
+if HOME="$missing_home" bash "$identity_preflight" \
+  >"$missing_output" 2>&1; then
+  echo "identity preflight accepted a missing identity" >&2
+  exit 1
+fi
+grep -Fq 'Bitwarden item: dotfiles - sops age identity' "$missing_output"
+grep -Fq \
+  'Expected path: ~/Library/Application Support/sops/age/keys.txt' \
+  "$missing_output"
+
+fixture_home="$preflight_test_root/fixture-home"
+fixture_key_dir="$fixture_home/Library/Application Support/sops/age"
+fixture_key_file="$fixture_key_dir/keys.txt"
+install -d -m 0700 "$fixture_key_dir"
+(
+  umask 077
+  age-keygen -o "$fixture_key_file" >/dev/null 2>&1
+)
+
+directory_mode_output="$preflight_test_root/directory-mode-output"
+chmod 0755 "$fixture_key_dir"
+if HOME="$fixture_home" bash "$identity_preflight" \
+  >"$directory_mode_output" 2>&1; then
+  echo "identity preflight accepted an unsafe directory mode" >&2
+  exit 1
+fi
+grep -Fq 'Expected permissions: 700' "$directory_mode_output"
+grep -Fq 'Actual permissions: 755' "$directory_mode_output"
+
+file_mode_output="$preflight_test_root/file-mode-output"
+chmod 0700 "$fixture_key_dir"
+chmod 0644 "$fixture_key_file"
+if HOME="$fixture_home" bash "$identity_preflight" \
+  >"$file_mode_output" 2>&1; then
+  echo "identity preflight accepted an unsafe file mode" >&2
+  exit 1
+fi
+grep -Fq 'Expected permissions: 600' "$file_mode_output"
+grep -Fq 'Actual permissions: 644' "$file_mode_output"
+
+mismatch_output="$preflight_test_root/mismatch-output"
+chmod 0600 "$fixture_key_file"
+if HOME="$fixture_home" bash "$identity_preflight" \
+  >"$mismatch_output" 2>&1; then
+  echo "identity preflight accepted a mismatched identity" >&2
+  exit 1
+fi
+grep -Fq 'Identity does not match the repository recipient.' "$mismatch_output"
+if rg -q 'AGE-SECRET-KEY-|age1[0-9a-z]+' "$mismatch_output"; then
+  echo "identity preflight exposed key material on mismatch" >&2
+  exit 1
+fi
+
+duplicate_repo="$preflight_test_root/duplicate-repo"
+duplicate_preflight="$duplicate_repo/scripts/check-sops-age-key.sh"
+duplicate_output="$preflight_test_root/duplicate-output"
+fixture_recipient="$(
+  age-keygen -y "$fixture_key_file" 2>/dev/null
+)"
+mkdir -p "$duplicate_repo/scripts" "$duplicate_repo/secrets"
+cp "$identity_preflight" "$duplicate_preflight"
+printf '%s\n' \
+  "keys: $fixture_recipient" \
+  "duplicate: $fixture_recipient" \
+  >"$duplicate_repo/.sops.yaml"
+: >"$duplicate_repo/secrets/sing-box.yaml"
+if HOME="$fixture_home" bash "$duplicate_preflight" \
+  >"$duplicate_output" 2>&1; then
+  echo "identity preflight accepted duplicate repository recipients" >&2
+  exit 1
+fi
+if ! grep -Fq 'Expected one repository recipient in:' "$duplicate_output"; then
+  echo "identity preflight did not reject duplicate repository recipients" >&2
+  exit 1
+fi
+if rg -q 'AGE-SECRET-KEY-|age1[0-9a-z]+' "$duplicate_output"; then
+  echo "identity preflight exposed key material for duplicate recipients" >&2
+  exit 1
+fi
+
+trap - EXIT
+cleanup_preflight_tests
+
+bootstrap_test_root="$(mktemp -d)"
+cleanup_bootstrap_tests() {
+  rm -rf "$bootstrap_test_root"
+}
+trap cleanup_bootstrap_tests EXIT
+
+bootstrap_fixture="$bootstrap_test_root/bootstrap.sh"
+bootstrap_fixture_bin="$bootstrap_test_root/bin"
+bootstrap_fixture_home="$bootstrap_test_root/home"
+bootstrap_fixture_real="$(cd "$bootstrap_test_root" && pwd -P)"
+bootstrap_log="$bootstrap_test_root/operations.log"
+mkdir -p \
+  "$bootstrap_fixture_bin" \
+  "$bootstrap_fixture_home" \
+  "$bootstrap_test_root/scripts"
+cp "$repo_dir/bootstrap.sh" "$bootstrap_fixture"
+printf '%s\n' '  user = "fixture-user";' >"$bootstrap_test_root/flake.nix"
+
+cat >"$bootstrap_test_root/scripts/check-sops-age-key.sh" <<'SH'
+#!/usr/bin/env bash
+printf '%s\n' 'identity preflight' >>"$BOOTSTRAP_TEST_LOG"
+SH
+cat >"$bootstrap_fixture_bin/whoami" <<'SH'
+#!/usr/bin/env bash
+printf '%s\n' 'fixture-user'
+SH
+cat >"$bootstrap_fixture_bin/nix" <<'SH'
+#!/usr/bin/env bash
+printf 'nix' >>"$BOOTSTRAP_TEST_LOG"
+printf ' %s' "$@" >>"$BOOTSTRAP_TEST_LOG"
+printf '\n' >>"$BOOTSTRAP_TEST_LOG"
+while [ "$#" -gt 0 ]; do
+  if [ "$1" = '--command' ]; then
+    shift
+    exec "$@"
+  fi
+  shift
+done
+SH
+cat >"$bootstrap_fixture_bin/sudo" <<'SH'
+#!/usr/bin/env bash
+printf 'sudo' >>"$BOOTSTRAP_TEST_LOG"
+printf ' %s' "$@" >>"$BOOTSTRAP_TEST_LOG"
+printf '\n' >>"$BOOTSTRAP_TEST_LOG"
+SH
+chmod 0755 \
+  "$bootstrap_test_root/scripts/check-sops-age-key.sh" \
+  "$bootstrap_fixture_bin/whoami" \
+  "$bootstrap_fixture_bin/nix" \
+  "$bootstrap_fixture_bin/sudo"
+
+export BOOTSTRAP_TEST_LOG="$bootstrap_log"
+bootstrap_test_path="$bootstrap_fixture_bin:/usr/bin:/bin"
+HOME="$bootstrap_fixture_home" PATH="$bootstrap_test_path" \
+  bash "$bootstrap_fixture" >/dev/null
+
+expected_bootstrap="$bootstrap_test_root/expected-operations"
+printf '%s\n' \
+  "nix shell nixpkgs#age nixpkgs#sops --command $bootstrap_fixture_real/scripts/check-sops-age-key.sh" \
+  'identity preflight' \
+  "sudo $bootstrap_fixture_bin/nix run github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild -- switch --flake $bootstrap_fixture_home/.dotfiles#mac" \
+  >"$expected_bootstrap"
+if ! cmp -s "$expected_bootstrap" "$bootstrap_log"; then
+  echo "bootstrap skipped or misordered the identity preflight" >&2
+  diff -u "$expected_bootstrap" "$bootstrap_log" >&2 || true
+  exit 1
+fi
+
+trap - EXIT
+cleanup_bootstrap_tests
+
+rebuild_test_root="$(mktemp -d)"
+cleanup_rebuild_tests() {
+  rm -rf "$rebuild_test_root"
+}
+trap cleanup_rebuild_tests EXIT
+
+rebuild_fixture="$rebuild_test_root/rebuild.sh"
+rebuild_fixture_bin="$rebuild_test_root/bin"
+rebuild_fixture_home="$rebuild_test_root/home"
+rebuild_log="$rebuild_test_root/operations.log"
+mkdir -p \
+  "$rebuild_fixture_bin" \
+  "$rebuild_fixture_home" \
+  "$rebuild_test_root/scripts"
+cp "$repo_dir/rebuild.sh" "$rebuild_fixture"
+
+cat >"$rebuild_test_root/scripts/check-sops-age-key.sh" <<'SH'
+#!/usr/bin/env bash
+printf '%s\n' 'identity preflight' >>"$REBUILD_TEST_LOG"
+SH
+cat >"$rebuild_test_root/scripts/check-sing-box-config.sh" <<'SH'
+#!/usr/bin/env bash
+printf '%s\n' 'config check' >>"$REBUILD_TEST_LOG"
+SH
+cat >"$rebuild_fixture_bin/nix" <<'SH'
+#!/usr/bin/env bash
+printf 'nix' >>"$REBUILD_TEST_LOG"
+printf ' %s' "$@" >>"$REBUILD_TEST_LOG"
+printf '\n' >>"$REBUILD_TEST_LOG"
+SH
+cat >"$rebuild_fixture_bin/git" <<'SH'
+#!/usr/bin/env bash
+printf 'git' >>"$REBUILD_TEST_LOG"
+printf ' %s' "$@" >>"$REBUILD_TEST_LOG"
+printf '\n' >>"$REBUILD_TEST_LOG"
+SH
+cat >"$rebuild_fixture_bin/sudo" <<'SH'
+#!/usr/bin/env bash
+printf 'sudo' >>"$REBUILD_TEST_LOG"
+printf ' %s' "$@" >>"$REBUILD_TEST_LOG"
+printf '\n' >>"$REBUILD_TEST_LOG"
+SH
+chmod 0755 \
+  "$rebuild_test_root/scripts/check-sops-age-key.sh" \
+  "$rebuild_test_root/scripts/check-sing-box-config.sh" \
+  "$rebuild_fixture_bin/nix" \
+  "$rebuild_fixture_bin/git" \
+  "$rebuild_fixture_bin/sudo"
+
+export REBUILD_TEST_LOG="$rebuild_log"
+rebuild_test_path="$rebuild_fixture_bin:/usr/bin:/bin"
+invalid_rebuild_output="$rebuild_test_root/invalid-output"
+: >"$rebuild_log"
+if HOME="$rebuild_fixture_home" PATH="$rebuild_test_path" \
+  bash "$rebuild_fixture" unexpected >"$invalid_rebuild_output" 2>&1; then
+  echo "rebuild accepted an unexpected argument" >&2
+  exit 1
+fi
+grep -Fq 'Usage:' "$invalid_rebuild_output"
+test ! -s "$rebuild_log"
+
+assert_rebuild_operations() {
+  expected_log="$1"
+  shift
+  : >"$rebuild_log"
+  HOME="$rebuild_fixture_home" PATH="$rebuild_test_path" \
+    bash "$rebuild_fixture" "$@" >/dev/null
+  if ! cmp -s "$expected_log" "$rebuild_log"; then
+    echo "rebuild operations ran in the wrong order" >&2
+    exit 1
+  fi
+}
+
+expected_rebuild="$rebuild_test_root/expected-rebuild"
+printf '%s\n' \
+  'identity preflight' \
+  'config check' \
+  "sudo darwin-rebuild switch --flake $rebuild_fixture_home/.dotfiles#mac" \
+  >"$expected_rebuild"
+assert_rebuild_operations "$expected_rebuild"
+
+expected_update_rebuild="$rebuild_test_root/expected-update-rebuild"
+printf '%s\n' \
+  'identity preflight' \
+  'config check' \
+  'nix flake update' \
+  "sudo darwin-rebuild switch --flake $rebuild_fixture_home/.dotfiles#mac" \
+  >"$expected_update_rebuild"
+assert_rebuild_operations "$expected_update_rebuild" -u
+assert_rebuild_operations "$expected_update_rebuild" --update
+
+multiple_rebuild_output="$rebuild_test_root/multiple-output"
+: >"$rebuild_log"
+if HOME="$rebuild_fixture_home" PATH="$rebuild_test_path" \
+  bash "$rebuild_fixture" -u --update >"$multiple_rebuild_output" 2>&1; then
+  echo "rebuild accepted multiple arguments" >&2
+  exit 1
+fi
+grep -Fq 'Usage:' "$multiple_rebuild_output"
+test ! -s "$rebuild_log"
+
+trap - EXIT
+cleanup_rebuild_tests
+
+grep -Fq 'darwinConfigurations.mac' "$repo_dir/flake.nix"
+if grep -Fq 'git add .' "$repo_dir/rebuild.sh"; then
+  echo "rebuild must not stage repository changes" >&2
+  exit 1
+fi
+grep -Fq '#mac' "$repo_dir/bootstrap.sh"
+grep -Fq '#mac' "$repo_dir/rebuild.sh"
+if rg -n 'sing-box[[:space:]]+run|launchctl.*sing-box' \
+  "$repo_dir/bootstrap.sh" \
+  "$repo_dir/rebuild.sh" \
+  "$repo_dir/scripts" \
+  "$repo_dir/sing-box.nix"; then
+  echo "bootstrap and rebuild must not manage the sing-box runtime" >&2
+  exit 1
+fi
 
 jq -e '
   .["$schema"] == "https://sing-box.sagernet.org/schema.json" and

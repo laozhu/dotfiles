@@ -43,16 +43,21 @@ else
   echo "    flake.nix already matches \"$REAL_USER\", nothing to do."
 fi
 
-echo "==> Step 4: first darwin-rebuild switch (pinned to nix-darwin-26.05)"
+# sudo resets PATH to a secure default that excludes /nix/.../bin, so a
+# freshly installed `nix` would not be found under sudo even though it's
+# on PATH here. Resolve the absolute path first and invoke that instead.
+NIX_BIN="$(command -v nix)"
+
+echo "==> Step 4: validate the SOPS age identity"
+"$NIX_BIN" shell nixpkgs#age nixpkgs#sops --command \
+  "$DIR/scripts/check-sops-age-key.sh"
+
+echo "==> Step 5: first darwin-rebuild switch (pinned to nix-darwin-26.05)"
 # darwin-rebuild doesn't exist yet on a fresh machine, so run it straight
 # from the flake this once. After this, rebuild.sh works normally.
 # This fetches the darwin-rebuild tool from the nix-darwin-26.05 release branch,
 # not the exact flake.lock revision. The system config it applies is still pinned
 # by this repo's flake.lock.
-# sudo resets PATH to a secure default that excludes /nix/.../bin, so a
-# freshly installed `nix` would not be found under sudo even though it's
-# on PATH here. Resolve the absolute path first and invoke that instead.
-NIX_BIN="$(command -v nix)"
 # "mac" is the flake host label - if you renamed it, change it in flake.nix
 # and rebuild.sh too.
 sudo "$NIX_BIN" run github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild -- \
