@@ -113,17 +113,22 @@ bootstrap_fixture="$bootstrap_test_root/bootstrap.sh"
 bootstrap_fixture_bin="$bootstrap_test_root/bin"
 bootstrap_fixture_home="$bootstrap_test_root/home"
 bootstrap_fixture_real="$(cd "$bootstrap_test_root" && pwd -P)"
+bootstrap_home_repo="$bootstrap_test_root/home-repo"
 bootstrap_log="$bootstrap_test_root/operations.log"
 mkdir -p \
   "$bootstrap_fixture_bin" \
   "$bootstrap_fixture_home" \
+  "$bootstrap_home_repo" \
   "$bootstrap_test_root/scripts"
+ln -s "$bootstrap_home_repo" "$bootstrap_fixture_home/.dotfiles"
+test "$(readlink "$bootstrap_fixture_home/.dotfiles")" = "$bootstrap_home_repo"
 cp "$repo_dir/bootstrap.sh" "$bootstrap_fixture"
 printf '%s\n' '  user = "fixture-user";' >"$bootstrap_test_root/flake.nix"
 
 cat >"$bootstrap_test_root/scripts/check-sops-age-key.sh" <<'SH'
 #!/usr/bin/env bash
-printf '%s\n' 'identity preflight' >>"$BOOTSTRAP_TEST_LOG"
+fixture_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+printf 'identity preflight %s\n' "$fixture_dir" >>"$BOOTSTRAP_TEST_LOG"
 exit "${BOOTSTRAP_PREFLIGHT_STATUS:-0}"
 SH
 cat >"$bootstrap_fixture_bin/whoami" <<'SH'
@@ -159,23 +164,29 @@ export BOOTSTRAP_TEST_LOG="$bootstrap_log"
 bootstrap_test_path="$bootstrap_fixture_bin:/usr/bin:/bin"
 HOME="$bootstrap_fixture_home" PATH="$bootstrap_test_path" \
   bash "$bootstrap_fixture" >/dev/null
+test "$(readlink "$bootstrap_fixture_home/.dotfiles")" = \
+  "$bootstrap_fixture_real"
 
 expected_bootstrap="$bootstrap_test_root/expected-operations"
 printf '%s\n' \
   "nix shell nixpkgs#age nixpkgs#sops --command $bootstrap_fixture_real/scripts/check-sops-age-key.sh" \
-  'identity preflight' \
-  "sudo $bootstrap_fixture_bin/nix run github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild -- switch --flake $bootstrap_fixture_home/.dotfiles#mac" \
+  "identity preflight $bootstrap_fixture_real" \
+  "sudo $bootstrap_fixture_bin/nix run github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild -- switch --flake $bootstrap_fixture_real#mac" \
   >"$expected_bootstrap"
 if ! cmp -s "$expected_bootstrap" "$bootstrap_log"; then
   echo "bootstrap skipped or misordered the identity preflight" >&2
   diff -u "$expected_bootstrap" "$bootstrap_log" >&2 || true
   exit 1
 fi
+if grep -Fq "$bootstrap_home_repo" "$bootstrap_log"; then
+  echo "bootstrap used the divergent HOME checkout" >&2
+  exit 1
+fi
 
 failed_bootstrap="$bootstrap_test_root/expected-preflight-failure"
 printf '%s\n' \
   "nix shell nixpkgs#age nixpkgs#sops --command $bootstrap_fixture_real/scripts/check-sops-age-key.sh" \
-  'identity preflight' \
+  "identity preflight $bootstrap_fixture_real" \
   >"$failed_bootstrap"
 : >"$bootstrap_log"
 if BOOTSTRAP_PREFLIGHT_STATUS=23 \
@@ -205,21 +216,28 @@ trap cleanup_rebuild_tests EXIT
 rebuild_fixture="$rebuild_test_root/rebuild.sh"
 rebuild_fixture_bin="$rebuild_test_root/bin"
 rebuild_fixture_home="$rebuild_test_root/home"
+rebuild_fixture_real="$(cd "$rebuild_test_root" && pwd -P)"
+rebuild_home_repo="$rebuild_test_root/home-repo"
 rebuild_log="$rebuild_test_root/operations.log"
 mkdir -p \
   "$rebuild_fixture_bin" \
   "$rebuild_fixture_home" \
+  "$rebuild_home_repo" \
   "$rebuild_test_root/scripts"
+ln -s "$rebuild_home_repo" "$rebuild_fixture_home/.dotfiles"
+test "$(readlink "$rebuild_fixture_home/.dotfiles")" = "$rebuild_home_repo"
 cp "$repo_dir/rebuild.sh" "$rebuild_fixture"
 
 cat >"$rebuild_test_root/scripts/check-sops-age-key.sh" <<'SH'
 #!/usr/bin/env bash
-printf '%s\n' 'identity preflight' >>"$REBUILD_TEST_LOG"
+fixture_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+printf 'identity preflight %s\n' "$fixture_dir" >>"$REBUILD_TEST_LOG"
 exit "${REBUILD_IDENTITY_STATUS:-0}"
 SH
 cat >"$rebuild_test_root/scripts/check-sing-box-config.sh" <<'SH'
 #!/usr/bin/env bash
-printf '%s\n' 'config check' >>"$REBUILD_TEST_LOG"
+fixture_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+printf 'config check %s\n' "$fixture_dir" >>"$REBUILD_TEST_LOG"
 exit "${REBUILD_CONFIG_STATUS:-0}"
 SH
 cat >"$rebuild_fixture_bin/nix" <<'SH'
@@ -274,24 +292,31 @@ assert_rebuild_operations() {
 
 expected_rebuild="$rebuild_test_root/expected-rebuild"
 printf '%s\n' \
-  'identity preflight' \
-  'config check' \
-  "sudo darwin-rebuild switch --flake $rebuild_fixture_home/.dotfiles#mac" \
+  "identity preflight $rebuild_fixture_real" \
+  "config check $rebuild_fixture_real" \
+  "sudo darwin-rebuild switch --flake $rebuild_fixture_real#mac" \
   >"$expected_rebuild"
 assert_rebuild_operations "$expected_rebuild"
 
 expected_update_rebuild="$rebuild_test_root/expected-update-rebuild"
 printf '%s\n' \
-  'identity preflight' \
-  'config check' \
-  'nix flake update' \
-  "sudo darwin-rebuild switch --flake $rebuild_fixture_home/.dotfiles#mac" \
+  "identity preflight $rebuild_fixture_real" \
+  "config check $rebuild_fixture_real" \
+  "nix flake update --flake $rebuild_fixture_real" \
+  "sudo darwin-rebuild switch --flake $rebuild_fixture_real#mac" \
   >"$expected_update_rebuild"
 assert_rebuild_operations "$expected_update_rebuild" -u
 assert_rebuild_operations "$expected_update_rebuild" --update
+test "$(readlink "$rebuild_fixture_home/.dotfiles")" = "$rebuild_home_repo"
+if grep -Fq "$rebuild_home_repo" "$rebuild_log"; then
+  echo "rebuild used the divergent HOME checkout" >&2
+  exit 1
+fi
 
 identity_failure_log="$rebuild_test_root/expected-identity-failure"
-printf '%s\n' 'identity preflight' >"$identity_failure_log"
+printf '%s\n' \
+  "identity preflight $rebuild_fixture_real" \
+  >"$identity_failure_log"
 : >"$rebuild_log"
 if REBUILD_IDENTITY_STATUS=31 \
   HOME="$rebuild_fixture_home" PATH="$rebuild_test_path" \
@@ -309,8 +334,8 @@ fi
 
 config_failure_log="$rebuild_test_root/expected-config-failure"
 printf '%s\n' \
-  'identity preflight' \
-  'config check' \
+  "identity preflight $rebuild_fixture_real" \
+  "config check $rebuild_fixture_real" \
   >"$config_failure_log"
 : >"$rebuild_log"
 if REBUILD_CONFIG_STATUS=32 \
@@ -329,9 +354,9 @@ fi
 
 update_failure_log="$rebuild_test_root/expected-update-failure"
 printf '%s\n' \
-  'identity preflight' \
-  'config check' \
-  'nix flake update' \
+  "identity preflight $rebuild_fixture_real" \
+  "config check $rebuild_fixture_real" \
+  "nix flake update --flake $rebuild_fixture_real" \
   >"$update_failure_log"
 : >"$rebuild_log"
 if REBUILD_NIX_STATUS=33 \
