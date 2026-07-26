@@ -2,10 +2,10 @@
   description = "Nix-darwin configuration for macOS";
 
   inputs = {
-    # 核心包集合 (使用稳定版或 unstable 均可，这里保留 unstable)
+    # 核心包集合
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     
-    # Nix-darwin (修复了拼写错误)
+    # Nix-darwin
     darwin = {
       url = "github:nix-darwin/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -17,19 +17,25 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Nix-Homebrew 及国内清华源 Taps
+    # 🤖 引入专门管理 AI Agents 的 Flake 源 (每日 CI 自动同步构建)
+    llm-agents = {
+      url = "github:numtide/llm-agents.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Nix-Homebrew 官方 Taps and Casks
     nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
     homebrew-core = {
-      url = "git+https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-core.git";
+      url = "github:homebrew/homebrew-core";
       flake = false;
     };
     homebrew-cask = {
-      url = "git+https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-cask.git";
+      url = "github:homebrew/homebrew-cask";
       flake = false;
     };
   };
 
-  outputs = inputs@{ self, darwin, nixpkgs, home-manager, nix-homebrew, ... }:
+  outputs = inputs@{ self, darwin, nixpkgs, home-manager, llm-agents, nix-homebrew, ... }:
     let
       user = "rich";
       # M4 芯片架构统一为 aarch64-darwin
@@ -43,7 +49,8 @@
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
-          home-manager.extraSpecialArgs = { inherit user; };
+          # 传递 inputs 给 home.nix，便于直接引用 inputs.llm-agents
+          home-manager.extraSpecialArgs = { inherit user inputs; };
           home-manager.users.${user} = import ./home.nix;
         }
 
@@ -52,7 +59,6 @@
           nix-homebrew = {
             enable = true;
             user = user;
-            # 注入清华源的 Taps
             taps = {
               "homebrew/homebrew-core" = inputs.homebrew-core;
               "homebrew/homebrew-cask" = inputs.homebrew-cask;
