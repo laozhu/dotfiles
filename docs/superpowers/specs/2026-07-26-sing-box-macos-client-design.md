@@ -57,10 +57,11 @@ home/.config/sing-box/
 
 ```text
 ~/.config/sing-box/config.json
-└── 符号链接到 sops-nix 渲染并校验后的运行文件
+└── 符号链接到 ~/.local/state/sing-box/config.json
+    └── 由 nix-darwin 在 sops-nix 渲染、校验成功后原子发布
 ```
 
-仓库模板通过 Nix 和 sops-nix 参与渲染，不直接成为该符号链接的目标。这样既保留统一的 Home Manager 文件管理入口，也可避免把明文秘密写入 Nix Store。最终使用的具体 sops-nix 路径选项必须在实施时根据锁定版本验证，不能硬编码 macOS 临时目录。
+仓库模板通过 Nix 和 sops-nix 参与渲染，不直接成为该符号链接的目标。这样既保留统一的 Home Manager 文件管理入口，也可避免把明文秘密写入 Nix Store。sops-nix 的候选模板使用官方 Darwin 模块管理的 `/run/secrets/rendered`，通过校验的持久运行文件位于用户的 XDG state 目录，权限为 `0600`。
 
 ## Nix 架构
 
@@ -73,6 +74,8 @@ darwinConfigurations.mac
 ```
 
 删除重复的 `mac-laptop` 和 `mac-desktop` 输出。两台实体 Mac 使用同一套配置和同一份共享 age 私钥。
+
+`flake.nix` 引入 `sops-nix`，并使用 `sops-nix.darwinModules.sops`。不得使用 sops-nix 的 Home Manager 模块，因为该模块依赖 `systemd --user`，macOS 不具备该运行时。解密、模板渲染和原子发布均由 nix-darwin 激活阶段负责。
 
 ### 软件包和应用
 
@@ -103,15 +106,14 @@ SFM 负责：
 - 出站 selector 状态；
 - 节点延迟测试和手动切换。
 
-Home Manager 负责：
+nix-darwin 和 sops-nix 负责：
 
-- 软件包；
 - 加密秘密的供应；
 - 配置渲染；
 - 文件权限；
 - 配置的静态和语义校验。
 
-Home Manager 不得运行 `sing-box run`，不得创建自动启动服务，也不得重启 SFM。
+Home Manager 负责命令行软件包和最终配置符号链接。nix-darwin 与 Home Manager 均不得运行 `sing-box run`，不得创建 sing-box 自动启动服务，也不得重启 SFM。
 
 ## 秘密管理
 
@@ -192,16 +194,17 @@ Bitwarden 官方 CLI 已经可用时，优先将 `keys.txt` 附件直接写入�
 
 ### 渲染过程
 
-仓库配置使用唯一且明确的字符串占位符。Home Manager 激活时，sops-nix 执行：
+仓库配置使用唯一且明确的字符串占位符。nix-darwin 激活时，sops-nix 执行：
 
 1. 读取 SOPS 密文；
 2. 使用本地 age identity 解密；
 3. 将 sops-nix placeholder 替换进配置；
-4. 在 Nix Store 之外写入候选运行文件；
-5. 设置权限为 `0600`；
+4. 在 `/run/secrets/rendered` 写入候选运行文件；
+5. 设置候选文件权限；
 6. 校验 JSON 语法和 sing-box 语义；
-7. 仅在全部校验通过后，原子更新运行文件；
-8. 由 `home.nix` 保持 `~/.config/sing-box/config.json` 指向该运行文件。
+7. 仅在全部校验通过后，原子更新 `~/.local/state/sing-box/config.json`；
+8. 设置最终文件所有者为当前用户、权限为 `0600`；
+9. 由 `home.nix` 保持 `~/.config/sing-box/config.json` 指向该运行文件。
 
 所有秘密均采用可以安全替换进 JSON 字符串的格式。渲染后必须重新解析生成文件，任何转义错误都应在替换现有运行配置之前使激活失败。
 
