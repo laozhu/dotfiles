@@ -48,10 +48,6 @@
         "server": "hosts-dns"
       },
       {
-        "ip_is_private": true,
-        "server": "direct-dns"
-      },
-      {
         "rule_set": [
           "gfwlist",
           "openai",
@@ -59,6 +55,10 @@
           "google-meet"
         ],
         "server": "proxy-dns"
+      },
+      {
+        "ip_is_private": true,
+        "server": "direct-dns"
       },
       {
         "query_type": [
@@ -146,6 +146,7 @@
       "tag": "sg-vless",
       "server": "__SOPS_SG_SERVER_HOSTNAME__",
       "server_port": 443,
+      "domain_resolver": "hosts-dns",
       "uuid": "__SOPS_SG_VLESS_UUID__",
       "flow": "xtls-rprx-vision",
       "tls": {
@@ -167,6 +168,7 @@
       "tag": "sg-hy2",
       "server": "__SOPS_SG_SERVER_HOSTNAME__",
       "server_port": 443,
+      "domain_resolver": "hosts-dns",
       "up_mbps": 45,
       "down_mbps": 170,
       "password": "__SOPS_SG_HY2_PASSWORD__",
@@ -184,6 +186,7 @@
       "tag": "us-vless",
       "server": "__SOPS_US_SERVER_HOSTNAME__",
       "server_port": 443,
+      "domain_resolver": "hosts-dns",
       "uuid": "__SOPS_US_VLESS_UUID__",
       "flow": "xtls-rprx-vision",
       "tls": {
@@ -205,6 +208,7 @@
       "tag": "us-hy2",
       "server": "__SOPS_US_SERVER_HOSTNAME__",
       "server_port": 8443,
+      "domain_resolver": "hosts-dns",
       "up_mbps": 32,
       "down_mbps": 95,
       "password": "__SOPS_US_HY2_PASSWORD__",
@@ -224,6 +228,7 @@
   ],
   "route": {
     "default_domain_resolver": "proxy-dns",
+    "auto_detect_interface": true,
     "rules": [
       {
         "action": "sniff"
