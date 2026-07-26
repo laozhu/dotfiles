@@ -32,7 +32,7 @@ esac
 "$DIR/scripts/check-sing-box-config.sh"
 
 if [ "$update_inputs" = true ]; then
-  nix flake update
+  nix flake update --flake "$DIR"
 fi
 
-exec sudo darwin-rebuild switch --flake ~/.dotfiles#mac
+exec sudo darwin-rebuild switch --flake "$DIR#mac"
