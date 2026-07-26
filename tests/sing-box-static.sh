@@ -19,6 +19,7 @@ jq -e '
   ([.outbounds[].tag] | index("us-hy2") != null) and
   .route.final == "direct" and
   .route.default_domain_resolver == "proxy-dns" and
+  .route.auto_detect_interface == true and
   .experimental.cache_file.enabled == true
 ' "$config" >/dev/null
 
@@ -68,12 +69,12 @@ jq -e '
       "server": "hosts-dns"
     },
     {
-      "ip_is_private": true,
-      "server": "direct-dns"
-    },
-    {
       "rule_set": ["gfwlist", "openai", "claude", "google-meet"],
       "server": "proxy-dns"
+    },
+    {
+      "ip_is_private": true,
+      "server": "direct-dns"
     },
     {
       "query_type": ["A", "AAAA"],
@@ -159,6 +160,7 @@ jq -e '
       "tag": $tag,
       "server": $server,
       "server_port": 443,
+      "domain_resolver": "hosts-dns",
       "uuid": $uuid,
       "flow": "xtls-rprx-vision",
       "tls": {
@@ -181,6 +183,7 @@ jq -e '
       "tag": $tag,
       "server": $server,
       "server_port": $port,
+      "domain_resolver": "hosts-dns",
       "up_mbps": $up,
       "down_mbps": $down,
       "password": $password,
@@ -342,9 +345,36 @@ jq -e '
 ' "$config" >/dev/null
 
 jq -e '
-  length == 18 and
-  ([keys[] | test("^__SOPS_[A-Z0-9_]+__$")] | all) and
-  ([.[]] | unique | length == 18)
+  . == {
+    "__SOPS_SG_SERVER_HOSTNAME__": "sing-box/singapore/server-hostname",
+    "__SOPS_SG_SERVER_IP__": "sing-box/singapore/server-ip",
+    "__SOPS_SG_VLESS_UUID__": "sing-box/singapore/vless/uuid",
+    "__SOPS_SG_VLESS_TLS_SERVER_NAME__":
+      "sing-box/singapore/vless/tls-server-name",
+    "__SOPS_SG_VLESS_REALITY_PUBLIC_KEY__":
+      "sing-box/singapore/vless/reality-public-key",
+    "__SOPS_SG_VLESS_REALITY_SHORT_ID__":
+      "sing-box/singapore/vless/reality-short-id",
+    "__SOPS_SG_HY2_PASSWORD__": "sing-box/singapore/hysteria2/password",
+    "__SOPS_SG_HY2_OBFS_PASSWORD__":
+      "sing-box/singapore/hysteria2/obfs-password",
+    "__SOPS_SG_HY2_TLS_SERVER_NAME__":
+      "sing-box/singapore/hysteria2/tls-server-name",
+    "__SOPS_US_SERVER_HOSTNAME__": "sing-box/usa/server-hostname",
+    "__SOPS_US_SERVER_IP__": "sing-box/usa/server-ip",
+    "__SOPS_US_VLESS_UUID__": "sing-box/usa/vless/uuid",
+    "__SOPS_US_VLESS_TLS_SERVER_NAME__":
+      "sing-box/usa/vless/tls-server-name",
+    "__SOPS_US_VLESS_REALITY_PUBLIC_KEY__":
+      "sing-box/usa/vless/reality-public-key",
+    "__SOPS_US_VLESS_REALITY_SHORT_ID__":
+      "sing-box/usa/vless/reality-short-id",
+    "__SOPS_US_HY2_PASSWORD__": "sing-box/usa/hysteria2/password",
+    "__SOPS_US_HY2_OBFS_PASSWORD__":
+      "sing-box/usa/hysteria2/obfs-password",
+    "__SOPS_US_HY2_TLS_SERVER_NAME__":
+      "sing-box/usa/hysteria2/tls-server-name"
+  }
 ' "$secret_map" >/dev/null
 
 map_paths="$(jq -c '[.[]] | sort' "$secret_map")"
@@ -428,6 +458,14 @@ assert.throws(
     {},
   ),
   /unresolved SOPS marker remains/,
+);
+assert.throws(
+  () => renderConfig(
+    '{"secret":"__SOPS_TEST__"}',
+    { __SOPS_TEST__: "root/value" },
+    { root: { value: '"' } },
+  ),
+  SyntaxError,
 );
 NODE
 
