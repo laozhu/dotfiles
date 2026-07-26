@@ -1,16 +1,25 @@
-#!/usr/bin/env bash
-set -euo pipefail
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
-
-# 确保软链接存在
-ln -sfn "$DIR" ~/.dotfiles
-
-# 核心修复：进入目录并将所有改动加入 Git 索引，确保 Flake 能读取到最新状态
 cd ~/.dotfiles
+
+# 解析参数
+UPDATE_ALL=false
+TARGET=""
+
+for arg in "$@"; do
+  if [ "$arg" == "--update" ] || [ "$arg" == "-u" ]; then
+    UPDATE_ALL=true
+  else
+    TARGET="$arg"
+  fi
+done
+
+TARGET=${TARGET:-mac-desktop}
+
+if [ "$UPDATE_ALL" = true ]; then
+  echo "🚀 正在更新所有 Flake Inputs (nixpkgs, llm-agents, homebrew)..."
+  nix flake update
+fi
+
 git add .
 
-TARGET=${1:-mac-laptop}
-echo "正在重建 Nix 配置目标: $TARGET ..."
-
-# 运行 darwin-rebuild
+echo "🛠️ 正在重建 Nix 配置目标: $TARGET ..."
 exec sudo darwin-rebuild switch --flake ~/.dotfiles#$TARGET

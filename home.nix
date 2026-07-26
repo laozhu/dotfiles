@@ -1,43 +1,55 @@
-{ config, pkgs, user, ... }:
+{ config, pkgs, user, inputs, ... }:
 
 let
   dotfiles = "${config.home.homeDirectory}/.dotfiles";
   
   # 用于 AI 智能体的统一全局上下文规则
   sharedAgentContext = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/AGENTS.md";
+
+  # 提取当前系统的 llm-agents 包集合
+  llmPkgs = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
 in
 {
   home.username = user;
   home.homeDirectory = "/Users/${user}";
-  home.stateVersion = "24.11";
+  home.stateVersion = "26.05";
   
   # Search on https://search.nixos.org/packages
-  home.packages = with pkgs; [
-    # --- 高频使用的 CLI 工具 ---
-    ripgrep   # Telescope live_grep 必需
-    fd        # Telescope find_files 必需
-    fzf       # 模糊搜索工具
-    jq        # 命令行 JSON 处理
-    lazygit
-    neovim
-    herdr     # Agent 多开工具
-    nerd-fonts.hack
+  home.packages = [
+    # --- 高频使用的常规 CLI 工具 ---
+    pkgs.ripgrep          # Telescope live_grep 必需
+    pkgs.fd               # Telescope find_files 必需
+    pkgs.fzf              # 模糊搜索工具
+    pkgs.jq               # 命令行 JSON 处理
+    pkgs.lazygit
+    pkgs.neovim
+    pkgs.github-cli       # GitHub 命令行工具
+    pkgs.nerd-fonts.hack
 
     # -----------------------------------------------------------
     # 🛠️ Neovim 核心底层依赖 (Treesitter & Mason 必需)
     # -----------------------------------------------------------
-    gnumake   # 编译 Treesitter 语法解析器的必备构建工具
-    gcc       # C 编译器，Treesitter 强依赖
-    unzip     # Mason 下载并解压 LSP 的必备工具
-    curl      # Mason 的底层网络工具
-    wget      
+    pkgs.gnumake          # 编译 Treesitter 语法解析器的必备构建工具
+    pkgs.gcc              # C 编译器，Treesitter 强依赖
+    pkgs.unzip            # Mason 下载并解压 LSP 的必备工具
+    pkgs.curl             # Mason 的底层网络工具
+    pkgs.wget
     
     # -----------------------------------------------------------
     # 📦 运行时依赖
     # -----------------------------------------------------------
-    nodejs_26
-    bun
+    pkgs.nodejs_26
+    pkgs.bun
 
+    # -----------------------------------------------------------
+    # 🤖 AI TUI Agents & 多开工具 (通过 llm-agents.nix 统一声明式管理)
+    # -----------------------------------------------------------
+    llmPkgs.herdr
+    llmPkgs.claude-code
+    llmPkgs.codex
+    llmPkgs.antigravity-cli
+    llmPkgs.kimi-code
+    llmPkgs.pi
   ];
   
   fonts.fontconfig.enable = true;
@@ -46,11 +58,11 @@ in
   # 启用并完全接管 Git
   programs.git = {
     enable = true;
-    userName = "Ritchie Zhu";
-    userEmail = "laozhu.me@gmail.com";
-    extraConfig = {
-      init.defaultBranch = "main";
+    settings = {
       core.editor = "nvim";
+      init.defaultBranch = "main";
+      user.email = "laozhu.me@gmail.com";
+      user.name = "Ritchie Zhu";
     };
   };
 
@@ -74,7 +86,7 @@ in
       share = true;
     };
 
-    initExtra = ''
+    initContent = ''
       bindkey '^f' autosuggest-accept
     '';
 
