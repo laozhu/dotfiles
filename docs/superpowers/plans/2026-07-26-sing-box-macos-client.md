@@ -622,7 +622,7 @@ let
   secretPaths = lib.unique (map (marker: secretMap.${marker}) markers);
   replacements =
     map (marker: config.sops.placeholder.${secretMap.${marker}}) markers;
-  candidate = config.sops.templates."sing-box-candidate.json".path;
+  candidate = config.sops.templates.sing-box-candidate.path;
   stateDir = "/Users/${user}/.local/state/sing-box";
   finalConfig = "${stateDir}/config.json";
 in
@@ -635,11 +635,14 @@ in
       generateKey = false;
     };
     secrets = lib.genAttrs secretPaths (_: { });
-    templates."sing-box-candidate.json" = {
+    templates.sing-box-candidate = {
       content = builtins.replaceStrings
         markers
         replacements
         (builtins.readFile templatePath);
+      path = "/run/secrets/rendered/sing-box-candidate.json";
+      owner = user;
+      group = "staff";
       mode = "0400";
     };
   };
@@ -648,20 +651,23 @@ in
 
 - [ ] **Step 3: 增加降权、校验后原子发布**
 
-root 激活脚本不得在用户可控的 home 路径中执行 `install -d`、`chown`、`chmod`、`mktemp` 或 `mv`，否则目录符号链接可把这些操作重定向到任意 root 可写目标。新增 `scripts/publish-sing-box-config.sh`，由普通用户执行：
+root 激活脚本不得在用户可控的 home 路径中执行 `install -d`、`chown`、`chmod`、`mktemp` 或 `mv`，否则目录符号链接可把这些操作重定向到任意 root 可写目标。sops-nix 候选文件由目标用户以 `0400` 只读，避免 root 通过管道发送内容时出现“生产者失败但消费者已经发布”的事务缺口。新增 `scripts/publish-sing-box-config.sh`，由普通用户执行，并针对即将发布的同一个临时文件完成全部校验：
 
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [ "$#" -ne 3 ]; then
-  echo "usage: publish-sing-box-config.sh STATE_DIR FINAL_CONFIG COREUTILS_BIN" >&2
+if [ "$#" -ne 6 ]; then
+  echo "usage: publish-sing-box-config.sh STATE_DIR FINAL_CONFIG CANDIDATE COREUTILS_BIN JQ SING_BOX" >&2
   exit 64
 fi
 
 state_dir="$1"
 final_config="$2"
-coreutils_bin="$3"
+candidate="$3"
+coreutils_bin="$4"
+jq_bin="$5"
+sing_box_bin="$6"
 
 for utility in install mktemp rm cat chmod mv; do
   if [ ! -x "$coreutils_bin/$utility" ]; then
@@ -669,6 +675,14 @@ for utility in install mktemp rm cat chmod mv; do
     exit 1
   fi
 done
+if [ ! -x "$jq_bin" ] || [ ! -x "$sing_box_bin" ]; then
+  echo "missing validator binary" >&2
+  exit 1
+fi
+if [ ! -f "$candidate" ] || [ ! -r "$candidate" ]; then
+  echo "candidate is not a readable regular file" >&2
+  exit 1
+fi
 
 if [ "$final_config" != "$state_dir/config.json" ]; then
   echo "refusing unexpected final config path" >&2
@@ -698,13 +712,15 @@ cleanup() {
 }
 trap cleanup EXIT
 
-"$coreutils_bin/cat" >"$tmp"
+"$coreutils_bin/cat" "$candidate" >"$tmp"
+"$jq_bin" -e . "$tmp" >/dev/null
+"$sing_box_bin" check -c "$tmp"
 "$coreutils_bin/chmod" 0600 "$tmp"
 "$coreutils_bin/mv" -Tf -- "$tmp" "$final_config"
 trap - EXIT
 ```
 
-`sing-box.nix` 将该脚本作为普通 Nix Store 输入引用。在同一个模块中加入顺序晚于 sops-nix `mkAfter` 的 postActivation。root 只验证 `/run/secrets` 中的候选文件，随后通过标准输入把内容交给降权后的发布助手：
+`sing-box.nix` 将该脚本作为普通 Nix Store 输入引用。在同一个模块中加入顺序晚于 sops-nix `mkAfter` 的 postActivation。root 不读取候选内容，也不写用户 home，只启动降权后的发布助手：
 
 ```nix
 system.activationScripts.postActivation.text = lib.mkOrder 2000 ''
@@ -713,16 +729,18 @@ system.activationScripts.postActivation.text = lib.mkOrder 2000 ''
   final_config=${lib.escapeShellArg finalConfig}
   candidate=${lib.escapeShellArg candidate}
 
-  ${pkgs.jq}/bin/jq -e . "$candidate" >/dev/null
-  ${pkgs.sing-box}/bin/sing-box check -c "$candidate"
-  ${pkgs.coreutils}/bin/cat "$candidate" \
-    | /usr/bin/sudo -u ${lib.escapeShellArg user} -- \
-        ${pkgs.bash}/bin/bash ${./scripts/publish-sing-box-config.sh} \
-          "$state_dir" "$final_config" ${pkgs.coreutils}/bin
+  /usr/bin/sudo -u ${lib.escapeShellArg user} -- \
+    ${pkgs.bash}/bin/bash ${./scripts/publish-sing-box-config.sh} \
+      "$state_dir" \
+      "$final_config" \
+      "$candidate" \
+      ${pkgs.coreutils}/bin \
+      ${pkgs.jq}/bin/jq \
+      ${pkgs.sing-box}/bin/sing-box
 '';
 ```
 
-失败时必须保留上一份 `finalConfig`，不得触碰 SFM。静态测试必须用临时目录实际执行发布助手，并覆盖：正常首次发布、替换已有普通文件、状态目录符号链接、最终路径是目录、最终路径是符号链接。后三种攻击输入必须非零退出、保持链接目标或目录内容不变，且不遗留 `.config.json.*` 临时文件。
+失败时必须保留上一份 `finalConfig`，不得触碰 SFM。静态测试必须用临时目录实际执行发布助手，并覆盖：正常首次发布、替换已有普通文件、候选文件不存在、候选 JSON 无效、候选 sing-box 语义无效、状态目录符号链接、最终路径是目录、最终路径是符号链接。所有失败场景必须非零退出、保留上一份 final 或攻击目标内容，且不遗留 `.config.json.*` 临时文件。测试还必须断言评估后的 postActivation 不含候选内容管道，并且校验器接收的路径就是随后由 `mv -Tf` 发布的临时文件。
 
 - [ ] **Step 4: 评估和构建**
 
