@@ -477,4 +477,161 @@ nix eval --raw \
   "$repo_dir#darwinConfigurations.mac.config.sops.age.keyFile" \
   | grep -Fx '/Users/rich/Library/Application Support/sops/age/keys.txt'
 
+publisher="$repo_dir/scripts/publish-sing-box-config.sh"
+coreutils_bin="$(
+  nix eval --raw "$repo_dir#darwinConfigurations.mac.pkgs.coreutils"
+)/bin"
+
+bash -n "$publisher"
+
+publish_test_root="$(mktemp -d)"
+cleanup_publish_tests() {
+  rm -rf "$publish_test_root"
+}
+trap cleanup_publish_tests EXIT
+
+assert_no_publish_temps() {
+  if find "$publish_test_root" \
+    -name '.config.json.*' \
+    -print -quit \
+    | grep -q .; then
+    echo "publish helper left a temporary file behind" >&2
+    exit 1
+  fi
+}
+
+first_state="$publish_test_root/first/state"
+first_final="$first_state/config.json"
+printf '%s' 'first publish' \
+  | bash "$publisher" "$first_state" "$first_final" "$coreutils_bin"
+test "$("$coreutils_bin/cat" "$first_final")" = 'first publish'
+test "$("$coreutils_bin/stat" -c '%a' "$first_state")" = '700'
+test "$("$coreutils_bin/stat" -c '%a' "$first_final")" = '600'
+assert_no_publish_temps
+
+printf '%s' 'old regular config' >"$first_final"
+printf '%s' 'replacement publish' \
+  | bash "$publisher" "$first_state" "$first_final" "$coreutils_bin"
+test "$("$coreutils_bin/cat" "$first_final")" = 'replacement publish'
+test "$("$coreutils_bin/stat" -c '%a' "$first_final")" = '600'
+assert_no_publish_temps
+
+state_target="$publish_test_root/state-target"
+state_link="$publish_test_root/state-link"
+"$coreutils_bin/install" -d -m 0755 "$state_target"
+printf '%s' 'state target sentinel' >"$state_target/sentinel"
+ln -s "$state_target" "$state_link"
+if printf '%s' 'must not publish' \
+  | bash \
+      "$publisher" \
+      "$state_link" \
+      "$state_link/config.json" \
+      "$coreutils_bin" \
+      2>/dev/null; then
+  echo "publish helper accepted a symlink state directory" >&2
+  exit 1
+fi
+test "$("$coreutils_bin/cat" "$state_target/sentinel")" = \
+  'state target sentinel'
+test "$("$coreutils_bin/stat" -c '%a' "$state_target")" = '755'
+test ! -e "$state_target/config.json"
+assert_no_publish_temps
+
+state_file="$publish_test_root/state-file"
+printf '%s' 'state file sentinel' >"$state_file"
+if printf '%s' 'must not publish' \
+  | bash \
+      "$publisher" \
+      "$state_file" \
+      "$state_file/config.json" \
+      "$coreutils_bin" \
+      2>/dev/null; then
+  echo "publish helper accepted a non-directory state path" >&2
+  exit 1
+fi
+test "$("$coreutils_bin/cat" "$state_file")" = 'state file sentinel'
+assert_no_publish_temps
+
+unexpected_state="$publish_test_root/unexpected"
+if printf '%s' 'must not publish' \
+  | bash \
+      "$publisher" \
+      "$unexpected_state" \
+      "$unexpected_state/other.json" \
+      "$coreutils_bin" \
+      2>/dev/null; then
+  echo "publish helper accepted an unexpected final path" >&2
+  exit 1
+fi
+test ! -e "$unexpected_state"
+assert_no_publish_temps
+
+directory_state="$publish_test_root/final-directory"
+"$coreutils_bin/install" -d "$directory_state/config.json"
+printf '%s' 'directory sentinel' \
+  >"$directory_state/config.json/sentinel"
+if printf '%s' 'must not publish' \
+  | bash \
+      "$publisher" \
+      "$directory_state" \
+      "$directory_state/config.json" \
+      "$coreutils_bin" \
+      2>/dev/null; then
+  echo "publish helper replaced a final directory" >&2
+  exit 1
+fi
+test "$("$coreutils_bin/cat" "$directory_state/config.json/sentinel")" = \
+  'directory sentinel'
+assert_no_publish_temps
+
+symlink_state="$publish_test_root/final-symlink"
+symlink_target="$publish_test_root/final-symlink-target"
+"$coreutils_bin/install" -d "$symlink_state"
+printf '%s' 'final symlink sentinel' >"$symlink_target"
+ln -s "$symlink_target" "$symlink_state/config.json"
+if printf '%s' 'must not publish' \
+  | bash \
+      "$publisher" \
+      "$symlink_state" \
+      "$symlink_state/config.json" \
+      "$coreutils_bin" \
+      2>/dev/null; then
+  echo "publish helper replaced a final symlink" >&2
+  exit 1
+fi
+test -L "$symlink_state/config.json"
+test "$("$coreutils_bin/cat" "$symlink_target")" = \
+  'final symlink sentinel'
+assert_no_publish_temps
+
+post_activation="$(
+  nix eval --raw \
+    "$repo_dir#darwinConfigurations.mac.config.system.activationScripts.postActivation.text"
+)"
+secrets_line="$(
+  printf '%s\n' "$post_activation" \
+    | grep -n -m1 'Setting up secrets' \
+    | cut -d: -f1
+)"
+validation_line="$(
+  printf '%s\n' "$post_activation" \
+    | grep -n -m1 'validating sing-box configuration' \
+    | cut -d: -f1
+)"
+test "$secrets_line" -lt "$validation_line"
+
+before_downgrade="${post_activation%%/usr/bin/sudo -u *}"
+if printf '%s\n' "$before_downgrade" \
+  | grep -Eq '/bin/(install|chown|chmod|mktemp|mv)([[:space:]]|$)'; then
+  echo "root activation mutates a user-home path before downgrade" >&2
+  exit 1
+fi
+printf '%s\n' "$post_activation" \
+  | grep -F '/usr/bin/sudo -u rich --' >/dev/null
+printf '%s\n' "$post_activation" \
+  | grep -F -- '-publish-sing-box-config.sh' >/dev/null
+
+trap - EXIT
+cleanup_publish_tests
+
 printf '%s\n' "sing-box static checks passed"

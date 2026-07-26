@@ -38,26 +38,11 @@ in
     final_config=${lib.escapeShellArg finalConfig}
     candidate=${lib.escapeShellArg candidate}
 
-    ${pkgs.coreutils}/bin/install -d \
-      -m 0700 \
-      -o ${lib.escapeShellArg user} \
-      -g staff \
-      "$state_dir"
-    tmp="$(${pkgs.coreutils}/bin/mktemp "$state_dir/.config.json.XXXXXX")"
-    cleanup() {
-      ${pkgs.coreutils}/bin/rm -f "$tmp"
-    }
-    trap cleanup EXIT
-
-    ${pkgs.coreutils}/bin/install \
-      -m 0600 \
-      -o ${lib.escapeShellArg user} \
-      -g staff \
-      "$candidate" \
-      "$tmp"
-    ${pkgs.jq}/bin/jq -e . "$tmp" >/dev/null
-    ${pkgs.sing-box}/bin/sing-box check -c "$tmp"
-    ${pkgs.coreutils}/bin/mv -f "$tmp" "$final_config"
-    trap - EXIT
+    ${pkgs.jq}/bin/jq -e . "$candidate" >/dev/null
+    ${pkgs.sing-box}/bin/sing-box check -c "$candidate"
+    ${pkgs.coreutils}/bin/cat "$candidate" \
+      | /usr/bin/sudo -u ${lib.escapeShellArg user} -- \
+          ${pkgs.bash}/bin/bash ${./scripts/publish-sing-box-config.sh} \
+            "$state_dir" "$final_config" ${pkgs.coreutils}/bin
   '';
 }
