@@ -61,10 +61,10 @@
 ```bash
 nix eval .#darwinConfigurations.mac.config.system.build.toplevel.drvPath
 nix eval --json .#darwinConfigurations.mac.config.homebrew.casks \
-  | jq -e 'index("bitwarden") and index("sfm")'
+  | jq -e '[.[].name] | index("bitwarden") and index("sfm")'
 ```
 
-Expected: 第一条因为 `darwinConfigurations.mac` 尚不存在而失败；第二条同样失败。
+Expected: 第一条因为 `darwinConfigurations.mac` 尚不存在而失败；第二条的 cask 名称断言同样失败。
 
 - [ ] **Step 2: 在 `flake.nix` 声明 sops-nix 并改为唯一配置**
 
@@ -140,12 +140,12 @@ Run:
 nix flake lock --update-input sops-nix
 nix eval .#darwinConfigurations.mac.config.system.build.toplevel.drvPath
 nix eval --json .#darwinConfigurations.mac.config.homebrew.casks \
-  | jq -e 'index("bitwarden") and index("sfm")'
+  | jq -e '[.[].name] | index("bitwarden") and index("sfm")'
 nix eval --json .#darwinConfigurations.mac.config.home-manager.users.rich.home.packages \
   | jq -e 'length > 0'
 ```
 
-Expected: 全部返回成功，casks 同时包含 Bitwarden 和 SFM。
+Expected: 全部返回成功，cask 对象的名称同时包含 Bitwarden 和 SFM。
 
 - [ ] **Step 6: 提交**
 
