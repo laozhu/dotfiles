@@ -17,6 +17,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # 🤖 引入专门管理 AI Agents 的 Flake 源 (每日 CI 自动同步构建)
     llm-agents = {
       url = "github:numtide/llm-agents.nix";
@@ -35,7 +40,7 @@
     };
   };
 
-  outputs = inputs@{ self, darwin, nixpkgs, home-manager, llm-agents, nix-homebrew, ... }:
+  outputs = inputs@{ self, darwin, nixpkgs, home-manager, llm-agents, nix-homebrew, sops-nix, ... }:
     let
       user = "rich";
       # M4 芯片架构统一为 aarch64-darwin
@@ -44,6 +49,8 @@
       # 💡 提取共享模块：笔记本和台式机共用的所有配置
       sharedModules = [
         ./configuration.nix
+
+        sops-nix.darwinModules.sops
 
         home-manager.darwinModules.home-manager
         {
@@ -69,15 +76,7 @@
       ];
     in
     {
-      # 💻 笔记本电脑配置
-      darwinConfigurations."mac-laptop" = darwin.lib.darwinSystem {
-        inherit system;
-        specialArgs = { inherit user inputs; };
-        modules = sharedModules;
-      };
-
-      # 🖥️ 台式机电脑配置 (复用完全相同的模块)
-      darwinConfigurations."mac-desktop" = darwin.lib.darwinSystem {
+      darwinConfigurations.mac = darwin.lib.darwinSystem {
         inherit system;
         specialArgs = { inherit user inputs; };
         modules = sharedModules;
