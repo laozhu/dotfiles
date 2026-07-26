@@ -393,11 +393,12 @@ jq -e '
   ([.outbounds[].tag] | index("us-hy2") != null) and
   .route.final == "direct" and
   .route.default_domain_resolver == "proxy-dns" and
+  .route.auto_detect_interface == true and
   .experimental.cache_file.enabled == true
 ' home/.config/sing-box/config.json
 ```
 
-还必须断言没有 `experimental.clash_api`、没有 Web Dashboard 字段、三个远程 rule-set 的 `download_detour` 均为通用 `proxy`，并确认秘密映射的 key path 与 SOPS 解密后叶子路径完全一致。三个自定义 inline rule-set 必须各包含且仅包含一个初始哨兵规则，精确匹配保留域名 `sing-box-placeholder.invalid`。
+还必须断言没有 `experimental.clash_api`、没有 Web Dashboard 字段、三个远程 rule-set 的 `download_detour` 均为通用 `proxy`，并确认 18 个 marker 到 SOPS key path 的映射对象与计划中的对象逐项完全一致，而不只是比较 path 集合。三个自定义 inline rule-set 必须各包含且仅包含一个初始哨兵规则，精确匹配保留域名 `sing-box-placeholder.invalid`。
 
 模板标记计数也必须固定：两个 `*_SERVER_HOSTNAME__` 标记各出现四次，分别用于两个物理出站、`hosts-dns` 映射键和共享的 `proxy-server` inline rule-set；其余 16 个标记各出现一次。这样既能复用加密的服务器端点，又能防止无意重复。
 
@@ -443,17 +444,17 @@ Expected: 因模板和映射文件不存在而失败。
 1. `log`: `level = "info"`、`timestamp = true`。
 2. `dns.servers`: 直连的 AliDNS DoH `223.5.5.5`、经 `proxy` 的 Cloudflare DoH `1.1.1.1`、把两个加密服务器域名映射到对应固定 IP 的 `hosts-dns`、FakeIP 双栈解析器；TLS server name 分别为 `dns.alidns.com` 和 `cloudflare-dns.com`，不得使用明文 UDP DNS。
 3. FakeIP 地址段固定为 IPv4 `198.18.0.0/15` 和 IPv6 `fc00::/18`。
-4. `dns.rules`: `proxy-server` 规则集使用 `hosts-dns`，私网使用直连 DoH；GFW、OpenAI、Claude、Google Meet 使用代理 DoH；A/AAAA 进入 FakeIP。
+4. `dns.rules` 的顺序固定为：`proxy-server` 规则集使用 `hosts-dns`；GFW、OpenAI、Claude、Google Meet 使用代理 DoH；之后私网响应使用直连 DoH；最后 A/AAAA 进入 FakeIP。受保护域名必须排在 `ip_is_private` 响应过滤之前，避免为判断响应是否私网而先向直连 DNS 泄露查询。
 5. `dns.strategy = "prefer_ipv4"`，同时保留 IPv6。
 6. `tun-in`: `address = ["172.19.0.1/30", "fdfe:dcba:9876::1/126"]`、`auto_route = true`、`strict_route = true`、`stack = "mixed"`。
 7. `mixed-in`: 只监听 `127.0.0.1:7777`。
 8. `proxy`: selector 默认 `auto`，成员为 `auto`、`singapore`、`usa` 和四个物理节点，`interrupt_exist_connections = true`。
 9. `auto`: URLTest 四个物理节点，URL 为 `https://www.gstatic.com/generate_204`，间隔 `10m`，容差 `50`，`interrupt_exist_connections = false`。
 10. `singapore` 和 `usa`: 各自 URLTest 两种协议，间隔 `10m`，`interrupt_exist_connections = false`。
-11. 两个 VLESS: `flow = "xtls-rprx-vision"`、REALITY、uTLS `chrome`。
-12. 两个 Hysteria2: 保留旧配置的端口、上下行带宽和 Salamander obfs。
+11. 两个 VLESS: `flow = "xtls-rprx-vision"`、REALITY、uTLS `chrome`，并显式设置 `domain_resolver = "hosts-dns"`。
+12. 两个 Hysteria2: 保留旧配置的端口、上下行带宽和 Salamander obfs，并显式设置 `domain_resolver = "hosts-dns"`。
 13. `direct` 出站。
-14. `route.default_domain_resolver = "proxy-dns"`，避免 1.13.14 的缺失解析器错误，并让未被更具体 DNS 规则覆盖的域名继续使用防污染的代理 DoH。路由规则顺序严格为 sniff、DNS hijack、代理服务器目标直连、私网直连、`custom-reject`、`custom-direct`、`custom-proxy`、OpenAI、Claude、Google Meet UDP、Google Meet 通用、GFWList、final direct。
+14. `route.default_domain_resolver = "proxy-dns"`，避免 1.13.14 的缺失解析器错误，并让未被更具体 DNS 规则覆盖的域名继续使用防污染的代理 DoH；四个物理代理出站用自己的 `hosts-dns` 覆盖它，避免启动递归。`route.auto_detect_interface = true`，让 macOS TUN 出站绑定默认物理接口，防止重新进入 TUN。路由规则顺序严格为 sniff、DNS hijack、代理服务器目标直连、私网直连、`custom-reject`、`custom-direct`、`custom-proxy`、OpenAI、Claude、Google Meet UDP、Google Meet 通用、GFWList、final direct。
 15. `custom-reject`、`custom-direct` 和 `custom-proxy` 是可编辑的 inline rule-set。sing-box 1.13.14 拒绝空的 inline rule-set，因此三个 `rules` 数组初始都包含一个精确匹配保留域名 `sing-box-placeholder.invalid` 的无害哨兵规则。用户以后向对应 `rules` 数组追加自定义规则，不要删除哨兵。
 15.1. `proxy-server` 是包含两个加密服务器域名的 inline rule-set；DNS 规则引用它并交给 `hosts-dns` 返回加密保存的固定 IP，路由规则引用它并强制直连，避免启动递归和 DNS 污染。
 16. Google Meet inline rule-set 包含 `meet.google.com`、`meetings.googleapis.com`、`stun.l.google.com`、`workspace.turns.goog`、`meet.turns.goog`，以及 `74.125.250.0/24`、`142.250.82.0/24`、`2001:4860:4864:5::/64`、`2001:4860:4864:6::/64`。UDP `3478` 和 `19302:19309` 在该服务规则中经 `proxy`。
@@ -551,6 +552,8 @@ bash scripts/check-sing-box-config.sh
 ```
 
 Expected: 静态断言通过，`sing-box check` 返回 0，输出中不含服务器地址、UUID、密码或密钥。
+
+静态测试还必须导入 `renderConfig` 并传入会在替换后形成非法 JSON 的秘密值，断言渲染器拒绝该输入；这与缺失路径、缺失 marker、重复 marker 全量替换和残留 marker 测试一起构成负向覆盖。
 
 - [ ] **Step 7: 提交**
 
