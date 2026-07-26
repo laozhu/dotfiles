@@ -49,6 +49,7 @@
       # 💡 提取共享模块：笔记本和台式机共用的所有配置
       sharedModules = [
         ./configuration.nix
+        ./sing-box.nix
 
         sops-nix.darwinModules.sops
 
