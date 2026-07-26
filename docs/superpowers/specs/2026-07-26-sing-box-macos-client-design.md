@@ -1,36 +1,36 @@
-# sing-box macOS Client Configuration Design
+# sing-box macOS 客户端配置设计
 
-Date: 2026-07-26
+日期：2026-07-26
 
-## Objective
+## 目标
 
-Build a declarative sing-box client configuration for Apple Silicon macOS that:
+为 Apple Silicon macOS 构建一套声明式 sing-box 客户端配置，满足以下要求：
 
-- uses SFM as the only sing-box runtime;
-- enables Network Extension TUN with IPv4 and IPv6;
-- routes GFWList traffic through a proxy and leaves unmatched traffic direct;
-- prevents DNS pollution with FakeIP and DNS hijacking;
-- supports four outbounds across two servers and two protocols;
-- lets SFM automatically select or manually switch nodes;
-- permits explicit custom reject, direct, and proxy rules;
-- keeps server credentials encrypted in Git with sops-nix and age;
-- uses one shared nix-darwin configuration for all Macs;
-- never starts multiple sing-box instances.
+- 使用 SFM 作为唯一的 sing-box 运行时；
+- 通过 Network Extension 启用 IPv4/IPv6 双栈 TUN；
+- GFWList 命中的流量通过代理，未命中的流量保持直连；
+- 使用 FakeIP 和 DNS 劫持防止 DNS 污染；
+- 支持两个服务器、两种协议组成的四个出站；
+- 允许 SFM 自动选择或手动切换节点；
+- 支持用户自定义拒绝、直连和代理规则；
+- 使用 sops-nix 和 age 加密 Git 仓库中的服务器凭据；
+- 所有 Mac 共用一套 nix-darwin 配置；
+- 确保任何时候都不会启动多个 sing-box 实例。
 
-## Constraints
+## 约束
 
-- The installed stable core is sing-box 1.13.14.
-- SFM is the only component allowed to start or stop sing-box.
-- Home Manager must not create a sing-box LaunchAgent or LaunchDaemon.
-- The sing-box CLI is used only for configuration validation.
-- No Web Dashboard or Clash API is required.
-- The repository already has unrelated staged and unstaged changes. Implementation must preserve them.
-- The old plaintext configuration is migration input only and must not be copied wholesale.
-- The old configuration contains sensitive values and must never be printed in logs, tests, or documentation.
+- 当前安装的稳定版核心是 sing-box 1.13.14。
+- 只有 SFM 可以启动或停止 sing-box。
+- Home Manager 不得创建 sing-box LaunchAgent 或 LaunchDaemon。
+- sing-box CLI 仅用于校验配置。
+- 不需要 Web Dashboard 或 Clash API。
+- 仓库中已有与本任务无关的暂存和未暂存修改，实施时必须保留。
+- 旧明文配置只作为迁移输入，不得整份照搬。
+- 旧配置包含敏感值，不得在日志、测试输出或文档中显示。
 
-## Repository Layout
+## 仓库布局
 
-The repository will contain:
+仓库中将包含：
 
 ```text
 .sops.yaml
@@ -40,129 +40,129 @@ home/.config/sing-box/
 └── config.json
 ```
 
-The responsibilities are:
+各文件职责如下：
 
-- `.sops.yaml` contains the shared age public recipient and SOPS creation rules.
-- `secrets/sing-box.yaml` contains only SOPS-encrypted secret values.
-- `home/.config/sing-box/config.json` contains the complete non-secret configuration structure, the official JSON Schema reference, and named secret placeholders.
-- `~/.config/sing-box/config.json` is the validated, rendered runtime configuration with mode `0600`.
+- `.sops.yaml` 保存共享 age 公钥接收者及 SOPS 加密规则。
+- `secrets/sing-box.yaml` 只保存由 SOPS 加密的秘密值。
+- `home/.config/sing-box/config.json` 保存完整的非秘密配置结构、官方 JSON Schema 引用和具名秘密占位符。
+- `~/.config/sing-box/config.json` 是经过校验并渲染完成的运行配置，权限为 `0600`。
 
-The repository `config.json` is the only source of truth for configuration structure and rules. The SOPS file is only the encrypted data source. The SFM Local Profile is a derived runtime copy and must not become an independent editing source.
+仓库中的 `config.json` 是配置结构和规则的唯一真相来源。SOPS 文件只提供加密数据。SFM Local Profile 是派生的运行副本，不得成为独立的编辑来源。
 
-## Nix Architecture
+## Nix 架构
 
-### Single Darwin Configuration
+### 单一 Darwin 配置
 
-`flake.nix` will expose one configuration:
+`flake.nix` 只暴露一个配置：
 
 ```text
 darwinConfigurations.mac
 ```
 
-The duplicate `mac-laptop` and `mac-desktop` outputs will be removed. Both physical Macs will use the same configuration and the same shared age private key.
+删除重复的 `mac-laptop` 和 `mac-desktop` 输出。两台实体 Mac 使用同一套配置和同一份共享 age 私钥。
 
-### Packages and Applications
+### 软件包和应用
 
-Home Manager will install these command-line packages from nixpkgs:
+Home Manager 从 nixpkgs 安装以下命令行软件包：
 
 - `age`
 - `sops`
 - `sing-box`
 
-The nix-darwin Homebrew cask list will include:
+nix-darwin 的 Homebrew cask 列表加入：
 
 - `sfm`
 
-Declaring SFM is required because Homebrew activation uses `cleanup = "zap"`.
+必须声明 SFM，因为 Homebrew 激活配置使用了 `cleanup = "zap"`。
 
-### Runtime Ownership
+### 运行时所有权
 
-SFM owns:
+SFM 负责：
 
-- the only running sing-box instance;
-- the macOS Network Extension;
-- TUN lifecycle;
-- logs and runtime status;
-- outbound selector state;
-- node latency tests and manual switching.
+- 唯一运行的 sing-box 实例；
+- macOS Network Extension；
+- TUN 生命周期；
+- 日志和运行状态；
+- 出站 selector 状态；
+- 节点延迟测试和手动切换。
 
-Home Manager owns:
+Home Manager 负责：
 
-- packages;
-- encrypted secret provisioning;
-- configuration rendering;
-- file permissions;
-- static and semantic configuration validation.
+- 软件包；
+- 加密秘密的供应；
+- 配置渲染；
+- 文件权限；
+- 配置的静态和语义校验。
 
-Home Manager must not run `sing-box run`, create an auto-start service, or restart SFM.
+Home Manager 不得运行 `sing-box run`，不得创建自动启动服务，也不得重启 SFM。
 
-## Secret Management
+## 秘密管理
 
-### Encryption Model
+### 加密模型
 
-sops-nix will use age as its encryption backend. The two Macs share one age identity.
+sops-nix 使用 age 作为加密后端。两台 Mac 共用同一个 age identity。
 
-The age private key is stored locally at:
+age 私钥存放在本机：
 
 ```text
 ~/Library/Application Support/sops/age/keys.txt
 ```
 
-Required permissions:
+权限要求：
 
-- containing directory: `0700`;
-- private key: `0600`.
+- 所在目录：`0700`
+- 私钥文件：`0600`
 
-The private key must never be committed. It must be restored to a new Mac through a password manager, encrypted removable storage, or another secure out-of-band channel.
+私钥绝不能提交到 Git。新 Mac 必须通过密码管理器、加密移动存储或其他安全的带外渠道恢复私钥。
 
-The following files are safe and expected to be committed:
+以下文件可以且应当提交：
 
-- `.sops.yaml`, which contains only the age public recipient;
-- `secrets/sing-box.yaml`, whose values are encrypted;
-- the non-secret configuration template.
+- `.sops.yaml`，其中只包含 age 公钥接收者；
+- `secrets/sing-box.yaml`，其中的值均已加密；
+- 非秘密配置模板。
 
-### Encrypted Fields
+### 加密字段
 
-Migration will extract sensitive values from `/Users/rich/Downloads/config.json` without displaying them. Encrypted fields include:
+迁移过程从 `/Users/rich/Downloads/config.json` 提取敏感值，但不得显示这些值。需要加密的字段包括：
 
-- US and Singapore server addresses where treated as private deployment metadata;
-- VLESS UUIDs;
-- VLESS REALITY server names, public keys, and short IDs;
-- Hysteria2 passwords;
-- Hysteria2 Salamander obfuscation passwords;
-- Hysteria2 TLS server names.
+- 美国和新加坡服务器地址，作为私有部署元数据处理；
+- VLESS UUID；
+- VLESS REALITY server name、public key 和 short ID；
+- Hysteria2 密码；
+- Hysteria2 Salamander 混淆密码；
+- Hysteria2 TLS server name。
 
-Ports and bandwidth settings may remain in the template unless inspection shows a reason to treat them as secret.
+端口和带宽设置默认保留在模板中，除非进一步检查表明它们也应作为秘密处理。
 
-### Rendering
+### 渲染过程
 
-The repository configuration uses unique string placeholders. During Home Manager activation, sops-nix:
+仓库配置使用唯一且明确的字符串占位符。Home Manager 激活时，sops-nix 执行：
 
-1. reads the SOPS ciphertext;
-2. decrypts values using the local age identity;
-3. substitutes sops-nix placeholders into the configuration;
-4. writes a runtime file outside the Nix Store;
-5. applies mode `0600`;
-6. validates JSON syntax and sing-box semantics;
-7. atomically exposes the new file at `~/.config/sing-box/config.json`.
+1. 读取 SOPS 密文；
+2. 使用本地 age identity 解密；
+3. 将 sops-nix placeholder 替换进配置；
+4. 在 Nix Store 之外写入运行文件；
+5. 设置权限为 `0600`；
+6. 校验 JSON 语法和 sing-box 语义；
+7. 仅在全部校验通过后，原子更新 `~/.config/sing-box/config.json`。
 
-Only secret formats safe for JSON string substitution are used. The generated file is parsed after rendering so any escaping error fails activation before the runtime configuration is replaced.
+所有秘密均采用可以安全替换进 JSON 字符串的格式。渲染后必须重新解析生成文件，任何转义错误都应在替换现有运行配置之前使激活失败。
 
-## New Mac Bootstrap
+## 新 Mac 初始化
 
-A completely new Mac uses:
+全新 Mac 的初始化流程：
 
 ```text
-1. Clone the repository.
-2. Restore the shared age private key at the standard macOS SOPS path.
-3. Run ./bootstrap.sh.
-4. Let sops-nix decrypt and render the sing-box configuration.
-5. Import the validated runtime configuration into SFM.
+1. 克隆仓库。
+2. 将共享 age 私钥恢复到 macOS 的标准 SOPS 路径。
+3. 运行 ./bootstrap.sh。
+4. 由 sops-nix 解密并渲染 sing-box 配置。
+5. 将通过校验的运行配置导入 SFM。
 ```
 
-`bootstrap.sh` and `rebuild.sh` will both target `darwinConfigurations.mac`.
+`bootstrap.sh` 和 `rebuild.sh` 均使用 `darwinConfigurations.mac`。
 
-The script interfaces become:
+脚本接口统一为：
 
 ```text
 ./bootstrap.sh
@@ -170,66 +170,66 @@ The script interfaces become:
 ./rebuild.sh --update
 ```
 
-The scripts must fail early with a clear path-specific message when the age private key is missing. They must not generate a replacement key because a new identity cannot decrypt the committed SOPS file.
+age 私钥缺失时，脚本必须提前失败并显示准确的恢复路径。不得自动生成替代密钥，因为新 identity 无法解密仓库中已有的 SOPS 文件。
 
-## SFM Profile Synchronization
+## SFM Profile 同步
 
-SFM supports local configuration profiles but stores profile content as application state rather than continuously watching `~/.config/sing-box/config.json`.
+SFM 支持本地配置 Profile，但会将 Profile 内容保存为应用状态，并不会持续监视 `~/.config/sing-box/config.json`。
 
-The synchronization policy is:
+同步策略如下：
 
-- all edits happen in the repository template and encrypted SOPS file;
-- SFM profile content is derived from the rendered configuration;
-- configuration is synchronized only after all validation succeeds;
-- `rebuild.sh` does not start SFM automatically;
-- direct long-lived edits in the SFM editor are prohibited.
+- 所有编辑都在仓库模板和加密 SOPS 文件中完成；
+- SFM Profile 内容由渲染后的配置派生；
+- 只有全部校验成功后才允许同步；
+- `rebuild.sh` 不自动启动 SFM；
+- 禁止直接在 SFM 编辑器中进行长期配置修改。
 
-During implementation, the official SFM file import behavior will be tested end to end. If SFM provides a stable file import mechanism, a user-invoked `sfm-sync` helper will use it. If no reliable automation is available, the documented workflow will require re-importing the validated file in SFM. The implementation must not write directly into SFM private application containers.
+实施时必须对 SFM 官方文件导入流程进行端到端验证。如果 SFM 提供稳定的文件导入方式，则提供由用户主动执行的 `sfm-sync` 辅助命令。如果没有可靠的自动化接口，则文档明确要求在 SFM 中重新导入已经校验的文件。实施不得直接写入 SFM 的私有应用容器。
 
-## Network Configuration
+## 网络配置
 
-### Inbounds
+### 入站
 
-The configuration has two inbounds:
+配置包含两个入站。
 
 #### `tun-in`
 
-- type: TUN;
-- IPv4 and IPv6 addresses;
-- system stack;
-- lifecycle controlled by SFM Network Extension;
-- no separate CLI TUN instance.
+- 类型：TUN
+- 同时提供 IPv4 和 IPv6 地址
+- 使用 system stack
+- 生命周期由 SFM Network Extension 控制
+- 不存在独立的 CLI TUN 实例
 
-Options managed or ignored by the Apple Network Extension will be minimized after testing against the official SFM feature matrix.
+根据官方 SFM 功能矩阵完成测试后，尽量减少由 Apple Network Extension 管理或忽略的选项。
 
 #### `mixed-in`
 
-- type: mixed SOCKS/HTTP;
-- listen address: `127.0.0.1`;
-- listen port: `7777`;
-- purpose: terminal diagnostics and explicit per-application proxying.
+- 类型：mixed SOCKS/HTTP
+- 监听地址：`127.0.0.1`
+- 监听端口：`7777`
+- 用途：终端诊断和单个应用显式代理
 
-It must never listen on a LAN or public address.
+该入站绝不能监听局域网或公网地址。
 
-### Physical Outbounds
+### 实际出站
 
-The two servers expose:
+两个服务器提供四个实际出站：
 
-- `sg-vless`: VLESS, REALITY, Vision, uTLS Chrome fingerprint;
-- `sg-hy2`: Hysteria2, TLS, Salamander obfuscation;
-- `us-vless`: VLESS, REALITY, Vision, uTLS Chrome fingerprint;
-- `us-hy2`: Hysteria2, TLS, Salamander obfuscation.
+- `sg-vless`：VLESS、REALITY、Vision、uTLS Chrome 指纹
+- `sg-hy2`：Hysteria2、TLS、Salamander 混淆
+- `us-vless`：VLESS、REALITY、Vision、uTLS Chrome 指纹
+- `us-hy2`：Hysteria2、TLS、Salamander 混淆
 
-The previous bandwidth hints are:
+旧配置中的带宽提示值：
 
-- Singapore Hysteria2: 45 Mbps up, 170 Mbps down;
-- US Hysteria2: 32 Mbps up, 95 Mbps down.
+- 新加坡 Hysteria2：上行 45 Mbps，下行 170 Mbps
+- 美国 Hysteria2：上行 32 Mbps，下行 95 Mbps
 
-Implementation will preserve them unless current sing-box guidance or testing shows that omission is safer.
+除非当前 sing-box 指南或实际测试表明省略这些值更安全，否则实施时保留。
 
-### Selector Hierarchy
+### Selector 层次
 
-The primary selector is:
+主 selector：
 
 ```text
 proxy
@@ -242,213 +242,213 @@ proxy
 └── us-hy2
 ```
 
-Behavior:
+行为：
 
-- `proxy` defaults to `auto`;
-- `auto` URL-tests all four physical outbounds;
-- `singapore` URL-tests both Singapore protocols;
-- `usa` URL-tests both US protocols;
-- automatic changes do not interrupt existing connections;
-- explicit manual changes may interrupt existing connections so the new selection takes effect immediately;
-- the initial URL-test interval target is ten minutes to reduce battery and background traffic;
-- no separate TCP or UDP selector is added without measured evidence.
+- `proxy` 默认选择 `auto`；
+- `auto` 对四个实际出站执行 URLTest；
+- `singapore` 对两个新加坡协议执行 URLTest；
+- `usa` 对两个美国协议执行 URLTest；
+- 自动切换不打断已有连接；
+- 用户手动切换时可以打断已有连接，使新选择立即生效；
+- URLTest 初始周期为十分钟，减少电量和后台流量消耗；
+- 没有测量证据时不增加单独的 TCP 或 UDP selector。
 
-## DNS Design
+## DNS 设计
 
-The DNS design uses FakeIP to prevent polluted answers from controlling proxied destinations.
+DNS 使用 FakeIP，防止受污染的解析结果控制代理目标。
 
-### Behavior
+### 行为
 
-- TUN hijacks ordinary DNS traffic.
-- A and AAAA queries normally receive FakeIP answers.
-- IPv4 and IPv6 FakeIP pools are enabled.
-- Resolution and connection strategy prefers IPv4 but permits IPv6.
-- FakeIP mappings are stored in the sing-box cache.
-- proxy server hostnames are resolved by an inline hosts server with their fixed IP addresses, avoiding bootstrap recursion and pollution;
-- local, `.local`, reverse lookup, private, and link-local names use local resolution;
-- direct destinations use a mainland-compatible encrypted DNS resolver;
-- proxied destinations preserve the domain through the proxy path and do not depend on a potentially polluted local answer.
+- TUN 劫持普通 DNS 流量。
+- A 和 AAAA 查询通常返回 FakeIP。
+- 同时启用 IPv4 和 IPv6 FakeIP 地址池。
+- 解析和连接策略优先 IPv4，但允许 IPv6。
+- FakeIP 映射写入 sing-box 缓存。
+- 使用 inline hosts DNS 将代理服务器域名映射到固定 IP，避免启动递归和 DNS 污染。
+- 本地、`.local`、反向解析、私有和链路本地域名使用本地解析。
+- 直连目标使用中国大陆可用的加密 DNS。
+- 代理目标保留域名并通过代理连接，不依赖可能受污染的本地解析结果。
 
-The final configuration will use the structured DNS server format supported by sing-box 1.13.14 and accepted by the official Schema wherever the stable version and latest online Schema overlap.
+最终配置使用 sing-box 1.13.14 支持的结构化 DNS server 格式，并尽量选择稳定版与最新官方 Schema 都接受的字段。
 
-## Routing Design
+## 路由设计
 
-### Rule Set Source
+### 规则集来源
 
-The GFWList rule set is:
+GFWList 使用：
 
 ```text
 https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/gfw.srs
 ```
 
-It is a remote binary sing-box rule set with a 24-hour update interval. It is downloaded through a known working bootstrap proxy outbound. Cached rules remain usable when refresh fails.
+它是远程二进制 sing-box rule-set，更新周期为 24 小时。通过一个已知可用的 bootstrap 代理出站下载。刷新失败时继续使用缓存规则。
 
-### Priority
+### 优先级
 
-Routing rules are evaluated in this order:
+路由规则按以下顺序求值：
 
-1. protocol sniffing;
-2. DNS hijacking;
-3. proxy server endpoints, private IPs, and LAN traffic to `direct`;
-4. `custom-reject`;
-5. `custom-direct`;
-6. `custom-proxy`;
-7. OpenAI to `proxy`;
-8. Claude to `proxy`;
-9. Google Meet domains, official media IPs, and required UDP ports to `proxy`;
-10. MetaCubeX GFWList to `proxy`;
-11. unmatched traffic to `direct`.
+1. 协议 sniff；
+2. DNS 劫持；
+3. 代理服务器端点、私有 IP 和局域网流量走 `direct`；
+4. `custom-reject`；
+5. `custom-direct`；
+6. `custom-proxy`；
+7. OpenAI 走 `proxy`；
+8. Claude 走 `proxy`；
+9. Google Meet 域名、官方媒体 IP 和必要 UDP 端口走 `proxy`；
+10. MetaCubeX GFWList 走 `proxy`；
+11. 未匹配流量走 `direct`。
 
-### Custom Rules
+### 自定义规则
 
-Three inline rule sets live in the main configuration:
+主配置中包含三个 inline rule-set：
 
-- `custom-reject`;
-- `custom-direct`;
-- `custom-proxy`.
+- `custom-reject`
+- `custom-direct`
+- `custom-proxy`
 
-They may contain domain, suffix, keyword, CIDR, port, and process rules. This preserves explicit user overrides without adding a second configuration source.
+它们可以包含域名、域名后缀、关键字、CIDR、端口和进程规则。这样可以保留明确的用户覆盖规则，而不引入第二份配置来源。
 
-### Service Rules Retained
+### 保留的服务规则
 
-Only these service policies have sufficient evidence:
+只有以下服务策略具有充分证据：
 
-- OpenAI must use `proxy` because mainland China is not a supported access region, while both Singapore and the United States are supported.
-- Claude must use `proxy` because Anthropic enforces supported-region policy using IP-derived location, while both proxy regions are supported.
-- Google Meet domains, official media IP ranges, and required UDP ports must use `proxy` to preserve media connectivity. It is not fixed to Hysteria2 because there is no evidence that one proxy protocol is universally superior.
+- OpenAI 必须走 `proxy`。中国大陆不在支持访问地区中，新加坡和美国均受支持。
+- Claude 必须走 `proxy`。Anthropic 使用 IP 推断位置并执行支持地区策略，两个代理地区均受支持。
+- Google Meet 域名、官方媒体 IP 段和必要 UDP 端口必须走 `proxy`，以保证媒体连接。不固定到 Hysteria2，因为没有证据表明某一种代理协议普遍更优。
 
-The following old policies are removed:
+删除旧配置中的以下策略：
 
-- Apple direct, because final routing is already direct;
-- fixed Singapore routing for OpenAI, Claude, Paid, Monoova, and WorkOS;
-- Hysteria2-only routing for WhatsApp, YouTube, and Meet;
-- broad AWS and Cloudflare proxy rules;
-- explicit proxy rules for GitHub, Homebrew, Figma, Slack, Stripe, Atlassian, Logitech, and Google Analytics.
+- Apple 直连，因为最终路由本来就是直连；
+- OpenAI、Claude、Paid、Monoova 和 WorkOS 固定新加坡；
+- WhatsApp、YouTube 和 Meet 仅使用 Hysteria2；
+- 宽泛的 AWS 和 Cloudflare 代理规则；
+- GitHub、Homebrew、Figma、Slack、Stripe、Atlassian、Logitech 和 Google Analytics 的显式代理规则。
 
-Those services use GFWList and the default direct behavior unless a reproducible failure justifies a future custom rule.
+这些服务由 GFWList 和默认直连行为处理。只有可复现的故障才能成为未来增加自定义规则的依据。
 
-## Dashboard and API
+## Dashboard 和 API
 
-No Web Dashboard is configured.
+不配置 Web Dashboard。
 
-No Clash API listener is configured.
+不配置 Clash API listener。
 
-SFM provides:
+SFM 提供：
 
-- start and stop controls;
-- logs;
-- selector groups;
-- URL tests;
-- manual node switching;
-- runtime status.
+- 启动和停止控制；
+- 日志；
+- selector 分组；
+- URLTest；
+- 手动节点切换；
+- 运行状态。
 
-This avoids exposing an unnecessary local API and avoids requiring the sing-box 1.14 alpha API service.
+这样可以避免暴露不必要的本地 API，也无需使用 sing-box 1.14 alpha 的 API service。
 
-## Single-Instance Safety
+## 单实例安全
 
-Single-instance behavior is a hard requirement.
+单实例行为是硬性要求。
 
-The implementation must ensure:
+实施必须确保：
 
-- SFM is the only runtime owner;
-- no `sing-box run` process is started by scripts;
-- no sing-box LaunchAgent or LaunchDaemon exists;
-- there is one active sing-box Network Extension;
-- there is one TUN owner;
-- repeated SFM start actions do not create another core;
-- stopping SFM restores system DNS and routes;
-- configuration rebuilds do not start or restart SFM.
+- SFM 是唯一运行时所有者；
+- 脚本不启动 `sing-box run`；
+- 不存在 sing-box LaunchAgent 或 LaunchDaemon；
+- 只有一个活动的 sing-box Network Extension；
+- 只有一个 TUN 所有者；
+- 重复点击 SFM 启动不会创建第二个核心；
+- 停止 SFM 后系统 DNS 和路由恢复；
+- 配置 rebuild 不启动或重启 SFM。
 
-Preflight and acceptance checks will inspect processes, launchd services, listening ports, Network Extension state, TUN interfaces, and default routes without printing secrets.
+预检和验收将检查进程、launchd 服务、监听端口、Network Extension 状态、TUN 接口和默认路由，同时不得打印秘密。
 
-## Failure Handling
+## 失败处理
 
-Configuration generation is transactional:
+配置生成是事务性的：
 
-1. verify the age identity;
-2. decrypt SOPS data;
-3. render a temporary configuration;
-4. parse it as JSON;
-5. run `sing-box check`;
-6. atomically publish it only when all checks pass.
+1. 验证 age identity；
+2. 解密 SOPS 数据；
+3. 渲染临时配置；
+4. 解析 JSON；
+5. 运行 `sing-box check`；
+6. 只有全部成功后才原子发布。
 
-On failure:
+发生失败时：
 
-- activation returns non-zero;
-- the previous valid runtime configuration remains available;
-- SFM is not started, stopped, or modified;
-- no partial plaintext file is retained;
-- secret values are not printed.
+- 激活返回非零状态；
+- 保留上一份有效运行配置；
+- 不启动、停止或修改 SFM；
+- 不保留残缺明文文件；
+- 不打印秘密值。
 
-Remote rule-set refresh failure uses the cached rule set. Initial startup requires a working physical proxy outbound so the first GFWList download can complete.
+远程规则集刷新失败时使用缓存。第一次启动需要至少一个实际代理出站可用，以完成首次 GFWList 下载。
 
-## Validation Plan
+## 验证计划
 
-### Static Validation
+### 静态验证
 
-- `nix flake check`;
-- build `darwinConfigurations.mac.system`;
-- run `shellcheck` on changed shell scripts;
-- validate the template structure against the official sing-box JSON Schema;
-- parse the rendered configuration with `jq`;
-- validate the rendered configuration with `sing-box check`;
-- scan pending and committed files for the age private key and known plaintext secrets.
+- 运行 `nix flake check`；
+- 构建 `darwinConfigurations.mac.system`；
+- 对修改过的 Shell 脚本运行 `shellcheck`；
+- 使用官方 sing-box JSON Schema 校验模板结构；
+- 使用 `jq` 解析渲染后的配置；
+- 使用 `sing-box check` 校验渲染后的配置；
+- 扫描待提交和已提交文件，确认不存在 age 私钥或已知明文秘密。
 
-The installed stable sing-box check is authoritative if the latest online Schema contains fields from an unreleased version.
+如果最新在线 Schema 包含尚未正式发布的字段，则以本机稳定版 `sing-box check` 为最终依据。
 
-### End-to-End Validation
+### 端到端验证
 
-1. Reproduce the current user flow by importing the generated configuration into SFM.
-2. Start SFM and confirm exactly one Network Extension instance.
-3. Confirm there is no CLI sing-box process or launchd service.
-4. Confirm TUN captures IPv4 and IPv6.
-5. Confirm ordinary A and AAAA queries receive addresses from the expected FakeIP ranges.
-6. Confirm LAN and `.local` access continues to work.
-7. Confirm a GFWList domain uses the selected proxy.
-8. Confirm an unmatched domain remains direct.
-9. Confirm OpenAI and Claude use `proxy`.
-10. Confirm Google Meet TCP and UDP connectivity.
-11. Test all four physical outbounds independently.
-12. Confirm `auto`, `singapore`, and `usa` URL tests work.
-13. Switch country and protocol through SFM and confirm the effective egress changes.
-14. Stop SFM and confirm DNS, routes, and TUN state are restored.
-15. Repeat start, stop, import, and switching operations and confirm no duplicate instance appears.
+1. 按用户真实流程将生成配置导入 SFM。
+2. 启动 SFM，确认恰好只有一个 Network Extension 实例。
+3. 确认不存在 CLI sing-box 进程或 launchd 服务。
+4. 确认 TUN 接管 IPv4 和 IPv6。
+5. 确认普通 A 和 AAAA 查询返回预期 FakeIP 地址池中的地址。
+6. 确认局域网和 `.local` 访问正常。
+7. 确认 GFWList 域名使用选定代理。
+8. 确认未匹配域名保持直连。
+9. 确认 OpenAI 和 Claude 使用 `proxy`。
+10. 确认 Google Meet TCP 和 UDP 连通。
+11. 分别测试四个实际出站。
+12. 确认 `auto`、`singapore` 和 `usa` 的 URLTest 正常。
+13. 通过 SFM 切换国家和协议，确认实际出口发生变化。
+14. 停止 SFM，确认 DNS、路由和 TUN 状态恢复。
+15. 重复启动、停止、导入和切换操作，确认不产生重复实例。
 
-## Migration and Cleanup
+## 迁移与清理
 
-The old `/Users/rich/Downloads/config.json` is mode `0644` and contains complete plaintext credentials.
+旧文件 `/Users/rich/Downloads/config.json` 权限为 `0644`，包含完整明文凭据。
 
-Implementation will:
+实施过程：
 
-1. extract required values locally without displaying them;
-2. create the encrypted SOPS data;
-3. verify that SOPS can decrypt it with the shared age identity;
-4. validate and run the new configuration;
-5. request explicit user permission before deleting the old plaintext file.
+1. 在本地提取所需值，不显示它们；
+2. 创建加密 SOPS 数据；
+3. 使用共享 age identity 验证 SOPS 可以解密；
+4. 校验并运行新配置；
+5. 删除旧明文文件前单独请求用户明确许可。
 
-The old Clash API secret is treated as compromised and is not reused. Since the new design has no Clash API, no replacement API secret is needed.
+旧 Clash API secret 视为已经暴露，不再复用。新设计没有 Clash API，因此不需要生成新的 API secret。
 
-## Out of Scope
+## 不在范围内
 
-- running a separate sing-box CLI service;
-- Web Dashboard;
-- Clash API;
-- third-party GUI or TUI clients;
-- automatic subscription conversion;
-- per-application routing without a demonstrated need;
-- automatic deletion of the old plaintext configuration;
-- separate laptop and desktop Darwin configurations.
+- 运行独立的 sing-box CLI 服务；
+- Web Dashboard；
+- Clash API；
+- 第三方 GUI 或 TUI 客户端；
+- 自动转换订阅；
+- 没有实际需求的按应用路由；
+- 自动删除旧明文配置；
+- 分离 laptop 和 desktop 的 Darwin 配置。
 
-## Acceptance Criteria
+## 验收标准
 
-The design is complete when:
+满足以下条件时设计目标完成：
 
-- both Macs build the same `darwinConfigurations.mac`;
-- the encrypted secrets are safely committed and decrypt with the shared age key;
-- the final configuration is schema-assisted, valid JSON, and accepted by sing-box 1.13.14;
-- SFM is installed declaratively and runs the configuration through one Network Extension instance;
-- FakeIP, dual stack, GFWList routing, custom rules, and service exceptions work as designed;
-- all four nodes can be selected and `auto` chooses among them;
-- unmatched traffic is direct;
-- stopping SFM restores the system network state;
-- no duplicate sing-box runtime or persistent CLI service exists.
+- 两台 Mac 均构建同一个 `darwinConfigurations.mac`；
+- 加密秘密可以安全提交，并能使用共享 age 私钥解密；
+- 最终配置具备 Schema 辅助、是有效 JSON，并通过 sing-box 1.13.14 校验；
+- SFM 通过声明式方式安装，并使用唯一的 Network Extension 实例运行配置；
+- FakeIP、双栈、GFWList、自定义规则和服务例外均按设计工作；
+- 四个节点均可选择，`auto` 可以自动选择；
+- 未匹配流量保持直连；
+- 停止 SFM 后系统网络状态恢复；
+- 不存在重复 sing-box 运行时或持久化 CLI 服务。
