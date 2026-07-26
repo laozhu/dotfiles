@@ -388,6 +388,8 @@ jq -e '
 
 还必须断言没有 `experimental.clash_api`、没有 Web Dashboard 字段、三个远程 rule-set 的 `download_detour` 均为通用 `proxy`，并确认秘密映射的 key path 与 SOPS 解密后叶子路径完全一致。
 
+模板标记计数也必须固定：四个 `*_SERVER__` 标记各出现两次，一次用于物理出站，一次用于共享的 `proxy-server` inline rule-set；其余 14 个标记各出现一次。这样既能复用加密的服务器 IP，又能防止无意重复。
+
 Run:
 
 ```bash
@@ -442,6 +444,7 @@ Expected: 因模板和映射文件不存在而失败。
 13. `direct` 出站。
 14. 路由顺序严格为 sniff、DNS hijack、代理服务器目标直连、私网直连、`custom-reject`、`custom-direct`、`custom-proxy`、OpenAI、Claude、Google Meet UDP、Google Meet 通用、GFWList、final direct。
 15. `custom-reject`、`custom-direct` 和 `custom-proxy` 是规则数组为空的 inline rule-set，用户以后只修改对应 `rules` 数组。
+15.1. `proxy-server` 是包含四个加密服务器 IP 的 inline rule-set；DNS 规则和路由规则都引用它，避免在两处重复保存服务器列表。
 16. Google Meet inline rule-set 包含 `meet.google.com`、`meetings.googleapis.com`、`stun.l.google.com`、`workspace.turns.goog`、`meet.turns.goog`，以及 `74.125.250.0/24`、`142.250.82.0/24`、`2001:4860:4864:5::/64`、`2001:4860:4864:6::/64`。UDP `3478` 和 `19302:19309` 在该服务规则中经 `proxy`。
 17. 远程规则集只保留 GFWList、OpenAI 和 Claude，URL 分别为 MetaCubeX 的 `gfw.srs`、`openai.srs` 和 `anthropic.srs`，更新间隔均为 `24h`。
 18. GFWList URL 固定为 `https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/gfw.srs`。
@@ -473,10 +476,10 @@ export function renderConfig(templateText, secretMap, secrets) {
       throw new Error(`invalid secret value for: ${path}`);
     }
     const occurrences = rendered.split(marker).length - 1;
-    if (occurrences !== 1) {
-      throw new Error(`expected marker exactly once: ${marker}`);
+    if (occurrences < 1) {
+      throw new Error(`expected marker at least once: ${marker}`);
     }
-    rendered = rendered.replace(marker, () => value);
+    rendered = rendered.split(marker).join(value);
   }
   if (/__SOPS_[A-Z0-9_]+__/.test(rendered)) {
     throw new Error("unresolved SOPS marker remains");
