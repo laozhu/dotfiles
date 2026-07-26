@@ -28,6 +28,8 @@ in
         replacements
         (builtins.readFile templatePath);
       path = "/run/secrets/rendered/sing-box-candidate.json";
+      owner = user;
+      group = "staff";
       mode = "0400";
     };
   };
@@ -38,11 +40,13 @@ in
     final_config=${lib.escapeShellArg finalConfig}
     candidate=${lib.escapeShellArg candidate}
 
-    ${pkgs.jq}/bin/jq -e . "$candidate" >/dev/null
-    ${pkgs.sing-box}/bin/sing-box check -c "$candidate"
-    ${pkgs.coreutils}/bin/cat "$candidate" \
-      | /usr/bin/sudo -u ${lib.escapeShellArg user} -- \
-          ${pkgs.bash}/bin/bash ${./scripts/publish-sing-box-config.sh} \
-            "$state_dir" "$final_config" ${pkgs.coreutils}/bin
+    /usr/bin/sudo -u ${lib.escapeShellArg user} -- \
+      ${pkgs.bash}/bin/bash ${./scripts/publish-sing-box-config.sh} \
+        "$state_dir" \
+        "$final_config" \
+        "$candidate" \
+        ${pkgs.coreutils}/bin \
+        ${pkgs.jq}/bin/jq \
+        ${pkgs.sing-box}/bin/sing-box
   '';
 }
