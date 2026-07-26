@@ -398,7 +398,7 @@ jq -e '
 ' home/.config/sing-box/config.json
 ```
 
-还必须断言没有 `experimental.clash_api`、没有 Web Dashboard 字段、三个远程 rule-set 的 `download_detour` 均为通用 `proxy`，并确认 18 个 marker 到 SOPS key path 的映射对象与计划中的对象逐项完全一致，而不只是比较 path 集合。三个自定义 inline rule-set 必须各包含且仅包含一个初始哨兵规则，精确匹配保留域名 `sing-box-placeholder.invalid`。
+还必须断言没有 `experimental.clash_api`、没有 Web Dashboard 字段、三个远程 rule-set 的 `download_detour` 均为通用 `proxy`，并确认 18 个 marker 到 SOPS key path 的映射对象与计划中的对象逐项完全一致，而不只是比较 path 集合。静态套件不得解密仓库 secrets 或依赖真实 age identity；真实叶子结构和解密能力由独立的 preflight 与配置检查命令验证。三个自定义 inline rule-set 必须各包含且仅包含一个初始哨兵规则，精确匹配保留域名 `sing-box-placeholder.invalid`。
 
 模板标记计数也必须固定：两个 `*_SERVER_HOSTNAME__` 标记各出现四次，分别用于两个物理出站、`hosts-dns` 映射键和共享的 `proxy-server` inline rule-set；其余 16 个标记各出现一次。这样既能复用加密的服务器端点，又能防止无意重复。
 
@@ -798,6 +798,15 @@ fi
 
 Expected: 当前 `rebuild.sh` 仍包含 `git add .`，测试失败。
 
+脚本夹具还必须让以下步骤逐一返回非零，并断言后续操作没有执行：
+
+- bootstrap identity preflight 失败时不得调用 `sudo` switch；
+- rebuild identity preflight 失败时不得运行配置检查、update 或 switch；
+- rebuild 配置检查失败时不得运行 update 或 switch；
+- `nix flake update` 失败时不得运行 switch。
+
+`tests/sing-box-static.sh` 必须完全使用临时 HOME、stub 和非秘密夹具，不得调用 `sops decrypt` 读取仓库的 `secrets/sing-box.yaml`，从而可在没有真实 identity 的 CI 或新机器上运行。
+
 - [ ] **Step 2: 实现 identity preflight**
 
 `scripts/check-sops-age-key.sh` 必须执行：
@@ -868,6 +877,8 @@ bash scripts/check-sing-box-config.sh
 ```
 
 Expected: 全部通过，输出不包含任何秘密。
+
+其中 `bash tests/sing-box-static.sh` 是不依赖真实 identity 的 hermetic 测试；随后两个脚本命令才是当前机器上的显式真实 identity 和解密集成检查。
 
 - [ ] **Step 6: 提交**
 
