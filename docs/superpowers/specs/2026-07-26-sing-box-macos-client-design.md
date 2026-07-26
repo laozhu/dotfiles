@@ -45,9 +45,22 @@ home/.config/sing-box/
 - `.sops.yaml` 保存共享 age 公钥接收者及 SOPS 加密规则。
 - `secrets/sing-box.yaml` 只保存由 SOPS 加密的秘密值。
 - `home/.config/sing-box/config.json` 保存完整的非秘密配置结构、官方 JSON Schema 引用和具名秘密占位符。
-- `~/.config/sing-box/config.json` 是经过校验并渲染完成的运行配置，权限为 `0600`。
+- `~/.config/sing-box/config.json` 是指向经过校验并渲染完成的运行配置的符号链接，链接目标权限为 `0600`。
 
 仓库中的 `config.json` 是配置结构和规则的唯一真相来源。SOPS 文件只提供加密数据。SFM Local Profile 是派生的运行副本，不得成为独立的编辑来源。
+
+### Home Manager 文件映射
+
+`home.nix` 的“统一文件映射”必须声明 `~/.config/sing-box/config.json`，但不得像 WezTerm 或 Neovim 那样直接链接仓库文件。仓库文件仍含有秘密占位符，不能作为 sing-box 的运行配置。
+
+映射关系必须为：
+
+```text
+~/.config/sing-box/config.json
+└── 符号链接到 sops-nix 渲染并校验后的运行文件
+```
+
+仓库模板通过 Nix 和 sops-nix 参与渲染，不直接成为该符号链接的目标。这样既保留统一的 Home Manager 文件管理入口，也可避免把明文秘密写入 Nix Store。最终使用的具体 sops-nix 路径选项必须在实施时根据锁定版本验证，不能硬编码 macOS 临时目录。
 
 ## Nix 架构
 
@@ -141,10 +154,11 @@ age 私钥存放在本机：
 1. 读取 SOPS 密文；
 2. 使用本地 age identity 解密；
 3. 将 sops-nix placeholder 替换进配置；
-4. 在 Nix Store 之外写入运行文件；
+4. 在 Nix Store 之外写入候选运行文件；
 5. 设置权限为 `0600`；
 6. 校验 JSON 语法和 sing-box 语义；
-7. 仅在全部校验通过后，原子更新 `~/.config/sing-box/config.json`。
+7. 仅在全部校验通过后，原子更新运行文件；
+8. 由 `home.nix` 保持 `~/.config/sing-box/config.json` 指向该运行文件。
 
 所有秘密均采用可以安全替换进 JSON 字符串的格式。渲染后必须重新解析生成文件，任何转义错误都应在替换现有运行配置之前使激活失败。
 
