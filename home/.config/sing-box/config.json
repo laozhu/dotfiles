@@ -1,0 +1,373 @@
+{
+  "$schema": "https://sing-box.sagernet.org/schema.json",
+  "log": {
+    "level": "info",
+    "timestamp": true
+  },
+  "dns": {
+    "servers": [
+      {
+        "type": "https",
+        "tag": "direct-dns",
+        "server": "223.5.5.5",
+        "server_port": 443,
+        "tls": {
+          "enabled": true,
+          "server_name": "dns.alidns.com"
+        }
+      },
+      {
+        "type": "https",
+        "tag": "proxy-dns",
+        "server": "1.1.1.1",
+        "server_port": 443,
+        "detour": "proxy",
+        "tls": {
+          "enabled": true,
+          "server_name": "cloudflare-dns.com"
+        }
+      },
+      {
+        "type": "hosts",
+        "tag": "hosts-dns",
+        "predefined": {
+          "__SOPS_SG_SERVER_HOSTNAME__": "__SOPS_SG_SERVER_IP__",
+          "__SOPS_US_SERVER_HOSTNAME__": "__SOPS_US_SERVER_IP__"
+        }
+      },
+      {
+        "type": "fakeip",
+        "tag": "fakeip-dns",
+        "inet4_range": "198.18.0.0/15",
+        "inet6_range": "fc00::/18"
+      }
+    ],
+    "rules": [
+      {
+        "rule_set": "proxy-server",
+        "server": "hosts-dns"
+      },
+      {
+        "ip_is_private": true,
+        "server": "direct-dns"
+      },
+      {
+        "rule_set": [
+          "gfwlist",
+          "openai",
+          "claude",
+          "google-meet"
+        ],
+        "server": "proxy-dns"
+      },
+      {
+        "query_type": [
+          "A",
+          "AAAA"
+        ],
+        "server": "fakeip-dns"
+      }
+    ],
+    "strategy": "prefer_ipv4"
+  },
+  "inbounds": [
+    {
+      "type": "tun",
+      "tag": "tun-in",
+      "address": [
+        "172.19.0.1/30",
+        "fdfe:dcba:9876::1/126"
+      ],
+      "auto_route": true,
+      "strict_route": true,
+      "stack": "mixed"
+    },
+    {
+      "type": "mixed",
+      "tag": "mixed-in",
+      "listen": "127.0.0.1",
+      "listen_port": 7777
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "selector",
+      "tag": "proxy",
+      "outbounds": [
+        "auto",
+        "singapore",
+        "usa",
+        "sg-vless",
+        "sg-hy2",
+        "us-vless",
+        "us-hy2"
+      ],
+      "default": "auto",
+      "interrupt_exist_connections": true
+    },
+    {
+      "type": "urltest",
+      "tag": "auto",
+      "outbounds": [
+        "sg-vless",
+        "sg-hy2",
+        "us-vless",
+        "us-hy2"
+      ],
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "10m",
+      "tolerance": 50,
+      "interrupt_exist_connections": false
+    },
+    {
+      "type": "urltest",
+      "tag": "singapore",
+      "outbounds": [
+        "sg-vless",
+        "sg-hy2"
+      ],
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "10m",
+      "interrupt_exist_connections": false
+    },
+    {
+      "type": "urltest",
+      "tag": "usa",
+      "outbounds": [
+        "us-vless",
+        "us-hy2"
+      ],
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "10m",
+      "interrupt_exist_connections": false
+    },
+    {
+      "type": "vless",
+      "tag": "sg-vless",
+      "server": "__SOPS_SG_SERVER_HOSTNAME__",
+      "server_port": 443,
+      "uuid": "__SOPS_SG_VLESS_UUID__",
+      "flow": "xtls-rprx-vision",
+      "tls": {
+        "enabled": true,
+        "server_name": "__SOPS_SG_VLESS_TLS_SERVER_NAME__",
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        },
+        "reality": {
+          "enabled": true,
+          "public_key": "__SOPS_SG_VLESS_REALITY_PUBLIC_KEY__",
+          "short_id": "__SOPS_SG_VLESS_REALITY_SHORT_ID__"
+        }
+      }
+    },
+    {
+      "type": "hysteria2",
+      "tag": "sg-hy2",
+      "server": "__SOPS_SG_SERVER_HOSTNAME__",
+      "server_port": 443,
+      "up_mbps": 45,
+      "down_mbps": 170,
+      "password": "__SOPS_SG_HY2_PASSWORD__",
+      "obfs": {
+        "type": "salamander",
+        "password": "__SOPS_SG_HY2_OBFS_PASSWORD__"
+      },
+      "tls": {
+        "enabled": true,
+        "server_name": "__SOPS_SG_HY2_TLS_SERVER_NAME__"
+      }
+    },
+    {
+      "type": "vless",
+      "tag": "us-vless",
+      "server": "__SOPS_US_SERVER_HOSTNAME__",
+      "server_port": 443,
+      "uuid": "__SOPS_US_VLESS_UUID__",
+      "flow": "xtls-rprx-vision",
+      "tls": {
+        "enabled": true,
+        "server_name": "__SOPS_US_VLESS_TLS_SERVER_NAME__",
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        },
+        "reality": {
+          "enabled": true,
+          "public_key": "__SOPS_US_VLESS_REALITY_PUBLIC_KEY__",
+          "short_id": "__SOPS_US_VLESS_REALITY_SHORT_ID__"
+        }
+      }
+    },
+    {
+      "type": "hysteria2",
+      "tag": "us-hy2",
+      "server": "__SOPS_US_SERVER_HOSTNAME__",
+      "server_port": 8443,
+      "up_mbps": 32,
+      "down_mbps": 95,
+      "password": "__SOPS_US_HY2_PASSWORD__",
+      "obfs": {
+        "type": "salamander",
+        "password": "__SOPS_US_HY2_OBFS_PASSWORD__"
+      },
+      "tls": {
+        "enabled": true,
+        "server_name": "__SOPS_US_HY2_TLS_SERVER_NAME__"
+      }
+    },
+    {
+      "type": "direct",
+      "tag": "direct"
+    }
+  ],
+  "route": {
+    "default_domain_resolver": "proxy-dns",
+    "rules": [
+      {
+        "action": "sniff"
+      },
+      {
+        "protocol": "dns",
+        "action": "hijack-dns"
+      },
+      {
+        "rule_set": "proxy-server",
+        "outbound": "direct"
+      },
+      {
+        "ip_is_private": true,
+        "outbound": "direct"
+      },
+      {
+        "rule_set": "custom-reject",
+        "action": "reject"
+      },
+      {
+        "rule_set": "custom-direct",
+        "outbound": "direct"
+      },
+      {
+        "rule_set": "custom-proxy",
+        "outbound": "proxy"
+      },
+      {
+        "rule_set": "openai",
+        "outbound": "proxy"
+      },
+      {
+        "rule_set": "claude",
+        "outbound": "proxy"
+      },
+      {
+        "rule_set": "google-meet",
+        "network": "udp",
+        "port": 3478,
+        "port_range": "19302:19309",
+        "outbound": "proxy"
+      },
+      {
+        "rule_set": "google-meet",
+        "outbound": "proxy"
+      },
+      {
+        "rule_set": "gfwlist",
+        "outbound": "proxy"
+      }
+    ],
+    "rule_set": [
+      {
+        "type": "inline",
+        "tag": "proxy-server",
+        "rules": [
+          {
+            "domain": [
+              "__SOPS_SG_SERVER_HOSTNAME__",
+              "__SOPS_US_SERVER_HOSTNAME__"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "inline",
+        "tag": "custom-reject",
+        "rules": [
+          {
+            "domain": "sing-box-placeholder.invalid"
+          }
+        ]
+      },
+      {
+        "type": "inline",
+        "tag": "custom-direct",
+        "rules": [
+          {
+            "domain": "sing-box-placeholder.invalid"
+          }
+        ]
+      },
+      {
+        "type": "inline",
+        "tag": "custom-proxy",
+        "rules": [
+          {
+            "domain": "sing-box-placeholder.invalid"
+          }
+        ]
+      },
+      {
+        "type": "inline",
+        "tag": "google-meet",
+        "rules": [
+          {
+            "domain": [
+              "meet.google.com",
+              "meetings.googleapis.com",
+              "stun.l.google.com",
+              "workspace.turns.goog",
+              "meet.turns.goog"
+            ],
+            "ip_cidr": [
+              "74.125.250.0/24",
+              "142.250.82.0/24",
+              "2001:4860:4864:5::/64",
+              "2001:4860:4864:6::/64"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "remote",
+        "tag": "gfwlist",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/gfw.srs",
+        "download_detour": "proxy",
+        "update_interval": "24h"
+      },
+      {
+        "type": "remote",
+        "tag": "openai",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/openai.srs",
+        "download_detour": "proxy",
+        "update_interval": "24h"
+      },
+      {
+        "type": "remote",
+        "tag": "claude",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/anthropic.srs",
+        "download_detour": "proxy",
+        "update_interval": "24h"
+      }
+    ],
+    "final": "direct"
+  },
+  "experimental": {
+    "cache_file": {
+      "enabled": true,
+      "store_fakeip": true
+    }
+  }
+}
