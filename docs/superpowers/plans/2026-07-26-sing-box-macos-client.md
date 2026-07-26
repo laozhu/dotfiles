@@ -573,6 +573,7 @@ git commit -m "feat: add validated sing-box client template"
 
 **Files:**
 - Create: `sing-box.nix`
+- Create: `scripts/publish-sing-box-config.sh`
 - Modify: `flake.nix`
 - Modify: `tests/sing-box-static.sh`
 
@@ -645,9 +646,65 @@ in
 }
 ```
 
-- [ ] **Step 3: 增加校验后原子发布**
+- [ ] **Step 3: 增加降权、校验后原子发布**
 
-在同一个模块中加入顺序晚于 sops-nix `mkAfter` 的 postActivation：
+root 激活脚本不得在用户可控的 home 路径中执行 `install -d`、`chown`、`chmod`、`mktemp` 或 `mv`，否则目录符号链接可把这些操作重定向到任意 root 可写目标。新增 `scripts/publish-sing-box-config.sh`，由普通用户执行：
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ "$#" -ne 3 ]; then
+  echo "usage: publish-sing-box-config.sh STATE_DIR FINAL_CONFIG COREUTILS_BIN" >&2
+  exit 64
+fi
+
+state_dir="$1"
+final_config="$2"
+coreutils_bin="$3"
+
+for utility in install mktemp rm cat chmod mv; do
+  if [ ! -x "$coreutils_bin/$utility" ]; then
+    echo "missing required coreutils binary: $utility" >&2
+    exit 1
+  fi
+done
+
+if [ "$final_config" != "$state_dir/config.json" ]; then
+  echo "refusing unexpected final config path" >&2
+  exit 1
+fi
+if [ -L "$state_dir" ]; then
+  echo "refusing symlink state directory" >&2
+  exit 1
+fi
+if [ -e "$state_dir" ] && [ ! -d "$state_dir" ]; then
+  echo "refusing non-directory state path" >&2
+  exit 1
+fi
+
+"$coreutils_bin/install" -d -m 0700 "$state_dir"
+
+if [ -L "$final_config" ] ||
+  { [ -e "$final_config" ] && [ ! -f "$final_config" ]; }; then
+  echo "refusing non-regular final config" >&2
+  exit 1
+fi
+
+umask 077
+tmp="$("$coreutils_bin/mktemp" "$state_dir/.config.json.XXXXXX")"
+cleanup() {
+  "$coreutils_bin/rm" -f "$tmp"
+}
+trap cleanup EXIT
+
+"$coreutils_bin/cat" >"$tmp"
+"$coreutils_bin/chmod" 0600 "$tmp"
+"$coreutils_bin/mv" -Tf -- "$tmp" "$final_config"
+trap - EXIT
+```
+
+`sing-box.nix` 将该脚本作为普通 Nix Store 输入引用。在同一个模块中加入顺序晚于 sops-nix `mkAfter` 的 postActivation。root 只验证 `/run/secrets` 中的候选文件，随后通过标准输入把内容交给降权后的发布助手：
 
 ```nix
 system.activationScripts.postActivation.text = lib.mkOrder 2000 ''
@@ -656,27 +713,16 @@ system.activationScripts.postActivation.text = lib.mkOrder 2000 ''
   final_config=${lib.escapeShellArg finalConfig}
   candidate=${lib.escapeShellArg candidate}
 
-  ${pkgs.coreutils}/bin/install -d -m 0700 -o ${lib.escapeShellArg user} -g staff "$state_dir"
-  tmp="$(${pkgs.coreutils}/bin/mktemp "$state_dir/.config.json.XXXXXX")"
-  cleanup() {
-    ${pkgs.coreutils}/bin/rm -f "$tmp"
-  }
-  trap cleanup EXIT
-
-  ${pkgs.coreutils}/bin/install \
-    -m 0600 \
-    -o ${lib.escapeShellArg user} \
-    -g staff \
-    "$candidate" \
-    "$tmp"
-  ${pkgs.jq}/bin/jq -e . "$tmp" >/dev/null
-  ${pkgs.sing-box}/bin/sing-box check -c "$tmp"
-  ${pkgs.coreutils}/bin/mv -f "$tmp" "$final_config"
-  trap - EXIT
+  ${pkgs.jq}/bin/jq -e . "$candidate" >/dev/null
+  ${pkgs.sing-box}/bin/sing-box check -c "$candidate"
+  ${pkgs.coreutils}/bin/cat "$candidate" \
+    | /usr/bin/sudo -u ${lib.escapeShellArg user} -- \
+        ${pkgs.bash}/bin/bash ${./scripts/publish-sing-box-config.sh} \
+          "$state_dir" "$final_config" ${pkgs.coreutils}/bin
 '';
 ```
 
-失败时必须保留上一份 `finalConfig`，不得触碰 SFM。
+失败时必须保留上一份 `finalConfig`，不得触碰 SFM。静态测试必须用临时目录实际执行发布助手，并覆盖：正常首次发布、替换已有普通文件、状态目录符号链接、最终路径是目录、最终路径是符号链接。后三种攻击输入必须非零退出、保持链接目标或目录内容不变，且不遗留 `.config.json.*` 临时文件。
 
 - [ ] **Step 4: 评估和构建**
 
@@ -693,7 +739,11 @@ Expected: Nix 评估成功，不需要在构建阶段读取私钥，SOPS 密文�
 - [ ] **Step 5: 提交**
 
 ```bash
-git add flake.nix sing-box.nix tests/sing-box-static.sh
+git add \
+  flake.nix \
+  sing-box.nix \
+  scripts/publish-sing-box-config.sh \
+  tests/sing-box-static.sh
 git commit -m "feat: render sing-box config with sops-nix"
 ```
 
