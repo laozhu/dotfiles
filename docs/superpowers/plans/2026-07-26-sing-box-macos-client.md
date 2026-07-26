@@ -166,21 +166,21 @@ git commit -m "feat: define sing-box macOS dependencies"
 **Interfaces:**
 - Consumes: 旧配置中四个实际出站及本机 `age-keygen`、`sops`。
 - Produces: 通用 dotfiles age recipient 和以下 18 个 SOPS key path：
-  - `sing-box/singapore/vless/server`
+  - `sing-box/singapore/server-hostname`
+  - `sing-box/singapore/server-ip`
   - `sing-box/singapore/vless/uuid`
   - `sing-box/singapore/vless/tls-server-name`
   - `sing-box/singapore/vless/reality-public-key`
   - `sing-box/singapore/vless/reality-short-id`
-  - `sing-box/singapore/hysteria2/server`
   - `sing-box/singapore/hysteria2/password`
   - `sing-box/singapore/hysteria2/obfs-password`
   - `sing-box/singapore/hysteria2/tls-server-name`
-  - `sing-box/usa/vless/server`
+  - `sing-box/usa/server-hostname`
+  - `sing-box/usa/server-ip`
   - `sing-box/usa/vless/uuid`
   - `sing-box/usa/vless/tls-server-name`
   - `sing-box/usa/vless/reality-public-key`
   - `sing-box/usa/vless/reality-short-id`
-  - `sing-box/usa/hysteria2/server`
   - `sing-box/usa/hysteria2/password`
   - `sing-box/usa/hysteria2/obfs-password`
   - `sing-box/usa/hysteria2/tls-server-name`
@@ -257,33 +257,41 @@ age_recipient="$(
 mkdir -p secrets
 jq '
   def ob($tag): first(.outbounds[] | select(.tag == $tag));
+  (.dns.servers[] | select(.type == "hosts").predefined) as $hosts
+  | if
+      ob("🇸🇬 aws-singapore-vless").server != ob("🇸🇬 aws-singapore-hy2").server or
+      ob("🇺🇸 racknerd-us-vless").server != ob("🇺🇸 racknerd-us-hy2").server
+    then error("protocol endpoints differ within a region")
+    else .
+    end
+  |
   {
     "sing-box": {
       singapore: {
+        "server-hostname": ob("🇸🇬 aws-singapore-vless").server,
+        "server-ip": $hosts[ob("🇸🇬 aws-singapore-vless").server],
         vless: {
-          server: ob("🇸🇬 aws-singapore-vless").server,
           uuid: ob("🇸🇬 aws-singapore-vless").uuid,
           "tls-server-name": ob("🇸🇬 aws-singapore-vless").tls.server_name,
           "reality-public-key": ob("🇸🇬 aws-singapore-vless").tls.reality.public_key,
           "reality-short-id": ob("🇸🇬 aws-singapore-vless").tls.reality.short_id
         },
         hysteria2: {
-          server: ob("🇸🇬 aws-singapore-hy2").server,
           password: ob("🇸🇬 aws-singapore-hy2").password,
           "obfs-password": ob("🇸🇬 aws-singapore-hy2").obfs.password,
           "tls-server-name": ob("🇸🇬 aws-singapore-hy2").tls.server_name
         }
       },
       usa: {
+        "server-hostname": ob("🇺🇸 racknerd-us-vless").server,
+        "server-ip": $hosts[ob("🇺🇸 racknerd-us-vless").server],
         vless: {
-          server: ob("🇺🇸 racknerd-us-vless").server,
           uuid: ob("🇺🇸 racknerd-us-vless").uuid,
           "tls-server-name": ob("🇺🇸 racknerd-us-vless").tls.server_name,
           "reality-public-key": ob("🇺🇸 racknerd-us-vless").tls.reality.public_key,
           "reality-short-id": ob("🇺🇸 racknerd-us-vless").tls.reality.short_id
         },
         hysteria2: {
-          server: ob("🇺🇸 racknerd-us-hy2").server,
           password: ob("🇺🇸 racknerd-us-hy2").password,
           "obfs-password": ob("🇺🇸 racknerd-us-hy2").obfs.password,
           "tls-server-name": ob("🇺🇸 racknerd-us-hy2").tls.server_name
@@ -327,8 +335,10 @@ sops filestatus secrets/sing-box.yaml | jq -e '.encrypted == true'
 sops decrypt --output-type json secrets/sing-box.yaml \
   | jq -e '
       .["sing-box"].singapore.vless.uuid != null and
+      .["sing-box"].singapore["server-ip"] != null and
       .["sing-box"].singapore.hysteria2.password != null and
       .["sing-box"].usa.vless.uuid != null and
+      .["sing-box"].usa["server-ip"] != null and
       .["sing-box"].usa.hysteria2.password != null
     ' >/dev/null
 if rg -n 'AGE-SECRET-KEY-' . \
@@ -337,7 +347,7 @@ if rg -n 'AGE-SECRET-KEY-' . \
 fi
 ```
 
-Expected: 密文状态为 true，四个核心字段存在，仓库中没有 age 私钥或已知明文。
+Expected: 密文状态为 true，六个核心字段存在，仓库中没有 age 私钥或已知明文。
 
 - [ ] **Step 8: 提交**
 
@@ -389,7 +399,7 @@ jq -e '
 
 还必须断言没有 `experimental.clash_api`、没有 Web Dashboard 字段、三个远程 rule-set 的 `download_detour` 均为通用 `proxy`，并确认秘密映射的 key path 与 SOPS 解密后叶子路径完全一致。三个自定义 inline rule-set 必须各包含且仅包含一个初始哨兵规则，精确匹配保留域名 `sing-box-placeholder.invalid`。
 
-模板标记计数也必须固定：四个 `*_SERVER__` 标记各出现两次，一次用于物理出站，一次用于共享的 `proxy-server` inline rule-set；其余 14 个标记各出现一次。这样既能复用加密的服务器 IP，又能防止无意重复。
+模板标记计数也必须固定：两个 `*_SERVER_HOSTNAME__` 标记各出现四次，分别用于两个物理出站、`hosts-dns` 映射键和共享的 `proxy-server` inline rule-set；其余 16 个标记各出现一次。这样既能复用加密的服务器端点，又能防止无意重复。
 
 Run:
 
@@ -405,21 +415,21 @@ Expected: 因模板和映射文件不存在而失败。
 
 ```json
 {
-  "__SOPS_SG_VLESS_SERVER__": "sing-box/singapore/vless/server",
+  "__SOPS_SG_SERVER_HOSTNAME__": "sing-box/singapore/server-hostname",
+  "__SOPS_SG_SERVER_IP__": "sing-box/singapore/server-ip",
   "__SOPS_SG_VLESS_UUID__": "sing-box/singapore/vless/uuid",
   "__SOPS_SG_VLESS_TLS_SERVER_NAME__": "sing-box/singapore/vless/tls-server-name",
   "__SOPS_SG_VLESS_REALITY_PUBLIC_KEY__": "sing-box/singapore/vless/reality-public-key",
   "__SOPS_SG_VLESS_REALITY_SHORT_ID__": "sing-box/singapore/vless/reality-short-id",
-  "__SOPS_SG_HY2_SERVER__": "sing-box/singapore/hysteria2/server",
   "__SOPS_SG_HY2_PASSWORD__": "sing-box/singapore/hysteria2/password",
   "__SOPS_SG_HY2_OBFS_PASSWORD__": "sing-box/singapore/hysteria2/obfs-password",
   "__SOPS_SG_HY2_TLS_SERVER_NAME__": "sing-box/singapore/hysteria2/tls-server-name",
-  "__SOPS_US_VLESS_SERVER__": "sing-box/usa/vless/server",
+  "__SOPS_US_SERVER_HOSTNAME__": "sing-box/usa/server-hostname",
+  "__SOPS_US_SERVER_IP__": "sing-box/usa/server-ip",
   "__SOPS_US_VLESS_UUID__": "sing-box/usa/vless/uuid",
   "__SOPS_US_VLESS_TLS_SERVER_NAME__": "sing-box/usa/vless/tls-server-name",
   "__SOPS_US_VLESS_REALITY_PUBLIC_KEY__": "sing-box/usa/vless/reality-public-key",
   "__SOPS_US_VLESS_REALITY_SHORT_ID__": "sing-box/usa/vless/reality-short-id",
-  "__SOPS_US_HY2_SERVER__": "sing-box/usa/hysteria2/server",
   "__SOPS_US_HY2_PASSWORD__": "sing-box/usa/hysteria2/password",
   "__SOPS_US_HY2_OBFS_PASSWORD__": "sing-box/usa/hysteria2/obfs-password",
   "__SOPS_US_HY2_TLS_SERVER_NAME__": "sing-box/usa/hysteria2/tls-server-name"
@@ -431,9 +441,9 @@ Expected: 因模板和映射文件不存在而失败。
 模板必须包含以下结构和顺序：
 
 1. `log`: `level = "info"`、`timestamp = true`。
-2. `dns.servers`: 直连的 AliDNS DoH `223.5.5.5`、经 `proxy` 的 Cloudflare DoH `1.1.1.1`、FakeIP 双栈解析器；TLS server name 分别为 `dns.alidns.com` 和 `cloudflare-dns.com`，不得使用明文 UDP DNS。
+2. `dns.servers`: 直连的 AliDNS DoH `223.5.5.5`、经 `proxy` 的 Cloudflare DoH `1.1.1.1`、把两个加密服务器域名映射到对应固定 IP 的 `hosts-dns`、FakeIP 双栈解析器；TLS server name 分别为 `dns.alidns.com` 和 `cloudflare-dns.com`，不得使用明文 UDP DNS。
 3. FakeIP 地址段固定为 IPv4 `198.18.0.0/15` 和 IPv6 `fc00::/18`。
-4. `dns.rules`: 代理服务器 IP 和私网使用直连 DoH；GFW、OpenAI、Claude、Google Meet 使用代理 DoH；A/AAAA 进入 FakeIP。
+4. `dns.rules`: `proxy-server` 规则集使用 `hosts-dns`，私网使用直连 DoH；GFW、OpenAI、Claude、Google Meet 使用代理 DoH；A/AAAA 进入 FakeIP。
 5. `dns.strategy = "prefer_ipv4"`，同时保留 IPv6。
 6. `tun-in`: `address = ["172.19.0.1/30", "fdfe:dcba:9876::1/126"]`、`auto_route = true`、`strict_route = true`、`stack = "mixed"`。
 7. `mixed-in`: 只监听 `127.0.0.1:7777`。
@@ -445,7 +455,7 @@ Expected: 因模板和映射文件不存在而失败。
 13. `direct` 出站。
 14. `route.default_domain_resolver = "proxy-dns"`，避免 1.13.14 的缺失解析器错误，并让未被更具体 DNS 规则覆盖的域名继续使用防污染的代理 DoH。路由规则顺序严格为 sniff、DNS hijack、代理服务器目标直连、私网直连、`custom-reject`、`custom-direct`、`custom-proxy`、OpenAI、Claude、Google Meet UDP、Google Meet 通用、GFWList、final direct。
 15. `custom-reject`、`custom-direct` 和 `custom-proxy` 是可编辑的 inline rule-set。sing-box 1.13.14 拒绝空的 inline rule-set，因此三个 `rules` 数组初始都包含一个精确匹配保留域名 `sing-box-placeholder.invalid` 的无害哨兵规则。用户以后向对应 `rules` 数组追加自定义规则，不要删除哨兵。
-15.1. `proxy-server` 是包含四个加密服务器 IP 的 inline rule-set；DNS 规则和路由规则都引用它，避免在两处重复保存服务器列表。
+15.1. `proxy-server` 是包含两个加密服务器域名的 inline rule-set；DNS 规则引用它并交给 `hosts-dns` 返回加密保存的固定 IP，路由规则引用它并强制直连，避免启动递归和 DNS 污染。
 16. Google Meet inline rule-set 包含 `meet.google.com`、`meetings.googleapis.com`、`stun.l.google.com`、`workspace.turns.goog`、`meet.turns.goog`，以及 `74.125.250.0/24`、`142.250.82.0/24`、`2001:4860:4864:5::/64`、`2001:4860:4864:6::/64`。UDP `3478` 和 `19302:19309` 在该服务规则中经 `proxy`。
 17. 远程规则集只保留 GFWList、OpenAI 和 Claude，URL 分别为 MetaCubeX 的 `gfw.srs`、`openai.srs` 和 `anthropic.srs`，更新间隔均为 `24h`。
 18. GFWList URL 固定为 `https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/gfw.srs`。
