@@ -944,7 +944,7 @@ Run:
 
 ```bash
 test -L "$HOME/.config/sing-box/config.json"
-test "$(readlink "$HOME/.config/sing-box/config.json")" \
+test "$(realpath "$HOME/.config/sing-box/config.json")" \
   = "$HOME/.local/state/sing-box/config.json"
 test "$(stat -f '%Lp' "$HOME/.local/state/sing-box")" = "700"
 test "$(stat -f '%Lp' "$HOME/.local/state/sing-box/config.json")" = "600"
@@ -952,7 +952,7 @@ jq -e . "$HOME/.config/sing-box/config.json" >/dev/null
 sing-box check -c "$HOME/.config/sing-box/config.json"
 ```
 
-Expected: 全部通过，不打印配置正文。
+Expected: 全部通过，不打印配置正文。Home Manager 可以通过 Nix Store 生成多跳符号链接，但最终解析目标必须精确等于状态文件。
 
 - [ ] **Step 5: 验证失败保留上一版本**
 
