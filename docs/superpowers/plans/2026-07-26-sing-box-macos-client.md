@@ -453,7 +453,9 @@ Expected: 因模板和映射文件不存在而失败。
 10. `singapore` 和 `usa`: 各自 URLTest 两种协议，间隔 `10m`，`interrupt_exist_connections = false`。
 11. 两个 VLESS: `flow = "xtls-rprx-vision"`、REALITY、uTLS `chrome`，并显式设置 `domain_resolver = "hosts-dns"`。
 12. 两个 Hysteria2: 保留旧配置的端口、上下行带宽和 Salamander obfs，并显式设置 `domain_resolver = "hosts-dns"`。
-13. `direct` 出站。
+13. `direct` 出站显式设置 `domain_resolver = "direct-dns"`，确保 FakeIP 还原后的
+    国内直连域名使用 AliDNS 获取适合当前网络的候选地址，不继承全局
+    `proxy-dns`。
 14. `route.default_domain_resolver = "proxy-dns"`，避免 1.13.14 的缺失解析器错误，并让未被更具体 DNS 规则覆盖的域名继续使用防污染的代理 DoH；四个物理代理出站用自己的 `hosts-dns` 覆盖它，避免启动递归。`route.auto_detect_interface = true`，让 macOS TUN 出站绑定默认物理接口，防止重新进入 TUN。路由规则顺序严格为 sniff、DNS hijack、代理服务器目标直连、私网直连、`custom-reject`、`custom-direct`、`custom-proxy`、OpenAI、Claude、Google Meet UDP、Google Meet 通用、GFWList、final direct。
 15. `custom-reject`、`custom-direct` 和 `custom-proxy` 是可编辑的 inline rule-set。sing-box 1.13.14 拒绝空的 inline rule-set，因此三个 `rules` 数组初始都包含一个精确匹配保留域名 `sing-box-placeholder.invalid` 的无害哨兵规则。用户以后向对应 `rules` 数组追加自定义规则，不要删除哨兵。
 15.1. `proxy-server` 是包含两个加密服务器域名的 inline rule-set；DNS 规则引用它并交给 `hosts-dns` 返回加密保存的固定 IP，路由规则引用它并强制直连，避免启动递归和 DNS 污染。

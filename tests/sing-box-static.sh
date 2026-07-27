@@ -630,7 +630,8 @@ jq -e '
   ) and
   first(.outbounds[] | select(.tag == "direct")) == {
     "type": "direct",
-    "tag": "direct"
+    "tag": "direct",
+    "domain_resolver": "direct-dns"
   }
 ' "$config" >/dev/null
 

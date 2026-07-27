@@ -223,7 +223,8 @@
     },
     {
       "type": "direct",
-      "tag": "direct"
+      "tag": "direct",
+      "domain_resolver": "direct-dns"
     }
   ],
   "route": {

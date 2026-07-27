@@ -127,6 +127,12 @@ SFM VPN 状态和 `7777` 监听共同识别 SFM 接管的 TUN。
 - Google Meet 的 TCP 与 UDP 流量都走 `proxy`。
 - DNS 请求被 `tun-in` 劫持到 sing-box，没有绕过 TUN 的系统 UDP DNS 泄漏。
 
+国内直连域名由 `direct` 出站显式使用 `direct-dns`（AliDNS）完成实际拨号
+解析；GFWList、OpenAI、Claude 和 Google Meet 等代理目标使用经 `proxy`
+连接的 Cloudflare DoH。不要删除 `direct.domain_resolver`，否则 FakeIP 还原
+后的国内域名会继承全局代理 DNS，可能获得不适合国内直连的候选地址并表现为
+TLS 建连缓慢。
+
 选择测试域名时避免账号、工作资源和私有服务。出口 IP 只用于核对线路，不要
 把完整结果写入仓库、工单或公开日志。
 
