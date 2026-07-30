@@ -35,4 +35,14 @@ if [ "$update_inputs" = true ]; then
   nix flake update --flake "$DIR"
 fi
 
+homebrew_cask_source="$(
+  DOTFILES_REBUILD_FLAKE="path:$DIR" nix eval \
+    --raw \
+    --impure \
+    --expr \
+    '(builtins.getFlake (builtins.getEnv "DOTFILES_REBUILD_FLAKE")).inputs.homebrew-cask.outPath'
+)"
+"$DIR/scripts/prefetch-uu-booster.sh" \
+  "$homebrew_cask_source/Casks/u/uu-booster.rb"
+
 exec sudo darwin-rebuild switch --flake "$DIR#mac"

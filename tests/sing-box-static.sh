@@ -207,6 +207,141 @@ fi
 trap - EXIT
 cleanup_bootstrap_tests
 
+uu_test_root="$(mktemp -d)"
+cleanup_uu_tests() {
+  rm -rf "$uu_test_root"
+}
+trap cleanup_uu_tests EXIT
+
+uu_prefetch="$repo_dir/scripts/prefetch-uu-booster.sh"
+uu_test_bin="$uu_test_root/bin"
+uu_test_cache_root="$uu_test_root/cache"
+uu_test_cache="$uu_test_cache_root/downloads/cf06028bd51147d9ef0f42c622fd0dd7bea21924443c072454e4bdc37b3ba804--UU-macOS-2.8.14.dmg"
+uu_test_dmg="$uu_test_root/signed.dmg"
+uu_test_cask="$uu_test_root/uu-booster.rb"
+uu_test_curl_log="$uu_test_root/curl.log"
+mkdir -p "$uu_test_bin" "$uu_test_cache_root"
+printf 'signed dmg fixture\n' >"$uu_test_dmg"
+cat >"$uu_test_cask" <<'RUBY'
+cask "uu-booster" do
+  version "2.8.14"
+  sha256 "eb030da6c6c30b0fc16952274fe661c5b4651f0371061379773cd6ca848bee3b"
+  url "https://uu.gdl.netease.com/UU-macOS-#{version}.dmg"
+end
+RUBY
+
+cat >"$uu_test_bin/brew" <<'SH'
+#!/usr/bin/env bash
+case "$*" in
+  "--cache")
+    printf '%s\n' "$UU_TEST_CACHE_ROOT"
+    ;;
+  *)
+    exit 64
+    ;;
+esac
+SH
+cat >"$uu_test_bin/curl" <<'SH'
+#!/usr/bin/env bash
+output=""
+url=""
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --output)
+      output="$2"
+      shift 2
+      ;;
+    -*)
+      shift
+      ;;
+    *)
+      url="$1"
+      shift
+      ;;
+  esac
+done
+printf '%s\n' "$url" >>"$UU_TEST_CURL_LOG"
+signed_url="${UU_TEST_SIGNED_URL:-https://uu.gdl.netease.com/UU-macOS-2.8.14.dmg?type=pc&key1=test-signature&key2=test-key}"
+case "$url" in
+  "https://adl.netease.com/d/g/uu/c/uumac?type=pc")
+    printf 'var pc_link = "%s";\n' "$signed_url"
+    ;;
+  *)
+    if [ "$url" = "$signed_url" ]; then
+      cp "$UU_TEST_DMG" "$output"
+    else
+      exit 65
+    fi
+    ;;
+esac
+SH
+chmod 0755 "$uu_test_bin/brew" "$uu_test_bin/curl"
+
+export UU_TEST_CACHE_ROOT="$uu_test_cache_root"
+export UU_TEST_CURL_LOG="$uu_test_curl_log"
+export UU_TEST_DMG="$uu_test_dmg"
+PATH="$uu_test_bin:/usr/bin:/bin" \
+  bash "$uu_prefetch" "$uu_test_cask" >/dev/null
+if ! cmp -s "$uu_test_dmg" "$uu_test_cache"; then
+  echo "UU Booster prefetch did not populate Homebrew's verified cache" >&2
+  exit 1
+fi
+
+: >"$uu_test_curl_log"
+PATH="$uu_test_bin:/usr/bin:/bin" \
+  bash "$uu_prefetch" "$uu_test_cask" >/dev/null
+if [ -s "$uu_test_curl_log" ]; then
+  echo "UU Booster prefetch accessed the network for a valid cache entry" >&2
+  exit 1
+fi
+
+rm -f "$uu_test_cache"
+foreign_output="$uu_test_root/foreign-output"
+if UU_TEST_SIGNED_URL='https://downloads.example.test/UU-macOS-2.8.14.dmg?type=pc&key1=test&key2=test' \
+  PATH="$uu_test_bin:/usr/bin:/bin" \
+  bash "$uu_prefetch" "$uu_test_cask" >"$foreign_output" 2>&1; then
+  echo "UU Booster prefetch accepted a non-NetEase download URL" >&2
+  exit 1
+fi
+if [ -e "$uu_test_cache" ]; then
+  echo "UU Booster prefetch cached a download from an untrusted host" >&2
+  exit 1
+fi
+
+version_output="$uu_test_root/version-output"
+if UU_TEST_SIGNED_URL='https://uu.gdl.netease.com/UU-macOS-9.9.9.dmg?type=pc&key1=test&key2=test' \
+  PATH="$uu_test_bin:/usr/bin:/bin" \
+  bash "$uu_prefetch" "$uu_test_cask" >"$version_output" 2>&1; then
+  echo "UU Booster prefetch accepted a mismatched download version" >&2
+  exit 1
+fi
+
+previous_cache="$uu_test_root/previous-cache"
+bad_dmg="$uu_test_root/bad.dmg"
+printf 'previous cache\n' >"$previous_cache"
+printf 'bad download\n' >"$bad_dmg"
+mkdir -p "$(dirname "$uu_test_cache")"
+cp "$previous_cache" "$uu_test_cache"
+checksum_output="$uu_test_root/checksum-output"
+if UU_TEST_DMG="$bad_dmg" \
+  PATH="$uu_test_bin:/usr/bin:/bin" \
+  bash "$uu_prefetch" "$uu_test_cask" >"$checksum_output" 2>&1; then
+  echo "UU Booster prefetch accepted a mismatched SHA-256" >&2
+  exit 1
+fi
+if ! cmp -s "$previous_cache" "$uu_test_cache"; then
+  echo "UU Booster prefetch overwrote the previous cache before verification" >&2
+  exit 1
+fi
+if find "$(dirname "$uu_test_cache")" -name '*.incomplete.*' -print -quit |
+  grep -q .; then
+  echo "UU Booster prefetch left an incomplete download behind" >&2
+  exit 1
+fi
+
+trap - EXIT
+cleanup_uu_tests
+
 rebuild_test_root="$(mktemp -d)"
 cleanup_rebuild_tests() {
   rm -rf "$rebuild_test_root"
@@ -219,10 +354,12 @@ rebuild_fixture_home="$rebuild_test_root/home"
 rebuild_fixture_real="$(cd "$rebuild_test_root" && pwd -P)"
 rebuild_home_repo="$rebuild_test_root/home-repo"
 rebuild_log="$rebuild_test_root/operations.log"
+rebuild_cask_source="$rebuild_test_root/homebrew-cask"
 mkdir -p \
   "$rebuild_fixture_bin" \
   "$rebuild_fixture_home" \
   "$rebuild_home_repo" \
+  "$rebuild_cask_source/Casks/u" \
   "$rebuild_test_root/scripts"
 ln -s "$rebuild_home_repo" "$rebuild_fixture_home/.dotfiles"
 test "$(readlink "$rebuild_fixture_home/.dotfiles")" = "$rebuild_home_repo"
@@ -240,11 +377,20 @@ fixture_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 printf 'config check %s\n' "$fixture_dir" >>"$REBUILD_TEST_LOG"
 exit "${REBUILD_CONFIG_STATUS:-0}"
 SH
+cat >"$rebuild_test_root/scripts/prefetch-uu-booster.sh" <<'SH'
+#!/usr/bin/env bash
+fixture_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+printf 'UU prefetch %s %s\n' "$fixture_dir" "$1" >>"$REBUILD_TEST_LOG"
+exit "${REBUILD_UU_STATUS:-0}"
+SH
 cat >"$rebuild_fixture_bin/nix" <<'SH'
 #!/usr/bin/env bash
 printf 'nix' >>"$REBUILD_TEST_LOG"
 printf ' %s' "$@" >>"$REBUILD_TEST_LOG"
 printf '\n' >>"$REBUILD_TEST_LOG"
+if [ "$1" = "eval" ]; then
+  printf '%s' "$REBUILD_CASK_SOURCE"
+fi
 exit "${REBUILD_NIX_STATUS:-0}"
 SH
 cat >"$rebuild_fixture_bin/git" <<'SH'
@@ -262,11 +408,13 @@ SH
 chmod 0755 \
   "$rebuild_test_root/scripts/check-sops-age-key.sh" \
   "$rebuild_test_root/scripts/check-sing-box-config.sh" \
+  "$rebuild_test_root/scripts/prefetch-uu-booster.sh" \
   "$rebuild_fixture_bin/nix" \
   "$rebuild_fixture_bin/git" \
   "$rebuild_fixture_bin/sudo"
 
 export REBUILD_TEST_LOG="$rebuild_log"
+export REBUILD_CASK_SOURCE="$rebuild_cask_source"
 rebuild_test_path="$rebuild_fixture_bin:/usr/bin:/bin"
 invalid_rebuild_output="$rebuild_test_root/invalid-output"
 : >"$rebuild_log"
@@ -294,6 +442,8 @@ expected_rebuild="$rebuild_test_root/expected-rebuild"
 printf '%s\n' \
   "identity preflight $rebuild_fixture_real" \
   "config check $rebuild_fixture_real" \
+  "nix eval --raw --impure --expr (builtins.getFlake (builtins.getEnv \"DOTFILES_REBUILD_FLAKE\")).inputs.homebrew-cask.outPath" \
+  "UU prefetch $rebuild_fixture_real $rebuild_cask_source/Casks/u/uu-booster.rb" \
   "sudo darwin-rebuild switch --flake $rebuild_fixture_real#mac" \
   >"$expected_rebuild"
 assert_rebuild_operations "$expected_rebuild"
@@ -303,6 +453,8 @@ printf '%s\n' \
   "identity preflight $rebuild_fixture_real" \
   "config check $rebuild_fixture_real" \
   "nix flake update --flake $rebuild_fixture_real" \
+  "nix eval --raw --impure --expr (builtins.getFlake (builtins.getEnv \"DOTFILES_REBUILD_FLAKE\")).inputs.homebrew-cask.outPath" \
+  "UU prefetch $rebuild_fixture_real $rebuild_cask_source/Casks/u/uu-booster.rb" \
   "sudo darwin-rebuild switch --flake $rebuild_fixture_real#mac" \
   >"$expected_update_rebuild"
 assert_rebuild_operations "$expected_update_rebuild" -u
@@ -349,6 +501,28 @@ fi
 test "$rebuild_status" = '32'
 if ! cmp -s "$config_failure_log" "$rebuild_log"; then
   echo "rebuild ran later operations after config failure" >&2
+  exit 1
+fi
+
+uu_failure_log="$rebuild_test_root/expected-uu-failure"
+printf '%s\n' \
+  "identity preflight $rebuild_fixture_real" \
+  "config check $rebuild_fixture_real" \
+  "nix eval --raw --impure --expr (builtins.getFlake (builtins.getEnv \"DOTFILES_REBUILD_FLAKE\")).inputs.homebrew-cask.outPath" \
+  "UU prefetch $rebuild_fixture_real $rebuild_cask_source/Casks/u/uu-booster.rb" \
+  >"$uu_failure_log"
+: >"$rebuild_log"
+if REBUILD_UU_STATUS=34 \
+  HOME="$rebuild_fixture_home" PATH="$rebuild_test_path" \
+  bash "$rebuild_fixture" >/dev/null; then
+  echo "rebuild continued after a failed UU Booster prefetch" >&2
+  exit 1
+else
+  rebuild_status="$?"
+fi
+test "$rebuild_status" = '34'
+if ! cmp -s "$uu_failure_log" "$rebuild_log"; then
+  echo "rebuild switched after a failed UU Booster prefetch" >&2
   exit 1
 fi
 
