@@ -67,6 +67,7 @@
     taps = [
       "homebrew/core"
       "homebrew/cask"
+      "stablyai/orca"
     ];
 
     # 🛑 命令行及 CLI Agent 工具已全部交给 Nix 接管，此处清空
@@ -85,6 +86,11 @@
       "wechat"
       "wechatwebdevtools"
       "wezterm"
+      "orbstack"
+      "logitech-g-hub"
+      "steam"
+      "uu-booster"
+      "stablyai/orca/orca"
     ];
   };
 }

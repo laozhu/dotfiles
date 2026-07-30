@@ -201,6 +201,22 @@
         "type": "github"
       }
     },
+    "orca-tap": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1785404627,
+        "narHash": "sha256-UAFn2IsTUnxNThayj50FoyCBWhfDDA3rUJ6vu+FtXyQ=",
+        "owner": "stablyai",
+        "repo": "homebrew-orca",
+        "rev": "637f1c57e7a0f8cc616cf9a19aa601b6566064bd",
+        "type": "github"
+      },
+      "original": {
+        "owner": "stablyai",
+        "repo": "homebrew-orca",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "darwin": "darwin",
@@ -210,6 +226,7 @@
         "llm-agents": "llm-agents",
         "nix-homebrew": "nix-homebrew",
         "nixpkgs": "nixpkgs",
+        "orca-tap": "orca-tap",
         "sops-nix": "sops-nix"
       }
     },

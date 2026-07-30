@@ -91,7 +91,7 @@ Run:
 ```bash
 nix flake metadata --offline
 nix eval --offline --raw '.#darwinConfigurations.mac.config.homebrew.casks' --apply 'xs: builtins.concatStringsSep "\n" xs'
-nix eval --offline --raw '.#darwinConfigurations.mac.config.homebrew.taps' --apply 'xs: builtins.concatStringsSep "\n" xs'
+nix eval --offline --raw '.#darwinConfigurations.mac.config.homebrew.taps' --apply 'xs: builtins.concatStringsSep "\n" (map (x: if builtins.isString x then x else x.name) xs)'
 ```
 
 Expected:
