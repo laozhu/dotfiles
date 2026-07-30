@@ -45,6 +45,8 @@ in
     pkgs.nodejs_26
     pkgs.pnpm
     pkgs.bun
+    pkgs.uv
+    pkgs.bws
 
     # -----------------------------------------------------------
     # 🤖 AI TUI Agents & 多开工具 (通过 llm-agents.nix 统一声明式管理)
