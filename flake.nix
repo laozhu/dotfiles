@@ -74,7 +74,7 @@
             taps = {
               "homebrew/homebrew-core" = inputs.homebrew-core;
               "homebrew/homebrew-cask" = inputs.homebrew-cask;
-              "stablyai/orca" = inputs.orca-tap;
+              "stablyai/homebrew-orca" = inputs.orca-tap;
             };
             mutableTaps = false;
           };

@@ -561,6 +561,15 @@ trap - EXIT
 cleanup_rebuild_tests
 
 grep -Fq 'darwinConfigurations.mac' "$repo_dir/flake.nix"
+nix eval --json \
+  "$repo_dir#darwinConfigurations.mac.config.nix-homebrew.taps" |
+  jq -e '
+    keys == [
+      "homebrew/homebrew-cask",
+      "homebrew/homebrew-core",
+      "stablyai/homebrew-orca"
+    ]
+  ' >/dev/null
 if grep -Fq 'git add .' "$repo_dir/rebuild.sh"; then
   echo "rebuild must not stage repository changes" >&2
   exit 1
