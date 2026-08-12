@@ -43,16 +43,25 @@ else
   echo "    flake.nix already matches \"$REAL_USER\", nothing to do."
 fi
 
+echo "==> Step 4: install Rosetta 2 on Apple Silicon"
+if [ "$(uname -m)" != "arm64" ]; then
+  echo "    not an Apple Silicon Mac, skipping"
+elif pkgutil --pkg-info com.apple.pkg.RosettaUpdateAuto >/dev/null 2>&1; then
+  echo "    Rosetta 2 already installed, skipping"
+else
+  sudo /usr/sbin/softwareupdate --install-rosetta --agree-to-license
+fi
+
 # sudo resets PATH to a secure default that excludes /nix/.../bin, so a
 # freshly installed `nix` would not be found under sudo even though it's
 # on PATH here. Resolve the absolute path first and invoke that instead.
 NIX_BIN="$(command -v nix)"
 
-echo "==> Step 4: validate the SOPS age identity"
+echo "==> Step 5: validate the SOPS age identity"
 "$NIX_BIN" shell nixpkgs#age nixpkgs#sops --command \
   "$DIR/scripts/check-sops-age-key.sh"
 
-echo "==> Step 5: first darwin-rebuild switch (pinned to nix-darwin-26.05)"
+echo "==> Step 6: first darwin-rebuild switch (pinned to nix-darwin-26.05)"
 # darwin-rebuild doesn't exist yet on a fresh machine, so run it straight
 # from the flake this once. After this, rebuild.sh works normally.
 # This fetches the darwin-rebuild tool from the nix-darwin-26.05 release branch,
