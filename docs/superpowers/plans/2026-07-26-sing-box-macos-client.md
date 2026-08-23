@@ -38,7 +38,7 @@
 - `scripts/check-sops-age-key.sh`: 检查 identity 路径、权限、recipient 和解密能力。
 - `scripts/render-sing-box-config.mjs`: 仅通过 stdin 接收解密后的 JSON，在内存中完成测试渲染并输出到 stdout。
 - `scripts/check-sing-box-config.sh`: 通过管道渲染和校验配置，不产生额外明文文件。
-- `tests/sing-box-static.sh`: 检查模板标签、规则顺序、秘密覆盖、包和单实例约束。
+- `tests/run.sh` 与 `tests/*.sh`: 按被测对象检查 bootstrap、rebuild、模板、规则、秘密覆盖、包和单实例约束。
 - `bootstrap.sh`: 在首次 Darwin switch 前执行 identity 预检并固定使用 `#mac`。
 - `rebuild.sh`: 支持 `--update`，执行预检，不再自动 `git add .`，固定使用 `#mac`。
 - `docs/sing-box.md`: 中文恢复、修改、重建、SFM 导入、切换和排障手册。
@@ -405,7 +405,7 @@ jq -e '
 Run:
 
 ```bash
-bash tests/sing-box-static.sh
+bash tests/run.sh
 ```
 
 Expected: 因模板和映射文件不存在而失败。
@@ -549,7 +549,7 @@ sops decrypt --output-type json "$encrypted_secrets" \
 Run:
 
 ```bash
-bash tests/sing-box-static.sh
+bash tests/run.sh
 bash scripts/check-sing-box-config.sh
 ```
 
@@ -749,7 +749,7 @@ system.activationScripts.postActivation.text = lib.mkOrder 2000 ''
 Run:
 
 ```bash
-bash tests/sing-box-static.sh
+bash tests/run.sh
 nix flake check
 nix build .#darwinConfigurations.mac.system --dry-run
 ```
@@ -873,14 +873,14 @@ Run:
 shellcheck bootstrap.sh rebuild.sh \
   scripts/check-sops-age-key.sh \
   scripts/check-sing-box-config.sh
-bash tests/sing-box-static.sh
+bash tests/run.sh
 bash scripts/check-sops-age-key.sh
 bash scripts/check-sing-box-config.sh
 ```
 
 Expected: 全部通过，输出不包含任何秘密。
 
-其中 `bash tests/sing-box-static.sh` 是不依赖真实 identity 的 hermetic 测试；随后两个脚本命令才是当前机器上的显式真实 identity 和解密集成检查。
+其中 `bash tests/run.sh` 是不依赖真实 identity 的 hermetic 测试；随后两个脚本命令才是当前机器上的显式真实 identity 和解密集成检查。
 
 - [ ] **Step 6: 提交**
 
@@ -1117,7 +1117,7 @@ Run:
 ```bash
 git diff --check
 shellcheck bootstrap.sh rebuild.sh scripts/*.sh
-bash tests/sing-box-static.sh
+bash tests/run.sh
 bash scripts/check-sops-age-key.sh
 bash scripts/check-sing-box-config.sh
 nix flake check
