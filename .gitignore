@@ -9,3 +9,7 @@ home/.config/herdr/*.sock
 
 # Local Git worktrees
 .worktrees/
+
+# Pi credentials and Home Manager adoption backups stay local
+/home/.pi/agent/auth.json
+/home/.pi/agent/**/*.backup
