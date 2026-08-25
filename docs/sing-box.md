@@ -133,6 +133,18 @@ SFM VPN 状态和 `7777` 监听共同识别 SFM 接管的 TUN。
 后的国内域名会继承全局代理 DNS，可能获得不适合国内直连的候选地址并表现为
 TLS 建连缓慢。
 
+远程 GFWList、OpenAI 和 Claude 规则集的 `download_detour` 固定为物理出站
+`sg-vless`，而不是 `proxy` selector。首次启动尚无规则缓存时，`proxy` 的默认
+子项 `auto` URLTest 还没有可用的测试结果，不能可靠承担初始化下载；直接使用
+已验证的 TCP 节点可以打破“代理启动依赖规则、规则下载又依赖代理组”的环。
+该设置只影响规则集下载，普通业务流量仍由 `proxy` selector 和 `auto` 选择。
+
+GitHub 主站、Raw 内容和静态资源域名使用内联 `custom-proxy` 规则匹配
+`github.com`、`githubusercontent.com` 和 `githubassets.com` 的所有子域。该规则
+不依赖远程 GFWList，因此即使首次启动尚未下载 GFWList，浏览器的 GitHub HTML、
+CSS、脚本、头像以及 `.srs` 文件请求也会经过 `proxy`。不要把这些域名只放进
+远程规则集，否则规则集下载失败时会再次失去为 GitHub 请求分流的依据。
+
 选择测试域名时避免账号、工作资源和私有服务。出口 IP 只用于核对线路，不要
 把完整结果写入仓库、工单或公开日志。
 
