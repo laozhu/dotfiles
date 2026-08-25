@@ -238,6 +238,7 @@ jq -e '
 ' "$config" >/dev/null
 
 jq -e '
+  . as $config |
   .route.rules == [
     {"action": "sniff"},
     {"protocol": "dns", "action": "hijack-dns"},
@@ -284,7 +285,15 @@ jq -e '
     {
       "type": "inline",
       "tag": "custom-proxy",
-      "rules": [{"domain": "sing-box-placeholder.invalid"}]
+      "rules": [
+        {
+          "domain_suffix": [
+            "github.com",
+            "githubusercontent.com",
+            "githubassets.com"
+          ]
+        }
+      ]
     }
   ] and
   .route.rule_set[4] == {
@@ -311,8 +320,12 @@ jq -e '
   ([.route.rule_set[] | select(.type == "remote")] | length == 3) and
   ([.route.rule_set[] | select(.type == "remote") | .tag] ==
     ["gfwlist", "openai", "claude"]) and
-  ([.route.rule_set[] | select(.type == "remote") | .download_detour] |
-    all(. == "proxy")) and
+  ([.route.rule_set[] | select(.type == "remote")] |
+    all(
+      .download_detour as $detour |
+      (first($config.outbounds[] | select(.tag == $detour)).type) as $type |
+      $type != "selector" and $type != "urltest"
+    )) and
   ([.route.rule_set[] | select(.type == "remote") | .update_interval] |
     all(. == "24h")) and
   ([.route.rule_set[] | select(.type == "remote") | .format] |
