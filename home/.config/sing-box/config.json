@@ -38,11 +38,14 @@
       {
         "type": "fakeip",
         "tag": "fakeip-dns",
-        "inet4_range": "198.18.0.0/15",
-        "inet6_range": "fc00::/18"
+        "inet4_range": "198.18.0.0/15"
       }
     ],
     "rules": [
+      {
+        "query_type": "AAAA",
+        "action": "reject"
+      },
       {
         "rule_set": "proxy-server",
         "server": "hosts-dns"
@@ -61,14 +64,12 @@
         "server": "direct-dns"
       },
       {
-        "query_type": [
-          "A",
-          "AAAA"
-        ],
+        "query_type": "A",
         "server": "fakeip-dns"
       }
     ],
-    "strategy": "prefer_ipv4"
+    "final": "direct-dns",
+    "strategy": "ipv4_only"
   },
   "inbounds": [
     {
@@ -352,7 +353,7 @@
         "tag": "gfwlist",
         "format": "binary",
         "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/gfw.srs",
-        "download_detour": "sg-vless",
+        "download_detour": "proxy",
         "update_interval": "24h"
       },
       {
@@ -360,7 +361,7 @@
         "tag": "openai",
         "format": "binary",
         "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/openai.srs",
-        "download_detour": "sg-vless",
+        "download_detour": "proxy",
         "update_interval": "24h"
       },
       {
@@ -368,7 +369,7 @@
         "tag": "claude",
         "format": "binary",
         "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/anthropic.srs",
-        "download_detour": "sg-vless",
+        "download_detour": "proxy",
         "update_interval": "24h"
       }
     ],

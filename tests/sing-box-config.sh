@@ -23,7 +23,8 @@ jq -e '
 
 jq -e '
   .log == {"level": "info", "timestamp": true} and
-  .dns.strategy == "prefer_ipv4" and
+  .dns.strategy == "ipv4_only" and
+  .dns.final == "direct-dns" and
   ([.dns.servers[].tag] ==
     ["direct-dns", "proxy-dns", "hosts-dns", "fakeip-dns"]) and
   .dns.servers[0] == {
@@ -58,10 +59,13 @@ jq -e '
   .dns.servers[3] == {
     "type": "fakeip",
     "tag": "fakeip-dns",
-    "inet4_range": "198.18.0.0/15",
-    "inet6_range": "fc00::/18"
+    "inet4_range": "198.18.0.0/15"
   } and
   .dns.rules == [
+    {
+      "query_type": "AAAA",
+      "action": "reject"
+    },
     {
       "rule_set": "proxy-server",
       "server": "hosts-dns"
@@ -75,7 +79,7 @@ jq -e '
       "server": "direct-dns"
     },
     {
-      "query_type": ["A", "AAAA"],
+      "query_type": "A",
       "server": "fakeip-dns"
     }
   ]
@@ -320,12 +324,8 @@ jq -e '
   ([.route.rule_set[] | select(.type == "remote")] | length == 3) and
   ([.route.rule_set[] | select(.type == "remote") | .tag] ==
     ["gfwlist", "openai", "claude"]) and
-  ([.route.rule_set[] | select(.type == "remote")] |
-    all(
-      .download_detour as $detour |
-      (first($config.outbounds[] | select(.tag == $detour)).type) as $type |
-      $type != "selector" and $type != "urltest"
-    )) and
+  ([.route.rule_set[] | select(.type == "remote") | .download_detour] |
+    all(. == "proxy")) and
   ([.route.rule_set[] | select(.type == "remote") | .update_interval] |
     all(. == "24h")) and
   ([.route.rule_set[] | select(.type == "remote") | .format] |
