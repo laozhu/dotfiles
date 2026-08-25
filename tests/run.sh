@@ -9,6 +9,7 @@ tests=(
   prefetch-uu-booster.sh
   rebuild.sh
   repository-policy.sh
+  pi-config.sh
   sing-box-config.sh
   render-sing-box-config.sh
   publish-sing-box-config.sh

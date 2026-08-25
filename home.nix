@@ -130,6 +130,14 @@ in
     ".config/sing-box/config.json".source = config.lib.file.mkOutOfStoreSymlink
       "${config.home.homeDirectory}/.local/state/sing-box/config.json";
 
+    # 只接管仓库维护的 Pi 资源，凭证、会话和缓存继续保留在本机
+    ".pi/agent/themes/rose-pine-moon.json".source = config.lib.file.mkOutOfStoreSymlink
+      "${dotfiles}/home/.pi/agent/themes/rose-pine-moon.json";
+    ".pi/agent/extensions/terminal-status-title.js".source = config.lib.file.mkOutOfStoreSymlink
+      "${dotfiles}/home/.pi/agent/extensions/terminal-status-title.js";
+    ".pi/agent/settings.json".source = config.lib.file.mkOutOfStoreSymlink
+      "${dotfiles}/home/.pi/agent/settings.json";
+
     # AI Agents 配置文件注入
     ".claude/settings.json".source      = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.claude/settings.json";
     ".claude/CLAUDE.md".source          = sharedAgentContext;
