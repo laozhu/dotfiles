@@ -143,6 +143,7 @@ in
     ".claude/settings.json".source      = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.claude/settings.json";
     ".claude/CLAUDE.md".source          = claudeContext;
     ".claude/AGENTS.md".source          = sharedAgentContext;
+    ".pi/agent/AGENTS.md".source         = sharedAgentContext;
     ".codex/AGENTS.md".source           = sharedAgentContext;
     ".config/opencode/AGENTS.md".source = sharedAgentContext;
   };
