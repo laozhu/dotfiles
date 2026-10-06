@@ -14,12 +14,41 @@ managed_files="$({
 for managed_path in \
   .pi/agent/themes/rose-pine-moon.json \
   .pi/agent/extensions/terminal-status-title.js \
-  .pi/agent/settings.json; do
+  .pi/agent/settings.json \
+  .claude/CLAUDE.md \
+  .claude/AGENTS.md \
+  .codex/AGENTS.md \
+  .config/opencode/AGENTS.md; do
   if ! grep -Fxq "$managed_path" <<<"$managed_files"; then
     printf 'Home Manager does not manage %s\n' "$managed_path" >&2
     exit 1
   fi
 done
+
+managed_source() {
+  nix eval --raw \
+    "$repo_dir#darwinConfigurations.mac.config.home-manager.users.$primary_user.home.file.\"$1\".source"
+}
+
+claude_wrapper_source="$(managed_source .claude/CLAUDE.md)"
+claude_agents_source="$(managed_source .claude/AGENTS.md)"
+
+if [[ "$claude_wrapper_source" == "$claude_agents_source" ]]; then
+  printf '%s\n' 'Claude wrapper must not point directly at shared AGENTS.md.' >&2
+  exit 1
+fi
+
+diff -u \
+  <(printf '%s\n' \
+    '<!-- Claude Code compatibility bridge. Shared instructions are maintained in AGENTS.md. -->' \
+    '' \
+    '@AGENTS.md') \
+  "$repo_dir/home/CLAUDE.md"
+
+if cmp -s "$repo_dir/home/CLAUDE.md" "$repo_dir/home/AGENTS.md"; then
+  printf '%s\n' 'Claude wrapper must remain separate from shared AGENTS.md.' >&2
+  exit 1
+fi
 
 for local_path in \
   .pi/agent \

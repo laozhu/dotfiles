@@ -5,6 +5,7 @@ let
   
   # 用于 AI 智能体的统一全局上下文规则
   sharedAgentContext = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/AGENTS.md";
+  claudeContext = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/CLAUDE.md";
 
   # 提取当前系统的 llm-agents 包集合
   llmPkgs = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
@@ -140,7 +141,8 @@ in
 
     # AI Agents 配置文件注入
     ".claude/settings.json".source      = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.claude/settings.json";
-    ".claude/CLAUDE.md".source          = sharedAgentContext;
+    ".claude/CLAUDE.md".source          = claudeContext;
+    ".claude/AGENTS.md".source          = sharedAgentContext;
     ".codex/AGENTS.md".source           = sharedAgentContext;
     ".config/opencode/AGENTS.md".source = sharedAgentContext;
   };
