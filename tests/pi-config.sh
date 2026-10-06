@@ -53,6 +53,7 @@ fi
 for local_path in \
   .pi/agent \
   .pi/agent/auth.json \
+  .pi/agent/npm \
   .pi/agent/themes \
   .pi/agent/extensions \
   .pi/agent/models.json; do
@@ -62,8 +63,23 @@ for local_path in \
   fi
 done
 
-jq -e 'type == "object" and (has("packages") | not)' \
-  "$repo_dir/home/.pi/agent/settings.json" >/dev/null
+pi_settings="$repo_dir/home/.pi/agent/settings.json"
+
+jq -e '
+  type == "object" and
+  .packages == [
+    "npm:pi-web-access@0.29.0",
+    "npm:@ryan_nookpi/pi-extension-codex-fast-mode@0.2.7"
+  ] and
+  (has("models") | not) and
+  (has("npmCommand") | not)
+' "$pi_settings" >/dev/null
+
+if jq -er '.packages[]' "$pi_settings" |
+  grep -Eqi 'pi-calm|compaction|@(latest|next)$'; then
+  printf '%s\n' 'Pi settings contain a forbidden or floating package.' >&2
+  exit 1
+fi
 jq -e '.name == "rose-pine-moon" and (.colors | type == "object")' \
   "$repo_dir/home/.pi/agent/themes/rose-pine-moon.json" >/dev/null
 
