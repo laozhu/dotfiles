@@ -155,7 +155,7 @@ git commit -m "fix: isolate Claude agent instructions"
 **Interfaces:**
 - `settings.json.packages` 必须严格等于 `npm:pi-web-access@0.29.0` 与 `npm:@ryan_nookpi/pi-extension-codex-fast-mode@0.2.7`。
 - Home Manager 仍只管理 settings 和两个精确资源文件，不管理 Pi 的 npm 下载目录或认证数据。
-- Pi 0.83 必须能在隔离配置目录中安装并列出两个 package，不读取真实 HOME 中的凭证或会话。
+- Pi 0.83 必须能在隔离配置目录中安装两个 package、验证安装的精确版本，并在不调用 provider 的情况下加载两者的 extension resource；不得读取真实 HOME 中的凭证或会话。
 
 - [ ] **Step 1: 用精确数组断言替换旧的无 packages 断言**
 
@@ -231,7 +231,7 @@ Expected: `Pi configuration tests passed.`
 
 - [ ] **Step 5: 在临时 HOME 中执行一次真实 Pi 0.83 package smoke test**
 
-此步骤允许 Pi 访问 npm，但所有安装结果均写入临时目录。它不加入 `tests/run.sh`，避免日常测试依赖网络。
+此步骤允许 Pi 访问 npm，但所有安装结果均写入临时目录。它不加入 `tests/run.sh`，避免日常测试依赖网络。`pi list` 只列出 settings 中的 source，不安装 package，也不在 `--no-approve` 下加载 extension，因此不能作为本步骤的验证。
 
 Run:
 
@@ -243,40 +243,69 @@ trap 'rm -rf "$pi_smoke_home"' EXIT
 mkdir -p "$pi_smoke_home/.pi/agent"
 cp home/.pi/agent/settings.json "$pi_smoke_home/.pi/agent/settings.json"
 
-(
-  cd "$pi_smoke_home"
-  HOME="$pi_smoke_home" \
-  PI_CODING_AGENT_DIR="$pi_smoke_home/.pi/agent" \
-  PI_CODING_AGENT_SESSION_DIR="$pi_smoke_home/sessions" \
-  PI_TELEMETRY=0 \
-    pi list --no-approve
-) | tee "$pi_smoke_home/pi-list.txt"
+# env -i prevents npm and Pi from inheriting real credential variables.
+pi_env=(
+  env -i
+  PATH="$PATH"
+  HOME="$pi_smoke_home"
+  PI_CODING_AGENT_DIR="$pi_smoke_home/.pi/agent"
+  PI_CODING_AGENT_SESSION_DIR="$pi_smoke_home/sessions"
+  PI_TELEMETRY=0
+  NPM_CONFIG_USERCONFIG="$pi_smoke_home/npmrc"
+  NPM_CONFIG_CACHE="$pi_smoke_home/npm-cache"
+)
 
-grep -Fq 'pi-web-access' "$pi_smoke_home/pi-list.txt"
-grep -Fq 'pi-extension-codex-fast-mode' "$pi_smoke_home/pi-list.txt"
-test ! -e "$pi_smoke_home/.pi/agent/auth.json"
-test ! -e "$pi_smoke_home/sessions"
+"${pi_env[@]}" pi install npm:pi-web-access@0.29.0 --no-approve
+"${pi_env[@]}" pi install npm:@ryan_nookpi/pi-extension-codex-fast-mode@0.2.7 --no-approve
+
+jq -e '.packages == [
+  "npm:pi-web-access@0.29.0",
+  "npm:@ryan_nookpi/pi-extension-codex-fast-mode@0.2.7"
+]' "$pi_smoke_home/.pi/agent/settings.json" >/dev/null
+
+web_manifest="$pi_smoke_home/.pi/agent/npm/node_modules/pi-web-access/package.json"
+codex_fast_manifest="$pi_smoke_home/.pi/agent/npm/node_modules/@ryan_nookpi/pi-extension-codex-fast-mode/package.json"
+jq -e '.name == "pi-web-access" and .version == "0.29.0"' "$web_manifest" >/dev/null
+jq -e '.name == "@ryan_nookpi/pi-extension-codex-fast-mode" and .version == "0.2.7"' "$codex_fast_manifest" >/dev/null
+
+# Packages are already installed. Offline RPC startup loads extensions without
+# provider calls; get_commands exposes resources registered by those extensions.
+printf '%s\n' '{"id":"commands","type":"get_commands"}' |
+  "${pi_env[@]}" PI_OFFLINE=1 pi --mode rpc --no-session --no-approve \
+    >"$pi_smoke_home/rpc.jsonl"
+
+! grep -Fq '"type":"extension_error"' "$pi_smoke_home/rpc.jsonl"
+jq -e '
+  (if type == "array" then .[] else . end)
+  | select(.id == "commands" and .type == "response" and .success)
+  | ([.data.commands[] | select(.name == "websearch" and .sourceInfo.source == "npm:pi-web-access@0.29.0")] | length == 1)
+    and ([.data.commands[] | select(.name == "codex-fast" and .sourceInfo.source == "npm:@ryan_nookpi/pi-extension-codex-fast-mode@0.2.7")] | length == 1)
+' "$pi_smoke_home/rpc.jsonl" >/dev/null
+
+# Pi may create an empty auth.json, but the isolated run must contain no auth
+# entries and no saved session files.
+test ! -e "$pi_smoke_home/.pi/agent/auth.json" ||
+  jq -e 'type == "object" and keys == []' "$pi_smoke_home/.pi/agent/auth.json" >/dev/null
+test ! -d "$pi_smoke_home/sessions" ||
+  test -z "$(find "$pi_smoke_home/sessions" -type f -print -quit)"
 ```
 
-Expected: `pi list` 退出码为 0，并列出两个精确 package 的资源；临时目录内没有 auth 或 session 数据。测试 shell 退出时由 `trap` 删除下载结果。
+Expected: 两个 `pi install` 命令退出 0；两个 package manifest 分别精确为 `pi-web-access@0.29.0` 和 `@ryan_nookpi/pi-extension-codex-fast-mode@0.2.7`；离线 RPC 返回 `websearch` 与 `codex-fast` 两个 command，且 `sourceInfo.source` 分别为两个精确 npm source。不存在 extension error、认证条目或 session 文件。测试 shell 退出时由 `trap` 删除下载结果。
 
-如果 npm 直连只因当前网络超时，保持同一个临时 HOME 并仅为 `pi list` 重试一次：
+如果 npm 直连只因当前网络超时，保持同一个临时 HOME，并仅为失败的 `pi install` 命令重试一次：
 
 ```bash
-(
-  cd "$pi_smoke_home"
-  HOME="$pi_smoke_home" \
-  PI_CODING_AGENT_DIR="$pi_smoke_home/.pi/agent" \
-  PI_CODING_AGENT_SESSION_DIR="$pi_smoke_home/sessions" \
-  PI_TELEMETRY=0 \
-  https_proxy=http://127.0.0.1:7897 \
-  http_proxy=http://127.0.0.1:7897 \
-  all_proxy=socks5://127.0.0.1:7897 \
-    pi list --no-approve
-) | tee "$pi_smoke_home/pi-list.txt"
+proxy_pi_env=(
+  "${pi_env[@]}"
+  https_proxy=http://127.0.0.1:7897
+  http_proxy=http://127.0.0.1:7897
+  all_proxy=socks5://127.0.0.1:7897
+)
+"${proxy_pi_env[@]}" pi install npm:pi-web-access@0.29.0 --no-approve
+# Or rerun the codex-fast command above if that was the command that timed out.
 ```
 
-若错误属于 package API 不兼容、模块加载或资源发现，不得用代理掩盖，必须停在本步骤诊断。
+若错误属于 package API 不兼容、模块加载、资源注册或 manifest version 不匹配，不得用代理掩盖，必须停在本步骤诊断。
 
 - [ ] **Step 6: 运行完整仓库测试和静态检查**
 
@@ -343,4 +372,3 @@ Expected: 完整测试通过；最近历史包含 Claude wrapper 与 Pi packages
 ```
 
 Home Manager 激活后，Claude 会读取 wrapper 再导入共享规则；Pi 下次启动时会在真实用户目录中安装缺少的两个精确版本包。
-
