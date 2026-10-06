@@ -296,11 +296,13 @@ if printf '%s\n' "$publication_block" | grep -Fq '|'; then
   echo "activation pipes candidate content across the user boundary" >&2
   exit 1
 fi
+configured_user="$(
+  nix eval --raw "$repo_dir#darwinConfigurations.mac.config.system.primaryUser"
+)"
 printf '%s\n' "$post_activation" \
-  | grep -F '/usr/bin/sudo -u rich --' >/dev/null
+  | grep -F "/usr/bin/sudo -u $configured_user --" >/dev/null
 printf '%s\n' "$post_activation" \
   | grep -F -- '-publish-sing-box-config.sh' >/dev/null
 
 trap - EXIT
 cleanup_publish_tests
-

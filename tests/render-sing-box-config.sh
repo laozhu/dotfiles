@@ -69,17 +69,25 @@ assert.throws(
 );
 NODE
 
+configured_user="$(
+  nix eval --raw "$repo_dir#darwinConfigurations.mac.config.system.primaryUser"
+)"
+configured_home="$(
+  nix eval --raw "$repo_dir#darwinConfigurations.mac.config" \
+    --apply 'c: c.users.users.${c.system.primaryUser}.home'
+)"
+
 nix eval --raw \
   "$repo_dir#darwinConfigurations.mac.config.sops.templates.sing-box-candidate.path" \
   | grep -Fx '/run/secrets/rendered/sing-box-candidate.json'
 
 nix eval --raw \
   "$repo_dir#darwinConfigurations.mac.config.sops.age.keyFile" \
-  | grep -Fx '/Users/rich/Library/Application Support/sops/age/keys.txt'
+  | grep -Fx "$configured_home/Library/Application Support/sops/age/keys.txt"
 
 nix eval --raw \
   "$repo_dir#darwinConfigurations.mac.config.sops.templates.sing-box-candidate.owner" \
-  | grep -Fx 'rich'
+  | grep -Fx "$configured_user"
 
 nix eval --raw \
   "$repo_dir#darwinConfigurations.mac.config.sops.templates.sing-box-candidate.group" \
@@ -88,4 +96,3 @@ nix eval --raw \
 nix eval --raw \
   "$repo_dir#darwinConfigurations.mac.config.sops.templates.sing-box-candidate.mode" \
   | grep -Fx '0400'
-

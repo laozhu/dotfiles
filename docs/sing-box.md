@@ -37,7 +37,7 @@ sing-box 核心或端口冲突。
 
 1. 在 SFM 中断开 VPN。
 2. 选择“文件” -> “从文件导入”，按 `Command-Shift-G` 输入
-   `/Users/rich/.config/sing-box/config.json`。
+   `~/.config/sing-box/config.json`。
 3. 删除或替换旧副本，只保留一个名为 `sing-box` 的 Local Profile。
 4. 连接并检查下面的运行状态。首次使用时按 macOS 提示授权。
 
