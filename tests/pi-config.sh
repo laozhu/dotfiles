@@ -15,6 +15,7 @@ for managed_path in \
   .pi/agent/themes/rose-pine-moon.json \
   .pi/agent/extensions/terminal-status-title.js \
   .pi/agent/settings.json \
+  .pi/agent/AGENTS.md \
   .claude/CLAUDE.md \
   .claude/AGENTS.md \
   .codex/AGENTS.md \
@@ -37,6 +38,16 @@ if [[ "$claude_wrapper_source" == "$claude_agents_source" ]]; then
   printf '%s\n' 'Claude wrapper must not point directly at shared AGENTS.md.' >&2
   exit 1
 fi
+
+for shared_agents_path in \
+  .pi/agent/AGENTS.md \
+  .codex/AGENTS.md \
+  .config/opencode/AGENTS.md; do
+  if [[ "$(managed_source "$shared_agents_path")" != "$claude_agents_source" ]]; then
+    printf '%s must share the global AGENTS.md source\n' "$shared_agents_path" >&2
+    exit 1
+  fi
+done
 
 diff -u \
   <(printf '%s\n' \
