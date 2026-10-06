@@ -29,11 +29,17 @@ case "$#" in
 esac
 
 "$DIR/scripts/check-sops-age-key.sh"
-"$DIR/scripts/check-sing-box-config.sh"
 
 if [ "$update_inputs" = true ]; then
   nix flake update --flake "$DIR"
 fi
+
+# 使用即将安装的内核校验，避免旧版本拒绝升级后的配置格式。
+target_sing_box="$(
+  nix build --no-link --print-out-paths \
+    "$DIR#darwinConfigurations.mac.pkgs.sing-box"
+)"
+PATH="$target_sing_box/bin:$PATH" "$DIR/scripts/check-sing-box-config.sh"
 
 homebrew_cask_source="$(
   DOTFILES_REBUILD_FLAKE="path:$DIR" nix eval \

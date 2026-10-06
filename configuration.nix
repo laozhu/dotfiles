@@ -1,4 +1,4 @@
-{ user, ... }:
+{ lib, user, ... }:
 
 {
   # Determinate 已经管理了 Nix daemon，关闭 nix-darwin 的管理防止冲突
@@ -6,6 +6,48 @@
   
   nixpkgs.config.allowUnfree = true;
   nixpkgs.hostPlatform = "aarch64-darwin"; # Apple Silicon
+
+  # 临时补齐 nixpkgs 尚未收录的稳定补丁版；上游追上后自动使用上游包。
+  nixpkgs.overlays = [
+    (final: prev: {
+      sing-box = if lib.versionOlder prev.sing-box.version "1.14.2" then
+        prev.sing-box.overrideAttrs (finalAttrs: _: {
+          version = "1.14.2";
+          src = final.fetchFromGitHub {
+            owner = "SagerNet";
+            repo = "sing-box";
+            tag = "v${finalAttrs.version}";
+            hash = "sha256-KoJj5nn0d7uxs5x4arG1p3KGkDmaFAJKiVJ5M5vYxcU=";
+          };
+          vendorHash = "sha256-DJNYQeCgAouLvpA8caZ0ILi9RYV82wteV6tR3gj+sfI=";
+        })
+      else prev.sing-box;
+
+      pnpm = if lib.versionOlder prev.pnpm.version "12.9.1" then
+        prev.pnpm.override {
+          version = "12.9.1";
+          srcHash = "sha256-inKhKFbI0M1exWL3jDhBmd+VnSwnGdxYOM4LTvs2Vuw=";
+          cargoHash = "sha256-NGefDu4dGMC2RGrTPeYBuRrG+Gb8jnx9+SbyK8WPd9E=";
+        }
+      else prev.pnpm;
+
+      uv = if lib.versionOlder prev.uv.version "0.12.23" then
+        prev.uv.overrideAttrs (finalAttrs: _: {
+          version = "0.12.23";
+          src = final.fetchFromGitHub {
+            owner = "astral-sh";
+            repo = "uv";
+            tag = finalAttrs.version;
+            hash = "sha256-U/LhX0XkUgbAXZZeLTBGF2nX2yzFb5zpiScCBD62pk4=";
+          };
+          cargoDeps = final.rustPlatform.fetchCargoVendor {
+            inherit (finalAttrs) src;
+            hash = "sha256-mzdpBXd8unvodVs4hk5Qw9pNhiAo5BaJjlNeqzop1GE=";
+          };
+        })
+      else prev.uv;
+    })
+  ];
 
   system.primaryUser = user;
   system.stateVersion = 6;

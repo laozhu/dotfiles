@@ -1,4 +1,4 @@
-{ config, pkgs, user, inputs, ... }:
+{ config, lib, pkgs, user, inputs, ... }:
 
 let
   dotfiles = "${config.home.homeDirectory}/.dotfiles";
@@ -71,6 +71,12 @@ in
       init.defaultBranch = "main";
       user.email = "laozhu.me@gmail.com";
       user.name = "Ritchie Zhu";
+      push.autoSetupRemote = true;
+      fetch.prune = true;
+      merge.conflictStyle = "zdiff3";
+      pull.ff = "only";
+      rerere.enabled = true;
+      diff.colorMoved = "zebra";
     };
   };
 
@@ -122,6 +128,14 @@ in
     };
   };
 
+  # Claude 与 Orca 会修改用户配置，只在首次部署时复制通用模板。
+  home.activation.claudeSettings = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    if [ ! -e "$HOME/.claude/settings.json" ] && [ ! -L "$HOME/.claude/settings.json" ]; then
+      run mkdir -p "$HOME/.claude"
+      run install -m 0600 ${./home/.claude/settings.json} "$HOME/.claude/settings.json"
+    fi
+  '';
+
   # 统一文件映射 (使用软链接便于实时修改)
   home.file = {
     # 基础应用配置
@@ -140,7 +154,6 @@ in
       "${dotfiles}/home/.pi/agent/settings.json";
 
     # AI Agents 配置文件注入
-    ".claude/settings.json".source      = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.claude/settings.json";
     ".claude/CLAUDE.md".source          = claudeContext;
     ".claude/AGENTS.md".source          = sharedAgentContext;
     ".pi/agent/AGENTS.md".source         = sharedAgentContext;
