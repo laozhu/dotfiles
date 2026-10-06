@@ -75,6 +75,11 @@ jq -e '
       "server": "proxy-dns"
     },
     {
+      "action": "evaluate",
+      "server": "direct-dns"
+    },
+    {
+      "match_response": true,
       "ip_is_private": true,
       "server": "direct-dns"
     },
