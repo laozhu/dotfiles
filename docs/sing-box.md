@@ -19,7 +19,7 @@ Nix 内核预检配置。
 - 秘密：`secrets/sing-box.yaml`，只保存 SOPS 密文。
 - 已发布配置：`~/.local/state/sing-box/config.json`，通过
   `~/.config/sing-box/config.json` 链接访问。
-- SFM 的 `sing-box` Local Profile 是导入副本，配置变化后必须重新导入。
+- SFM 的 `config` Local Profile 是导入副本，配置变化后必须重新导入。
   不要编辑应用私有容器或把 SFM 的临时修改覆盖回仓库。
 
 ## 部署与重新导入
@@ -38,7 +38,7 @@ sing-box 核心或端口冲突。
 1. 在 SFM 中断开 VPN。
 2. 选择“文件” -> “从文件导入”，按 `Command-Shift-G` 输入
    `~/.config/sing-box/config.json`。
-3. 删除或替换旧副本，只保留一个名为 `sing-box` 的 Local Profile。
+3. 删除或替换旧副本，只保留一个名为 `config` 的 Local Profile。
 4. 连接并检查下面的运行状态。首次使用时按 macOS 提示授权。
 
 每次修改模板、规则或秘密后，重复以上步骤。
@@ -67,12 +67,21 @@ netstat -anv -p tcp | rg '[.:](7777|9090).*LISTEN'
 - DNS 请求由 TUN 劫持，结果符合规则；并非所有域名都返回 FakeIP。
 
 `direct.domain_resolver` 使用 AliDNS，避免国内直连目标继承代理 DNS。
-远程规则集通过 `us-hy2` 下载，避免首次启动依赖尚未完成探测的 `auto`。
+远程规则集通过共享 HTTP client `rule-set-download`，固定经 `🇺🇸 us-hy2`
+下载，避免首次启动依赖尚未完成探测的 `⚡ auto`。使用 sing-box 1.14 的
+`http_client` / `default_http_client`，不再使用已弃用的 `download_detour`。
 GitHub 的主站、Raw 和静态资源域名使用内联规则，避免依赖远程规则集缓存。
 
-`proxy` 可选择 `auto`、`singapore`、`usa`、`sg-vless`、`sg-hy2`、`us-vless`
-和 `us-hy2`。手动切换会中断既有连接，URLTest 自动探测不会。
-节点失败时先切回 `auto`，再检查错误与延迟。不要公开完整日志、出口 IP 或凭据。
+`🚀 proxy` 可选择 `⚡ auto`、`🇸🇬 singapore`、`🇺🇸 usa`、`🇸🇬 sg-vless`、
+`🇸🇬 sg-hy2`、`🇺🇸 us-vless` 和 `🇺🇸 us-hy2`。三个 URLTest 组每 3 分钟
+探测一次，容差 50 ms，自动选择变化时保留既有连接。组内 HY2 优先排列，
+使首次探测前的候选优先使用 HY2；完成探测后按延迟选择，不永久锁定协议。
+手动切换会中断既有连接。节点失败时先切回 `⚡ auto`，再检查错误与延迟。
+不要公开完整日志、出口 IP 或凭据。
+
+DNS 缓存随现有 cache file 持久保存；过期记录最多再使用 5 分钟，同时后台
+刷新，减少重复查询和等待。DNS 分流、IPv4 策略与 FakeIP 规则保持原样。
+速度测试和两台服务器的差异见 [性能审计](sing-box-performance.md)。
 
 历史验收（2026-07-28）：`us-vless` 未通过，其余节点与组通过；断开恢复及
 重复启停未测试。升级后应重新验收，不能沿用历史结果。
