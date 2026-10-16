@@ -330,7 +330,7 @@ jq -e '
   ([.route.rule_set[] | select(.type == "remote") | .tag] ==
     ["gfwlist", "openai", "claude"]) and
   ([.route.rule_set[] | select(.type == "remote") | .download_detour] |
-    all(. == "proxy")) and
+    all(. == "us-hy2")) and
   ([.route.rule_set[] | select(.type == "remote") | .update_interval] |
     all(. == "24h")) and
   ([.route.rule_set[] | select(.type == "remote") | .format] |
