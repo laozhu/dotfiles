@@ -67,7 +67,7 @@ netstat -anv -p tcp | rg '[.:](7777|9090).*LISTEN'
 - DNS 请求由 TUN 劫持，结果符合规则；并非所有域名都返回 FakeIP。
 
 `direct.domain_resolver` 使用 AliDNS，避免国内直连目标继承代理 DNS。
-远程规则集通过 `sg-vless` 下载，避免首次启动依赖尚未完成探测的 `auto`。
+远程规则集通过 `us-hy2` 下载，避免首次启动依赖尚未完成探测的 `auto`。
 GitHub 的主站、Raw 和静态资源域名使用内联规则，避免依赖远程规则集缓存。
 
 `proxy` 可选择 `auto`、`singapore`、`usa`、`sg-vless`、`sg-hy2`、`us-vless`

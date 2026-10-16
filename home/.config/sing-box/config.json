@@ -358,7 +358,7 @@
         "tag": "gfwlist",
         "format": "binary",
         "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/gfw.srs",
-        "download_detour": "proxy",
+        "download_detour": "us-hy2",
         "update_interval": "24h"
       },
       {
@@ -366,7 +366,7 @@
         "tag": "openai",
         "format": "binary",
         "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/openai.srs",
-        "download_detour": "proxy",
+        "download_detour": "us-hy2",
         "update_interval": "24h"
       },
       {
@@ -374,7 +374,7 @@
         "tag": "claude",
         "format": "binary",
         "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/anthropic.srs",
-        "download_detour": "proxy",
+        "download_detour": "us-hy2",
         "update_interval": "24h"
       }
     ],
