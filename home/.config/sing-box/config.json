@@ -21,7 +21,7 @@
         "tag": "proxy-dns",
         "server": "1.1.1.1",
         "server_port": 443,
-        "detour": "proxy",
+        "detour": "🚀 proxy",
         "tls": {
           "enabled": true,
           "server_name": "cloudflare-dns.com"
@@ -74,7 +74,11 @@
       }
     ],
     "final": "direct-dns",
-    "strategy": "ipv4_only"
+    "strategy": "ipv4_only",
+    "optimistic": {
+      "enabled": true,
+      "timeout": "5m"
+    }
   },
   "inbounds": [
     {
@@ -98,58 +102,60 @@
   "outbounds": [
     {
       "type": "selector",
-      "tag": "proxy",
+      "tag": "🚀 proxy",
       "outbounds": [
-        "auto",
-        "singapore",
-        "usa",
-        "sg-vless",
-        "sg-hy2",
-        "us-vless",
-        "us-hy2"
+        "⚡ auto",
+        "🇸🇬 singapore",
+        "🇺🇸 usa",
+        "🇸🇬 sg-vless",
+        "🇸🇬 sg-hy2",
+        "🇺🇸 us-vless",
+        "🇺🇸 us-hy2"
       ],
-      "default": "auto",
+      "default": "⚡ auto",
       "interrupt_exist_connections": true
     },
     {
       "type": "urltest",
-      "tag": "auto",
+      "tag": "⚡ auto",
       "outbounds": [
-        "sg-vless",
-        "sg-hy2",
-        "us-vless",
-        "us-hy2"
+        "🇺🇸 us-hy2",
+        "🇸🇬 sg-hy2",
+        "🇺🇸 us-vless",
+        "🇸🇬 sg-vless"
       ],
       "url": "https://www.gstatic.com/generate_204",
-      "interval": "10m",
+      "interval": "3m",
       "tolerance": 50,
       "interrupt_exist_connections": false
     },
     {
       "type": "urltest",
-      "tag": "singapore",
+      "tag": "🇸🇬 singapore",
       "outbounds": [
-        "sg-vless",
-        "sg-hy2"
+        "🇸🇬 sg-hy2",
+        "🇸🇬 sg-vless"
       ],
       "url": "https://www.gstatic.com/generate_204",
-      "interval": "10m",
-      "interrupt_exist_connections": false
+      "interval": "3m",
+      "interrupt_exist_connections": false,
+      "tolerance": 50
     },
     {
       "type": "urltest",
-      "tag": "usa",
+      "tag": "🇺🇸 usa",
       "outbounds": [
-        "us-vless",
-        "us-hy2"
+        "🇺🇸 us-hy2",
+        "🇺🇸 us-vless"
       ],
       "url": "https://www.gstatic.com/generate_204",
-      "interval": "10m",
-      "interrupt_exist_connections": false
+      "interval": "3m",
+      "interrupt_exist_connections": false,
+      "tolerance": 50
     },
     {
       "type": "vless",
-      "tag": "sg-vless",
+      "tag": "🇸🇬 sg-vless",
       "server": "__SOPS_SG_SERVER_HOSTNAME__",
       "server_port": 443,
       "domain_resolver": "hosts-dns",
@@ -171,7 +177,7 @@
     },
     {
       "type": "hysteria2",
-      "tag": "sg-hy2",
+      "tag": "🇸🇬 sg-hy2",
       "server": "__SOPS_SG_SERVER_HOSTNAME__",
       "server_port": 443,
       "domain_resolver": "hosts-dns",
@@ -189,7 +195,7 @@
     },
     {
       "type": "vless",
-      "tag": "us-vless",
+      "tag": "🇺🇸 us-vless",
       "server": "__SOPS_US_SERVER_HOSTNAME__",
       "server_port": 443,
       "domain_resolver": "hosts-dns",
@@ -211,7 +217,7 @@
     },
     {
       "type": "hysteria2",
-      "tag": "us-hy2",
+      "tag": "🇺🇸 us-hy2",
       "server": "__SOPS_US_SERVER_HOSTNAME__",
       "server_port": 8443,
       "domain_resolver": "hosts-dns",
@@ -262,30 +268,30 @@
       },
       {
         "rule_set": "custom-proxy",
-        "outbound": "proxy"
+        "outbound": "🚀 proxy"
       },
       {
         "rule_set": "openai",
-        "outbound": "proxy"
+        "outbound": "🚀 proxy"
       },
       {
         "rule_set": "claude",
-        "outbound": "proxy"
+        "outbound": "🚀 proxy"
       },
       {
         "rule_set": "google-meet",
         "network": "udp",
         "port": 3478,
         "port_range": "19302:19309",
-        "outbound": "proxy"
+        "outbound": "🚀 proxy"
       },
       {
         "rule_set": "google-meet",
-        "outbound": "proxy"
+        "outbound": "🚀 proxy"
       },
       {
         "rule_set": "gfwlist",
-        "outbound": "proxy"
+        "outbound": "🚀 proxy"
       }
     ],
     "rule_set": [
@@ -358,32 +364,40 @@
         "tag": "gfwlist",
         "format": "binary",
         "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/gfw.srs",
-        "download_detour": "us-hy2",
-        "update_interval": "24h"
+        "update_interval": "24h",
+        "http_client": "rule-set-download"
       },
       {
         "type": "remote",
         "tag": "openai",
         "format": "binary",
         "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/openai.srs",
-        "download_detour": "us-hy2",
-        "update_interval": "24h"
+        "update_interval": "24h",
+        "http_client": "rule-set-download"
       },
       {
         "type": "remote",
         "tag": "claude",
         "format": "binary",
         "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/anthropic.srs",
-        "download_detour": "us-hy2",
-        "update_interval": "24h"
+        "update_interval": "24h",
+        "http_client": "rule-set-download"
       }
     ],
-    "final": "direct"
+    "final": "direct",
+    "default_http_client": "rule-set-download"
   },
   "experimental": {
     "cache_file": {
       "enabled": true,
-      "store_fakeip": true
+      "store_fakeip": true,
+      "store_dns": true
     }
-  }
+  },
+  "http_clients": [
+    {
+      "tag": "rule-set-download",
+      "detour": "🇺🇸 us-hy2"
+    }
+  ]
 }

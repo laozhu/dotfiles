@@ -4,26 +4,41 @@ set -euo pipefail
 repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 config="$repo_dir/home/.config/sing-box/config.json"
 secret_map="$repo_dir/home/.config/sing-box/secrets-map.json"
+
+# Group, route and downloader references must survive display-name changes.
+jq -e '
+  [.outbounds[].tag] as $tags |
+  ($tags | length) == ($tags | unique | length) and
+  ([.outbounds[] | select(.type == "selector" or .type == "urltest") |
+    .outbounds[]] | all(. as $tag | $tags | index($tag) != null)) and
+  ([.. | objects | (.outbound? // empty), (.detour? // empty)] |
+    all(. as $tag | $tags | index($tag) != null)) and
+  ([.outbounds[] | select(.type == "selector") |
+    . as $group | .outbounds | index($group.default) != null] | all)
+' "$config" >/dev/null
+
 jq -e '
   .["$schema"] == "https://sing-box.sagernet.org/schema.json" and
   ([.inbounds[].tag] | sort == ["mixed-in", "tun-in"]) and
-  ([.outbounds[].tag] | index("proxy") != null) and
-  ([.outbounds[].tag] | index("auto") != null) and
-  ([.outbounds[].tag] | index("singapore") != null) and
-  ([.outbounds[].tag] | index("usa") != null) and
-  ([.outbounds[].tag] | index("sg-vless") != null) and
-  ([.outbounds[].tag] | index("sg-hy2") != null) and
-  ([.outbounds[].tag] | index("us-vless") != null) and
-  ([.outbounds[].tag] | index("us-hy2") != null) and
+  ([.outbounds[].tag] | index("🚀 proxy") != null) and
+  ([.outbounds[].tag] | index("⚡ auto") != null) and
+  ([.outbounds[].tag] | index("🇸🇬 singapore") != null) and
+  ([.outbounds[].tag] | index("🇺🇸 usa") != null) and
+  ([.outbounds[].tag] | index("🇸🇬 sg-vless") != null) and
+  ([.outbounds[].tag] | index("🇸🇬 sg-hy2") != null) and
+  ([.outbounds[].tag] | index("🇺🇸 us-vless") != null) and
+  ([.outbounds[].tag] | index("🇺🇸 us-hy2") != null) and
   .route.final == "direct" and
   .route.default_domain_resolver == "proxy-dns" and
   .route.auto_detect_interface == true and
+  .route.default_http_client == "rule-set-download" and
   .experimental.cache_file.enabled == true
 ' "$config" >/dev/null
 
 jq -e '
   .log == {"level": "info", "timestamp": true} and
   .dns.strategy == "ipv4_only" and
+  .dns.optimistic == {"enabled": true, "timeout": "5m"} and
   .dns.final == "direct-dns" and
   ([.dns.servers[].tag] ==
     ["direct-dns", "proxy-dns", "hosts-dns", "fakeip-dns"]) and
@@ -42,7 +57,7 @@ jq -e '
     "tag": "proxy-dns",
     "server": "1.1.1.1",
     "server_port": 443,
-    "detour": "proxy",
+    "detour": "🚀 proxy",
     "tls": {
       "enabled": true,
       "server_name": "cloudflare-dns.com"
@@ -109,53 +124,55 @@ jq -e '
   ] and
   .outbounds[0] == {
     "type": "selector",
-    "tag": "proxy",
+    "tag": "🚀 proxy",
     "outbounds": [
-      "auto",
-      "singapore",
-      "usa",
-      "sg-vless",
-      "sg-hy2",
-      "us-vless",
-      "us-hy2"
+      "⚡ auto",
+      "🇸🇬 singapore",
+      "🇺🇸 usa",
+      "🇸🇬 sg-vless",
+      "🇸🇬 sg-hy2",
+      "🇺🇸 us-vless",
+      "🇺🇸 us-hy2"
     ],
-    "default": "auto",
+    "default": "⚡ auto",
     "interrupt_exist_connections": true
   } and
   .outbounds[1] == {
     "type": "urltest",
-    "tag": "auto",
-    "outbounds": ["sg-vless", "sg-hy2", "us-vless", "us-hy2"],
+    "tag": "⚡ auto",
+    "outbounds": ["🇺🇸 us-hy2", "🇸🇬 sg-hy2", "🇺🇸 us-vless", "🇸🇬 sg-vless"],
     "url": "https://www.gstatic.com/generate_204",
-    "interval": "10m",
+    "interval": "3m",
     "tolerance": 50,
     "interrupt_exist_connections": false
   } and
   .outbounds[2] == {
     "type": "urltest",
-    "tag": "singapore",
-    "outbounds": ["sg-vless", "sg-hy2"],
+    "tag": "🇸🇬 singapore",
+    "outbounds": ["🇸🇬 sg-hy2", "🇸🇬 sg-vless"],
     "url": "https://www.gstatic.com/generate_204",
-    "interval": "10m",
+    "interval": "3m",
+    "tolerance": 50,
     "interrupt_exist_connections": false
   } and
   .outbounds[3] == {
     "type": "urltest",
-    "tag": "usa",
-    "outbounds": ["us-vless", "us-hy2"],
+    "tag": "🇺🇸 usa",
+    "outbounds": ["🇺🇸 us-hy2", "🇺🇸 us-vless"],
     "url": "https://www.gstatic.com/generate_204",
-    "interval": "10m",
+    "interval": "3m",
+    "tolerance": 50,
     "interrupt_exist_connections": false
   } and
   ([.outbounds[].tag] == [
-    "proxy",
-    "auto",
-    "singapore",
-    "usa",
-    "sg-vless",
-    "sg-hy2",
-    "us-vless",
-    "us-hy2",
+    "🚀 proxy",
+    "⚡ auto",
+    "🇸🇬 singapore",
+    "🇺🇸 usa",
+    "🇸🇬 sg-vless",
+    "🇸🇬 sg-hy2",
+    "🇺🇸 us-vless",
+    "🇺🇸 us-hy2",
     "direct"
   ])
 ' "$config" >/dev/null
@@ -204,7 +221,7 @@ jq -e '
       }
     };
   vless_valid(
-    "sg-vless";
+    "🇸🇬 sg-vless";
     "__SOPS_SG_SERVER_HOSTNAME__";
     "__SOPS_SG_VLESS_UUID__";
     "__SOPS_SG_VLESS_TLS_SERVER_NAME__";
@@ -212,7 +229,7 @@ jq -e '
     "__SOPS_SG_VLESS_REALITY_SHORT_ID__"
   ) and
   hy2_valid(
-    "sg-hy2";
+    "🇸🇬 sg-hy2";
     "__SOPS_SG_SERVER_HOSTNAME__";
     443;
     "__SOPS_SG_HY2_PASSWORD__";
@@ -222,7 +239,7 @@ jq -e '
     170
   ) and
   vless_valid(
-    "us-vless";
+    "🇺🇸 us-vless";
     "__SOPS_US_SERVER_HOSTNAME__";
     "__SOPS_US_VLESS_UUID__";
     "__SOPS_US_VLESS_TLS_SERVER_NAME__";
@@ -230,7 +247,7 @@ jq -e '
     "__SOPS_US_VLESS_REALITY_SHORT_ID__"
   ) and
   hy2_valid(
-    "us-hy2";
+    "🇺🇸 us-hy2";
     "__SOPS_US_SERVER_HOSTNAME__";
     8443;
     "__SOPS_US_HY2_PASSWORD__";
@@ -255,18 +272,18 @@ jq -e '
     {"ip_is_private": true, "outbound": "direct"},
     {"rule_set": "custom-reject", "action": "reject"},
     {"rule_set": "custom-direct", "outbound": "direct"},
-    {"rule_set": "custom-proxy", "outbound": "proxy"},
-    {"rule_set": "openai", "outbound": "proxy"},
-    {"rule_set": "claude", "outbound": "proxy"},
+    {"rule_set": "custom-proxy", "outbound": "🚀 proxy"},
+    {"rule_set": "openai", "outbound": "🚀 proxy"},
+    {"rule_set": "claude", "outbound": "🚀 proxy"},
     {
       "rule_set": "google-meet",
       "network": "udp",
       "port": 3478,
       "port_range": "19302:19309",
-      "outbound": "proxy"
+      "outbound": "🚀 proxy"
     },
-    {"rule_set": "google-meet", "outbound": "proxy"},
-    {"rule_set": "gfwlist", "outbound": "proxy"}
+    {"rule_set": "google-meet", "outbound": "🚀 proxy"},
+    {"rule_set": "gfwlist", "outbound": "🚀 proxy"}
   ] and
   .route.rule_set[0] == {
     "type": "inline",
@@ -329,8 +346,10 @@ jq -e '
   ([.route.rule_set[] | select(.type == "remote")] | length == 3) and
   ([.route.rule_set[] | select(.type == "remote") | .tag] ==
     ["gfwlist", "openai", "claude"]) and
-  ([.route.rule_set[] | select(.type == "remote") | .download_detour] |
-    all(. == "us-hy2")) and
+  ([.route.rule_set[] | select(.type == "remote") | .http_client] |
+    all(. == "rule-set-download")) and
+  ([.route.rule_set[] | select(.type == "remote")] |
+    all(has("download_detour") | not)) and
   ([.route.rule_set[] | select(.type == "remote") | .update_interval] |
     all(. == "24h")) and
   ([.route.rule_set[] | select(.type == "remote") | .format] |
@@ -347,11 +366,12 @@ jq -e '
   .experimental == {
     "cache_file": {
       "enabled": true,
-      "store_fakeip": true
+      "store_fakeip": true,
+      "store_dns": true
     }
   } and
   (.experimental | has("clash_api") | not) and
-  (has("http_clients") | not) and
+  .http_clients == [{"tag": "rule-set-download", "detour": "🇺🇸 us-hy2"}] and
   ([.. | objects | keys[]] |
     any(
       . == "external_controller" or
