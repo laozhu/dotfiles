@@ -31,7 +31,7 @@ declared_url="$(
 expected_declared_url='https://uu.gdl.netease.com/UU-macOS-#{version}.dmg'
 
 if [ "$declared_url" != "$expected_declared_url" ]; then
-  printf 'Homebrew 的 UU Booster cask 已更改下载方式，跳过 403 兼容处理。\n'
+  # 新版 cask 已使用官方下载入口，无需旧版 403 兼容处理。
   exit 0
 fi
 if ! printf '%s\n' "$version" | grep -Eq '^[0-9]+([.][0-9]+)+$' ||

@@ -77,6 +77,20 @@ GitHub 的主站、Raw 和静态资源域名使用内联规则，避免依赖远
 历史验收（2026-07-28）：`us-vless` 未通过，其余节点与组通过；断开恢复及
 重复启停未测试。升级后应重新验收，不能沿用历史结果。
 
+2026-10-16：美国 VLESS 与 Hysteria2 均通过本机直连测试，VLESS 另经 SFM
+实测确认。VLESS 原故障是 Xray 26.4.25 的 REALITY 目标 TLS 记录缓冲区仅有
+8192 字节，无法处理 Microsoft 返回的 8273 字节证书记录。服务端现使用
+`26.4.25 local-reality17k` 兼容补丁版，只回移
+[官方缓冲区修复](https://github.com/XTLS/REALITY/pull/33)，将其扩大至 17 KiB；
+目标、SNI 和认证参数均未改变。
+
+官方 Xray 26.10.10 已在隔离实例中测试，但当前 sing-box 1.14.2 返回
+`reality verification failed`，对应
+[新版 REALITY 握手兼容问题](https://github.com/SagerNet/sing-box/issues/4520)。
+因此未部署该官方新版。x-ui 更新核心会覆盖兼容补丁版，更新前需先验证客户端
+兼容性。服务端备份、补丁、构建清单和回滚说明位于
+`/root/xray-upgrade-20261016-snkd26te/`；本仓库不管理服务端二进制。
+
 ## 停止与恢复
 
 在 SFM 界面断开后，确认 `7777`、`9090` 没有监听，DNS 与 IPv4/IPv6 默认路由
