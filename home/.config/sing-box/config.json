@@ -39,6 +39,17 @@
         "type": "fakeip",
         "tag": "fakeip-dns",
         "inet4_range": "198.18.0.0/15"
+      },
+      {
+        "type": "https",
+        "tag": "singapore-dns",
+        "server": "1.1.1.1",
+        "server_port": 443,
+        "detour": "🇸🇬 singapore",
+        "tls": {
+          "enabled": true,
+          "server_name": "cloudflare-dns.com"
+        }
       }
     ],
     "rules": [
@@ -51,9 +62,12 @@
         "server": "hosts-dns"
       },
       {
+        "rule_set": "antigravity.google",
+        "server": "singapore-dns"
+      },
+      {
         "rule_set": [
           "custom-proxy",
-          "antigravity.google",
           "gfwlist",
           "openai",
           "claude",
@@ -274,7 +288,7 @@
       },
       {
         "rule_set": "antigravity.google",
-        "outbound": "🚀 proxy"
+        "outbound": "🇸🇬 singapore"
       },
       {
         "rule_set": "openai",

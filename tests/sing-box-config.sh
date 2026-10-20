@@ -41,7 +41,7 @@ jq -e '
   .dns.optimistic == {"enabled": true, "timeout": "5m"} and
   .dns.final == "direct-dns" and
   ([.dns.servers[].tag] ==
-    ["direct-dns", "proxy-dns", "hosts-dns", "fakeip-dns"]) and
+    ["direct-dns", "proxy-dns", "hosts-dns", "fakeip-dns", "singapore-dns"]) and
   .dns.servers[0] == {
     "type": "https",
     "tag": "direct-dns",
@@ -76,6 +76,17 @@ jq -e '
     "tag": "fakeip-dns",
     "inet4_range": "198.18.0.0/15"
   } and
+  .dns.servers[4] == {
+    "type": "https",
+    "tag": "singapore-dns",
+    "server": "1.1.1.1",
+    "server_port": 443,
+    "detour": "🇸🇬 singapore",
+    "tls": {
+      "enabled": true,
+      "server_name": "cloudflare-dns.com"
+    }
+  } and
   .dns.rules == [
     {
       "query_type": "AAAA",
@@ -86,7 +97,11 @@ jq -e '
       "server": "hosts-dns"
     },
     {
-      "rule_set": ["custom-proxy", "antigravity.google", "gfwlist", "openai", "claude", "google-meet"],
+      "rule_set": "antigravity.google",
+      "server": "singapore-dns"
+    },
+    {
+      "rule_set": ["custom-proxy", "gfwlist", "openai", "claude", "google-meet"],
       "server": "proxy-dns"
     },
     {
@@ -273,7 +288,7 @@ jq -e '
     {"rule_set": "custom-reject", "action": "reject"},
     {"rule_set": "custom-direct", "outbound": "direct"},
     {"rule_set": "custom-proxy", "outbound": "🚀 proxy"},
-    {"rule_set": "antigravity.google", "outbound": "🚀 proxy"},
+    {"rule_set": "antigravity.google", "outbound": "🇸🇬 singapore"},
     {"rule_set": "openai", "outbound": "🚀 proxy"},
     {"rule_set": "claude", "outbound": "🚀 proxy"},
     {

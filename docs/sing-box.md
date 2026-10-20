@@ -75,8 +75,11 @@ GitHub 的主站、Raw 和静态资源域名使用内联规则，避免依赖远
 
 ### Antigravity 分流
 
-独立内联规则集 `antigravity.google` 同时接入 `🚀 proxy` 和 `proxy-dns`，
-不依赖 GFWList 是否覆盖这些域名。官网与 API 已从 `custom-proxy` 迁入此规则集。
+独立内联规则集 `antigravity.google` 固定使用 `🇸🇬 singapore`，
+域名查询使用同样经新加坡组出站的 `singapore-dns`，优先于通用代理 DNS 规则。
+全局 `🚀 proxy` 或 `⚡ auto` 的选择不会改变 Antigravity 的新加坡出口。
+官网与 API 已从 `custom-proxy` 迁入此规则集，不依赖 GFWList 是否覆盖这些域名。
+新加坡组仍可在 VLESS 与 Hysteria2 节点间测速选择，但不会切到美国节点。
 
 | 用途 | 域名 |
 | --- | --- |
