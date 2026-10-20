@@ -32,6 +32,7 @@ esac
 
 if [ "$update_inputs" = true ]; then
   nix flake update --flake "$DIR"
+  bash "$DIR/scripts/update-macos-binaries.sh"
 fi
 
 # 使用即将安装的内核校验，避免旧版本拒绝升级后的配置格式。
@@ -51,4 +52,5 @@ homebrew_cask_source="$(
 "$DIR/scripts/prefetch-uu-booster.sh" \
   "$homebrew_cask_source/Casks/u/uu-booster.rb"
 
+# 共享配置通过 Homebrew cask 安装或升级 Codex 官方 macOS 二进制。
 exec sudo darwin-rebuild switch --flake "$DIR#mac"

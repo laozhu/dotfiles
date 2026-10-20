@@ -33,6 +33,11 @@ fixture_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 printf 'identity preflight %s\n' "$fixture_dir" >>"$REBUILD_TEST_LOG"
 exit "${REBUILD_IDENTITY_STATUS:-0}"
 SH
+cat >"$rebuild_test_root/scripts/update-macos-binaries.sh" <<'SH'
+#!/usr/bin/env bash
+printf 'binary pins update\n' >>"$REBUILD_TEST_LOG"
+exit "${REBUILD_BINARY_STATUS:-0}"
+SH
 cat >"$rebuild_test_root/scripts/check-sing-box-config.sh" <<'SH'
 #!/usr/bin/env bash
 fixture_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
@@ -127,6 +132,7 @@ expected_update_rebuild="$rebuild_test_root/expected-update-rebuild"
 printf '%s\n' \
   "identity preflight $rebuild_fixture_real" \
   "nix flake update --flake $rebuild_fixture_real" \
+  "binary pins update" \
   "nix build --no-link --print-out-paths $rebuild_fixture_real#darwinConfigurations.mac.pkgs.sing-box" \
   "config check $rebuild_fixture_real" \
   "nix eval --raw --impure --expr (builtins.getFlake (builtins.getEnv \"DOTFILES_REBUILD_FLAKE\")).inputs.homebrew-cask.outPath" \
@@ -157,7 +163,8 @@ assert_rebuild_failure() {
 assert_rebuild_failure REBUILD_IDENTITY_STATUS 31 "$expected_update_rebuild" 1 -u
 assert_rebuild_failure REBUILD_NIX_STATUS 33 "$expected_update_rebuild" 2 -u
 assert_rebuild_failure REBUILD_NIX_STATUS 36 "$expected_rebuild" 2
-assert_rebuild_failure REBUILD_CONFIG_STATUS 32 "$expected_update_rebuild" 4 -u
+assert_rebuild_failure REBUILD_BINARY_STATUS 37 "$expected_update_rebuild" 3 -u
+assert_rebuild_failure REBUILD_CONFIG_STATUS 32 "$expected_update_rebuild" 5 -u
 assert_rebuild_failure REBUILD_UU_STATUS 34 "$expected_rebuild" 5
 
 multiple_rebuild_output="$rebuild_test_root/multiple-output"

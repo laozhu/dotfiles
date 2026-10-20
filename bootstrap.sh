@@ -62,6 +62,7 @@ echo "==> Step 5: validate the SOPS age identity"
   "$DIR/scripts/check-sops-age-key.sh"
 
 echo "==> Step 6: first darwin-rebuild switch (pinned to nix-darwin-26.05)"
+# 共享配置安装固定的官方 macOS CLI 二进制；Codex 使用 Homebrew cask。
 # darwin-rebuild doesn't exist yet on a fresh machine, so run it straight
 # from the flake this once. After this, rebuild.sh works normally.
 # This fetches the darwin-rebuild tool from the nix-darwin-26.05 release branch,

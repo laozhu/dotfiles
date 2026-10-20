@@ -8,6 +8,7 @@ tests=(
   bootstrap.sh
   prefetch-uu-booster.sh
   rebuild.sh
+  update-macos-binaries.sh
   repository-policy.sh
   pi-config.sh
   sing-box-config.sh
