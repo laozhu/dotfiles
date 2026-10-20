@@ -54,6 +54,11 @@ fixture_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 printf 'UU prefetch %s %s\n' "$fixture_dir" "$1" >>"$REBUILD_TEST_LOG"
 exit "${REBUILD_UU_STATUS:-0}"
 SH
+cat >"$rebuild_test_root/scripts/sync-editors.sh" <<'SH'
+#!/usr/bin/env bash
+printf 'editor sync\n' >>"$REBUILD_TEST_LOG"
+exit "${REBUILD_EDITOR_STATUS:-0}"
+SH
 cat >"$rebuild_fixture_bin/nix" <<'SH'
 #!/usr/bin/env bash
 printf 'nix' >>"$REBUILD_TEST_LOG"
@@ -77,6 +82,7 @@ cat >"$rebuild_fixture_bin/sudo" <<'SH'
 printf 'sudo' >>"$REBUILD_TEST_LOG"
 printf ' %s' "$@" >>"$REBUILD_TEST_LOG"
 printf '\n' >>"$REBUILD_TEST_LOG"
+exit "${REBUILD_DARWIN_STATUS:-0}"
 SH
 cat >"$rebuild_sing_box/bin/sing-box" <<'SH'
 #!/usr/bin/env bash
@@ -125,6 +131,7 @@ printf '%s\n' \
   "nix eval --raw --impure --expr (builtins.getFlake (builtins.getEnv \"DOTFILES_REBUILD_FLAKE\")).inputs.homebrew-cask.outPath" \
   "UU prefetch $rebuild_fixture_real $rebuild_cask_source/Casks/u/uu-booster.rb" \
   "sudo darwin-rebuild switch --flake $rebuild_fixture_real#mac" \
+  "editor sync" \
   >"$expected_rebuild"
 assert_rebuild_operations "$expected_rebuild"
 
@@ -138,6 +145,7 @@ printf '%s\n' \
   "nix eval --raw --impure --expr (builtins.getFlake (builtins.getEnv \"DOTFILES_REBUILD_FLAKE\")).inputs.homebrew-cask.outPath" \
   "UU prefetch $rebuild_fixture_real $rebuild_cask_source/Casks/u/uu-booster.rb" \
   "sudo darwin-rebuild switch --flake $rebuild_fixture_real#mac" \
+  "editor sync" \
   >"$expected_update_rebuild"
 assert_rebuild_operations "$expected_update_rebuild" -u
 assert_rebuild_operations "$expected_update_rebuild" --update
@@ -166,6 +174,8 @@ assert_rebuild_failure REBUILD_NIX_STATUS 36 "$expected_rebuild" 2
 assert_rebuild_failure REBUILD_BINARY_STATUS 37 "$expected_update_rebuild" 3 -u
 assert_rebuild_failure REBUILD_CONFIG_STATUS 32 "$expected_update_rebuild" 5 -u
 assert_rebuild_failure REBUILD_UU_STATUS 34 "$expected_rebuild" 5
+assert_rebuild_failure REBUILD_DARWIN_STATUS 38 "$expected_rebuild" 6
+assert_rebuild_failure REBUILD_EDITOR_STATUS 39 "$expected_rebuild" 7
 
 multiple_rebuild_output="$rebuild_test_root/multiple-output"
 : >"$rebuild_log"
