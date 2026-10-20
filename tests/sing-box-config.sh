@@ -86,7 +86,7 @@ jq -e '
       "server": "hosts-dns"
     },
     {
-      "rule_set": ["gfwlist", "openai", "claude", "google-meet"],
+      "rule_set": ["custom-proxy", "gfwlist", "openai", "claude", "google-meet"],
       "server": "proxy-dns"
     },
     {
@@ -316,7 +316,14 @@ jq -e '
           "domain_suffix": [
             "github.com",
             "githubusercontent.com",
-            "githubassets.com"
+            "githubassets.com",
+            "s3.ap-southeast-2.amazonaws.com",
+            "hcaptcha.com",
+            "challenges.cloudflare.com",
+            "turnstile.com",
+            "stripe.com",
+            "monoova.com",
+            "auth0.com"
           ]
         }
       ]
