@@ -53,6 +53,7 @@
       {
         "rule_set": [
           "custom-proxy",
+          "antigravity.google",
           "gfwlist",
           "openai",
           "claude",
@@ -272,6 +273,10 @@
         "outbound": "🚀 proxy"
       },
       {
+        "rule_set": "antigravity.google",
+        "outbound": "🚀 proxy"
+      },
+      {
         "rule_set": "openai",
         "outbound": "🚀 proxy"
       },
@@ -364,6 +369,30 @@
               "142.250.82.0/24",
               "2001:4860:4864:5::/64",
               "2001:4860:4864:6::/64"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "inline",
+        "tag": "antigravity.google",
+        "rules": [
+          {
+            "domain": [
+              "aicode.googleapis.com",
+              "cloudcode-pa.googleapis.com",
+              "daily-cloudcode-pa.googleapis.com",
+              "accounts.google.com",
+              "oauth2.googleapis.com",
+              "www.googleapis.com",
+              "antigravity-unleash.goog",
+              "play.googleapis.com",
+              "antigravity-cli-auto-updater-974169037036.us-central1.run.app",
+              "storage.googleapis.com"
+            ],
+            "domain_suffix": [
+              "antigravity.google",
+              "antigravity.google.com"
             ]
           }
         ]

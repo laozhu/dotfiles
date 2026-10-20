@@ -63,7 +63,8 @@ netstat -anv -p tcp | rg '[.:](7777|9090).*LISTEN'
 通过 SFM 日志、连接记录与出口 IP 检查分流：
 
 - `localhost`、`.local`、局域网及未匹配目标直连。
-- GFWList、GitHub、OpenAI、Claude 和 Google Meet（TCP/UDP）走 `proxy`。
+- GFWList、Antigravity、GitHub、OpenAI、Claude
+  和 Google Meet（TCP/UDP）走 `proxy`。
 - DNS 请求由 TUN 劫持，结果符合规则；并非所有域名都返回 FakeIP。
 
 `direct.domain_resolver` 使用 AliDNS，避免国内直连目标继承代理 DNS。
@@ -71,6 +72,27 @@ netstat -anv -p tcp | rg '[.:](7777|9090).*LISTEN'
 下载，避免首次启动依赖尚未完成探测的 `⚡ auto`。使用 sing-box 1.14 的
 `http_client` / `default_http_client`，不再使用已弃用的 `download_detour`。
 GitHub 的主站、Raw 和静态资源域名使用内联规则，避免依赖远程规则集缓存。
+
+### Antigravity 分流
+
+独立内联规则集 `antigravity.google` 同时接入 `🚀 proxy` 和 `proxy-dns`，
+不依赖 GFWList 是否覆盖这些域名。官网与 API 已从 `custom-proxy` 迁入此规则集。
+
+| 用途 | 域名 |
+| --- | --- |
+| 官网与网页入口（包含子域名） | `antigravity.google`、`antigravity.google.com` |
+| 模型与账号服务（精确匹配） | `aicode.googleapis.com`、`cloudcode-pa.googleapis.com`、`daily-cloudcode-pa.googleapis.com` |
+| Google 登录（精确匹配） | `accounts.google.com`、`oauth2.googleapis.com`、`www.googleapis.com` |
+| 配置与遥测（精确匹配） | `antigravity-unleash.goog`、`play.googleapis.com` |
+| 安装与更新（精确匹配） | `antigravity-cli-auto-updater-974169037036.us-central1.run.app`、`storage.googleapis.com` |
+
+范围依据本机 `agy 1.4.3`、Antigravity IDE 内置 language server 的端点字面量、
+CLI 日志、[官方安装说明](https://antigravity.google/docs/getting-started?tab=cli)
+及[上游网络问题记录](https://github.com/google-antigravity/antigravity-cli/issues/181)整理。
+二进制包含端点不代表当前会话都访问过；未纳入测试环境或 Google 企业服务端点。
+规则保证这些目标走代理，但不能保证 Google 的账号或出口 IP 地区资格校验通过。
+
+### 节点与连接
 
 `🚀 proxy` 可选择 `⚡ auto`、`🇸🇬 singapore`、`🇺🇸 usa`、`🇸🇬 sg-vless`、
 `🇸🇬 sg-hy2`、`🇺🇸 us-vless` 和 `🇺🇸 us-hy2`。三个 URLTest 组每 3 分钟
