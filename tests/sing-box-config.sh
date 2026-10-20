@@ -317,6 +317,7 @@ jq -e '
             "github.com",
             "githubusercontent.com",
             "githubassets.com",
+            "cache.nixos.org",
             "s3.ap-southeast-2.amazonaws.com",
             "hcaptcha.com",
             "challenges.cloudflare.com",
