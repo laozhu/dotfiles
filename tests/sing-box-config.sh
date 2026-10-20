@@ -86,7 +86,7 @@ jq -e '
       "server": "hosts-dns"
     },
     {
-      "rule_set": ["custom-proxy", "gfwlist", "openai", "claude", "google-meet"],
+      "rule_set": ["custom-proxy", "antigravity.google", "gfwlist", "openai", "claude", "google-meet"],
       "server": "proxy-dns"
     },
     {
@@ -273,6 +273,7 @@ jq -e '
     {"rule_set": "custom-reject", "action": "reject"},
     {"rule_set": "custom-direct", "outbound": "direct"},
     {"rule_set": "custom-proxy", "outbound": "🚀 proxy"},
+    {"rule_set": "antigravity.google", "outbound": "🚀 proxy"},
     {"rule_set": "openai", "outbound": "🚀 proxy"},
     {"rule_set": "claude", "outbound": "🚀 proxy"},
     {
@@ -441,3 +442,31 @@ jq -en --argjson expected "$map_markers" --argjson actual "$config_markers" '
 ' >/dev/null
 
 bash -n "$repo_dir/scripts/check-sing-box-config.sh"
+
+# Exercise sing-box domain matching, including exact API hosts and suffix boundaries.
+rule_fixture="$(mktemp)"
+trap 'rm -f "$rule_fixture"' EXIT
+jq -e '
+  [.route.rule_set[] | select(.tag == "antigravity.google")] | length == 1
+' "$config" >/dev/null
+jq '{version: 3, rules: first(.route.rule_set[] |
+  select(.tag == "antigravity.google")).rules}' "$config" > "$rule_fixture"
+for domain in \
+  antigravity.google www.antigravity.google antigravity.google.com \
+  aicode.googleapis.com cloudcode-pa.googleapis.com daily-cloudcode-pa.googleapis.com \
+  accounts.google.com oauth2.googleapis.com www.googleapis.com \
+  antigravity-unleash.goog play.googleapis.com \
+  antigravity-cli-auto-updater-974169037036.us-central1.run.app storage.googleapis.com; do
+  result="$(sing-box rule-set match "$rule_fixture" "$domain" 2>&1)"
+  if [ -z "$result" ]; then
+    printf 'Antigravity rule did not match %s\n' "$domain" >&2
+    exit 1
+  fi
+done
+for domain in example.com other.googleapis.com notantigravity.google antigravity.google.evil.example; do
+  result="$(sing-box rule-set match "$rule_fixture" "$domain" 2>&1)"
+  if [ -n "$result" ]; then
+    printf 'Antigravity rule unexpectedly matched %s\n' "$domain" >&2
+    exit 1
+  fi
+done
