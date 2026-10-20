@@ -7,46 +7,12 @@
   nixpkgs.config.allowUnfree = true;
   nixpkgs.hostPlatform = "aarch64-darwin"; # Apple Silicon
 
-  # 临时补齐 nixpkgs 尚未收录的稳定补丁版；上游追上后自动使用上游包。
+  # These tools always use pinned official macOS binaries, never source builds.
   nixpkgs.overlays = [
-    (final: prev: {
-      sing-box = if lib.versionOlder prev.sing-box.version "1.14.2" then
-        prev.sing-box.overrideAttrs (finalAttrs: _: {
-          version = "1.14.2";
-          src = final.fetchFromGitHub {
-            owner = "SagerNet";
-            repo = "sing-box";
-            tag = "v${finalAttrs.version}";
-            hash = "sha256-KoJj5nn0d7uxs5x4arG1p3KGkDmaFAJKiVJ5M5vYxcU=";
-          };
-          vendorHash = "sha256-DJNYQeCgAouLvpA8caZ0ILi9RYV82wteV6tR3gj+sfI=";
-        })
-      else prev.sing-box;
-
-      pnpm = if lib.versionOlder prev.pnpm.version "12.9.1" then
-        prev.pnpm.override {
-          version = "12.9.1";
-          srcHash = "sha256-inKhKFbI0M1exWL3jDhBmd+VnSwnGdxYOM4LTvs2Vuw=";
-          cargoHash = "sha256-NGefDu4dGMC2RGrTPeYBuRrG+Gb8jnx9+SbyK8WPd9E=";
-        }
-      else prev.pnpm;
-
-      uv = if lib.versionOlder prev.uv.version "0.12.23" then
-        prev.uv.overrideAttrs (finalAttrs: _: {
-          version = "0.12.23";
-          src = final.fetchFromGitHub {
-            owner = "astral-sh";
-            repo = "uv";
-            tag = finalAttrs.version;
-            hash = "sha256-U/LhX0XkUgbAXZZeLTBGF2nX2yzFb5zpiScCBD62pk4=";
-          };
-          cargoDeps = final.rustPlatform.fetchCargoVendor {
-            inherit (finalAttrs) src;
-            hash = "sha256-mzdpBXd8unvodVs4hk5Qw9pNhiAo5BaJjlNeqzop1GE=";
-          };
-        })
-      else prev.uv;
-    })
+    (final: prev:
+      let binaries = prev.callPackage ./macos-binaries.nix { }; in {
+        inherit (binaries) pnpm uv sing-box bws herdr kimi-code pi;
+      })
   ];
 
   system.primaryUser = user;
@@ -112,11 +78,12 @@
       "stablyai/orca"
     ];
 
-    # 🛑 命令行及 CLI Agent 工具已全部交给 Nix 接管，此处清空
+    # 常规 CLI 由 Nix 管理；Codex 通过 cask 安装官方预编译包。
     brews = [];
 
-    # 只保留纯 GUI 桌面级应用
+    # 桌面应用及使用官方 macOS 二进制的 Codex CLI
     casks = [
+      "codex"
       "antigravity-ide"
       "bitwarden"
       "sfm"

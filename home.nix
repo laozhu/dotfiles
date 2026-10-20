@@ -50,14 +50,13 @@ in
     pkgs.bws
 
     # -----------------------------------------------------------
-    # 🤖 AI TUI Agents & 多开工具 (通过 llm-agents.nix 统一声明式管理)
+    # 🤖 AI TUI Agents & 多开工具 (全部使用预编译发布包)
     # -----------------------------------------------------------
-    llmPkgs.herdr
+    pkgs.herdr
     llmPkgs.claude-code
-    llmPkgs.codex
     llmPkgs.antigravity-cli
-    llmPkgs.kimi-code
-    llmPkgs.pi
+    pkgs.kimi-code
+    pkgs.pi
   ];
   
   fonts.fontconfig.enable = true;

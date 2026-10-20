@@ -21,4 +21,14 @@
 ./rebuild.sh --update # 更新依赖并应用配置
 ```
 
+Codex CLI 由 Homebrew `codex` cask 安装官方 Apple Silicon 预编译发布包，
+不再由 `llm-agents.nix` 从源码编译。`bootstrap.sh` 首次安装，`rebuild.sh`
+通过同一份 Homebrew 声明安装或升级；`--update` 同时更新锁定的 cask 定义。
+`pnpm`、`uv`、`bws`、`herdr`、Kimi Code、Pi 和 sing-box 也使用官方 Apple Silicon
+二进制发布包，Nix 只校验 SHA-256、解包和链接，不编译这些工具。
+版本及校验值固定在 `macos-binaries.json`；`--update` 根据更新后的 flake 输入
+通过 GitHub CLI 刷新这些记录，需要可用的 GitHub 连接（可先运行 `gh auth login`）。
+缺少对应发布包或 SHA-256 时更新失败，不回退源码编译。普通 rebuild 与首次 bootstrap
+使用已固定的版本，无需查询 GitHub API。其他 Nix 系统依赖仍可能编译。
+
 SFM 配置需要手动导入，操作与恢复步骤见 [sing-box 文档](docs/sing-box.md)。
