@@ -53,4 +53,7 @@ homebrew_cask_source="$(
   "$homebrew_cask_source/Casks/u/uu-booster.rb"
 
 # 共享配置通过 Homebrew cask 安装或升级 Codex 官方 macOS 二进制。
-exec sudo darwin-rebuild switch --flake "$DIR#mac"
+sudo darwin-rebuild switch --flake "$DIR#mac"
+
+# IDE 配置与插件属于当前用户，必须在系统应用安装完成后执行。
+bash "$DIR/scripts/sync-editors.sh"
