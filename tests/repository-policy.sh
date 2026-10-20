@@ -12,6 +12,7 @@ nix eval --json "$repo_dir#darwinConfigurations.mac.pkgs" --apply '
 nix eval --json "$repo_dir#darwinConfigurations.mac.config" --apply '
   config: {
     casks = map (cask: cask.name) config.homebrew.casks;
+    brews = map (brew: brew.name) config.homebrew.brews;
     upgrade = config.homebrew.onActivation.upgrade;
     packages = builtins.concatLists (map
       (home: map (package: package.pname or package.name) home.home.packages)
@@ -19,6 +20,7 @@ nix eval --json "$repo_dir#darwinConfigurations.mac.config" --apply '
   }
 ' | jq -e '
   (.casks | index("codex") != null) and
+  (.brews | index("daipeihust/tap/im-select") != null) and
   .upgrade == true and
   ([.packages[] | select(test("^codex($|-)"))] | length == 0)
 ' >/dev/null
@@ -27,6 +29,7 @@ nix eval --json \
   "$repo_dir#darwinConfigurations.mac.config.nix-homebrew.taps" |
   jq -e '
     keys == [
+      "daipeihust/homebrew-tap",
       "homebrew/homebrew-cask",
       "homebrew/homebrew-core",
       "stablyai/homebrew-orca"

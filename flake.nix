@@ -42,6 +42,10 @@
       url = "github:stablyai/homebrew-orca";
       flake = false;
     };
+    im-select-tap = {
+      url = "github:daipeihust/homebrew-tap";
+      flake = false;
+    };
   };
 
   outputs = inputs@{ self, darwin, nixpkgs, home-manager, llm-agents, nix-homebrew, sops-nix, ... }:
@@ -75,6 +79,7 @@
               "homebrew/homebrew-core" = inputs.homebrew-core;
               "homebrew/homebrew-cask" = inputs.homebrew-cask;
               "stablyai/homebrew-orca" = inputs.orca-tap;
+              "daipeihust/homebrew-tap" = inputs.im-select-tap;
             };
             mutableTaps = false;
           };

@@ -21,6 +21,9 @@
 ./rebuild.sh --update # 更新依赖并应用配置
 ```
 
+im-select 通过上游 `daipeihust/tap` 的 Homebrew formula 自动安装，tap 版本由
+`flake.lock` 固定。运行 `rebuild.sh` 后可用 `im-select` 查询当前输入法。
+
 Codex CLI 由 Homebrew `codex` cask 安装官方 Apple Silicon 预编译发布包，
 不再由 `llm-agents.nix` 从源码编译。`bootstrap.sh` 首次安装，`rebuild.sh`
 通过同一份 Homebrew 声明安装或升级；`--update` 同时更新锁定的 cask 定义。

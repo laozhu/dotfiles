@@ -76,10 +76,11 @@
       "homebrew/core"
       "homebrew/cask"
       "stablyai/orca"
+      "daipeihust/tap"
     ];
 
-    # 常规 CLI 由 Nix 管理；Codex 通过 cask 安装官方预编译包。
-    brews = [];
+    # 常规 CLI 由 Nix 管理；im-select 使用上游 tap，Codex 使用官方 cask。
+    brews = [ "daipeihust/tap/im-select" ];
 
     # 桌面应用及使用官方 macOS 二进制的 Codex CLI
     casks = [
