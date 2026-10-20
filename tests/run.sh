@@ -11,6 +11,7 @@ tests=(
   update-macos-binaries.sh
   repository-policy.sh
   pi-config.sh
+  pi-help.sh
   sing-box-config.sh
   render-sing-box-config.sh
   publish-sing-box-config.sh

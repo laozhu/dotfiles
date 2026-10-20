@@ -30,5 +30,7 @@ Codex CLI 由 Homebrew `codex` cask 安装官方 Apple Silicon 预编译发布�
 通过 GitHub CLI 刷新这些记录，需要可用的 GitHub 连接（可先运行 `gh auth login`）。
 缺少对应发布包或 SHA-256 时更新失败，不回退源码编译。普通 rebuild 与首次 bootstrap
 使用已固定的版本，无需查询 GitHub API。其他 Nix 系统依赖仍可能编译。
+单独运行 `pi --help` 或 `pi -h` 时禁用启动联网，避免因缺少扩展触发 npm 安装；
+正常启动与扩展安装、更新继续使用原有网络行为。
 
 SFM 配置需要手动导入，操作与恢复步骤见 [sing-box 文档](docs/sing-box.md)。

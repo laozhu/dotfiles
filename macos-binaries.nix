@@ -32,7 +32,14 @@ let
             --prefix PATH : ${lib.makeBinPath [ fd ripgrep ]} \
             --set PI_PACKAGE_DIR "$(dirname "$binary")" \
             --set PI_SKIP_VERSION_CHECK 1 \
-            --set PI_TELEMETRY 0
+            --set PI_TELEMETRY 0 \
+            --run ${lib.escapeShellArg ''
+              if [ "$#" -eq 1 ]; then
+                case "$1" in
+                  --help|-h) export PI_OFFLINE=1 ;;
+                esac
+              fi
+            ''}
         '' else ''
           ln -s "$binary" "$out/bin/${executable}"
         ''}
