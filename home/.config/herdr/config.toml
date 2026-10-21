@@ -1,4 +1,4 @@
-onboarding = true
+onboarding = false
 [keys]
 prefix = "ctrl+b"
 focus_pane_left  = "prefix+h"
@@ -17,8 +17,9 @@ copy_mode  = "prefix+y"  # herdr's copy-mode entry key; copy-mode's own internal
 # Agents panel order: explicit choice of "spaces" (grouped by space, the default) over "priority".
 agent_panel_sort = "spaces"
 
+status_indicators = "dots"
 [theme]
-name = "rose-pine-dawn"
+name = "tokyo-night"
 auto_switch = false
 
 [ui.toast]
