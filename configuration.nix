@@ -2,6 +2,8 @@
 
 let
   preferredLanguages = [ "en-SG" "zh-SG" ];
+  locale = "en_SG";
+  terminalLocale = "${locale}.UTF-8";
   timeZone = "Asia/Singapore";
 in
 {
@@ -32,7 +34,7 @@ in
   system.defaults = {
     # Safari 跟随系统首选语言；Chrome 通过策略使用相同的语言顺序。
     CustomUserPreferences.".GlobalPreferences".AppleLanguages = preferredLanguages;
-    CustomUserPreferences.".GlobalPreferences".AppleLocale = "en_SG";
+    CustomUserPreferences.".GlobalPreferences".AppleLocale = locale;
     CustomUserPreferences."com.google.Chrome".ForcedLanguages = preferredLanguages;
 
     NSGlobalDomain = {
@@ -61,8 +63,11 @@ in
     };
   };
 
-  # 注入南京大学 (NJU) 的 API 与 Bottles 镜像
+  # Shell 使用 UTF-8，并注入南京大学 (NJU) 的 API 与 Bottles 镜像。
   environment.variables = {
+    LANG = terminalLocale;
+    LC_ALL = terminalLocale;
+
     HOMEBREW_API_DOMAIN = "https://mirror.nju.edu.cn/homebrew-bottles/api";
     HOMEBREW_BOTTLE_DOMAIN = "https://mirror.nju.edu.cn/homebrew-bottles";
     HOMEBREW_BREW_GIT_REMOTE = "https://mirror.nju.edu.cn/git/homebrew/brew.git";
