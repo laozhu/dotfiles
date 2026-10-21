@@ -6,6 +6,9 @@ home/.config/herdr/*.log
 home/.config/herdr/release-notes.json
 home/.config/herdr/session.json
 home/.config/herdr/*.sock
+home/.config/herdr/herdr.sock.agent
+home/.config/herdr/.plugins.lock
+home/.config/herdr/session-snapshots/
 
 # Local Git worktrees
 .worktrees/
