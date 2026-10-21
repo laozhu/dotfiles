@@ -42,6 +42,7 @@ in
       InitialKeyRepeat = 15;  # 缩短长按触发重复的延迟
       # 🛑 开发者防坑必备：关闭 macOS 各类“自作聪明”的文本替换
       NSAutomaticCapitalizationEnabled = false;      # 关闭自动首字母大写
+      NSAutomaticInlinePredictionEnabled = true;    # 显示行内预测文字
       NSAutomaticDashSubstitutionEnabled = false;    # 关闭自动双横杠替换为长破折号（防止 --help 报错）
       NSAutomaticPeriodSubstitutionEnabled = false;  # 关闭双击空格自动输入句号
       NSAutomaticQuoteSubstitutionEnabled = false;   # 关闭智能引号（防止破坏 JSON/代码结构）
@@ -98,6 +99,7 @@ in
 
     # 桌面应用及使用官方 macOS 二进制的 Codex CLI
     casks = [
+      "doubaoime"
       "codex"
       "antigravity-ide"
       "bitwarden"
