@@ -63,8 +63,8 @@ netstat -anv -p tcp | rg '[.:](7777|9090).*LISTEN'
 通过 SFM 日志、连接记录与出口 IP 检查分流：
 
 - `localhost`、`.local`、局域网及未匹配目标直连。
-- GFWList、Antigravity、GitHub、OpenAI、Claude
-  和 Google Meet（TCP/UDP）走 `proxy`。
+- GFWList、GitHub、OpenAI 和 Google Meet（TCP/UDP）走 `🚀 proxy`。
+- Antigravity 和 Claude 固定走 `🇸🇬 singapore`，DNS 使用 `singapore-dns`。
 - DNS 请求由 TUN 劫持，结果符合规则；并非所有域名都返回 FakeIP。
 
 `direct.domain_resolver` 使用 AliDNS，避免国内直连目标继承代理 DNS。
@@ -94,6 +94,13 @@ CLI 日志、[官方安装说明](https://antigravity.google/docs/getting-starte
 及[上游网络问题记录](https://github.com/google-antigravity/antigravity-cli/issues/181)整理。
 二进制包含端点不代表当前会话都访问过；未纳入测试环境或 Google 企业服务端点。
 规则保证这些目标走代理，但不能保证 Google 的账号或出口 IP 地区资格校验通过。
+
+### Claude 分流
+
+`claude` 规则集固定使用 `🇸🇬 singapore`，域名查询使用 `singapore-dns`。
+DNS 规则优先于通用代理 DNS 规则，全局 `🚀 proxy` 或 `⚡ auto` 的选择不会
+改变 Claude 的新加坡出口。新加坡组仍可在同一机房的 VLESS 与 Hysteria2
+节点间测速选择，不会切到美国节点。
 
 ### 节点与连接
 

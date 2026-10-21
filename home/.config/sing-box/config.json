@@ -66,11 +66,14 @@
         "server": "singapore-dns"
       },
       {
+        "rule_set": "claude",
+        "server": "singapore-dns"
+      },
+      {
         "rule_set": [
           "custom-proxy",
           "gfwlist",
           "openai",
-          "claude",
           "google-meet"
         ],
         "server": "proxy-dns"
@@ -296,7 +299,7 @@
       },
       {
         "rule_set": "claude",
-        "outbound": "🚀 proxy"
+        "outbound": "🇸🇬 singapore"
       },
       {
         "rule_set": "google-meet",
