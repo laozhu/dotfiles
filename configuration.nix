@@ -1,5 +1,9 @@
 { lib, user, ... }:
 
+let
+  preferredLanguages = [ "en-SG" "zh-SG" ];
+  timeZone = "Asia/Singapore";
+in
 {
   # Determinate 已经管理了 Nix daemon，关闭 nix-darwin 的管理防止冲突
   nix.enable = false;
@@ -19,15 +23,17 @@
   system.stateVersion = 6;
 
   # 设置系统时区为新加坡
-  time.timeZone = "Asia/Singapore";
+  time.timeZone = timeZone;
 
   users.users.${user} = {
     home = "/Users/${user}";
   };
 
   system.defaults = {
-    CustomUserPreferences.".GlobalPreferences".AppleLanguages = [ "en-SG" "zh-SG" ];
+    # Safari 跟随系统首选语言；Chrome 通过策略使用相同的语言顺序。
+    CustomUserPreferences.".GlobalPreferences".AppleLanguages = preferredLanguages;
     CustomUserPreferences.".GlobalPreferences".AppleLocale = "en_SG";
+    CustomUserPreferences."com.google.Chrome".ForcedLanguages = preferredLanguages;
 
     NSGlobalDomain = {
       KeyRepeat = 2;          # 极速按键重复 (开发者必需)
