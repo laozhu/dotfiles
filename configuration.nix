@@ -18,14 +18,17 @@
   system.primaryUser = user;
   system.stateVersion = 6;
 
-  # 设置系统时区，匹配国内环境
-  time.timeZone = "Asia/Shanghai";
+  # 设置系统时区为新加坡
+  time.timeZone = "Asia/Singapore";
 
   users.users.${user} = {
     home = "/Users/${user}";
   };
 
   system.defaults = {
+    CustomUserPreferences.".GlobalPreferences".AppleLanguages = [ "en-SG" "zh-SG" ];
+    CustomUserPreferences.".GlobalPreferences".AppleLocale = "en_SG";
+
     NSGlobalDomain = {
       KeyRepeat = 2;          # 极速按键重复 (开发者必需)
       InitialKeyRepeat = 15;  # 缩短长按触发重复的延迟

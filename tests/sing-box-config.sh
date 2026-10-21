@@ -101,7 +101,11 @@ jq -e '
       "server": "singapore-dns"
     },
     {
-      "rule_set": ["custom-proxy", "gfwlist", "openai", "claude", "google-meet"],
+      "rule_set": "claude",
+      "server": "singapore-dns"
+    },
+    {
+      "rule_set": ["custom-proxy", "gfwlist", "openai", "google-meet"],
       "server": "proxy-dns"
     },
     {
@@ -290,7 +294,7 @@ jq -e '
     {"rule_set": "custom-proxy", "outbound": "🚀 proxy"},
     {"rule_set": "antigravity.google", "outbound": "🇸🇬 singapore"},
     {"rule_set": "openai", "outbound": "🚀 proxy"},
-    {"rule_set": "claude", "outbound": "🚀 proxy"},
+    {"rule_set": "claude", "outbound": "🇸🇬 singapore"},
     {
       "rule_set": "google-meet",
       "network": "udp",
