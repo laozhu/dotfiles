@@ -1,4 +1,5 @@
 {
+  "autoMemoryEnabled": false,
   "theme": "dark-ansi",
   "statusLine": {
     "type": "command",
