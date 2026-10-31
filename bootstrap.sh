@@ -24,6 +24,29 @@ esac
 echo "==> Machine profile: $PROFILE (shared + $PROFILE)"
 source "$DIR/scripts/nix-cache-env.sh"
 
+echo "==> Configure the machine name (first run only)"
+MACHINE_NAME_FILE="$HOME/.config/dotfiles/hostname"
+if [ -f "$MACHINE_NAME_FILE" ]; then
+  echo "    Machine name already configured, skipping"
+else
+  while true; do
+    if ! read -r -p "    Computer name (e.g. rich-macbook, without .local): " MACHINE_NAME; then
+      echo '    A computer name is required. Run bootstrap again in an interactive terminal.' >&2
+      exit 1
+    fi
+    if [ "${#MACHINE_NAME}" -le 63 ] &&
+      [[ "$MACHINE_NAME" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$ ]]; then
+      break
+    fi
+    echo '    Use 1-63 ASCII letters, digits or hyphens; start and end with a letter or digit.' >&2
+  done
+  sudo scutil --set ComputerName "$MACHINE_NAME"
+  sudo scutil --set LocalHostName "$MACHINE_NAME"
+  sudo scutil --set HostName "$MACHINE_NAME"
+  mkdir -p "$(dirname "$MACHINE_NAME_FILE")"
+  printf '%s\n' "$MACHINE_NAME" >"$MACHINE_NAME_FILE"
+fi
+
 echo "==> Step 1: Determinate Nix"
 if command -v nix >/dev/null 2>&1; then
   echo "    nix already installed, skipping"
@@ -40,8 +63,8 @@ echo "==> Step 2: symlink this repo to ~/.dotfiles"
 ln -sfn "$DIR" ~/.dotfiles
 
 echo "==> Step 3: personalize the configured username"
-# Do this before any sudo call: sudo resets $USER to root, so whoami has to
-# run as the real interactive user first.
+# Resolve this as the real interactive user, outside sudo (which resets $USER
+# to root).
 REAL_USER="$(whoami)"
 FLAKE_USER="$(sed -nE 's/^[[:space:]]*user = "([^"]+)";.*/\1/p' "$DIR/flake.nix" | head -n1)"
 if [ -z "$FLAKE_USER" ]; then

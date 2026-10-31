@@ -21,6 +21,9 @@
 新增文件映射、安装软件和系统设置需要 rebuild。
 Claude 的 `home/.claude/settings.json` 只在本机配置不存在时复制，后续修改模板不会覆盖本机文件。
 
+`configuration.nix` 在 home/work 两组中均将 AirDrop 设为对所有人可见，
+并开启触摸板“轻点以点按”。这些设置由首次 bootstrap 和后续 rebuild 应用。
+
 ## 工具来源与更新
 
 - 常规命令行工具由 Nix / Home Manager 管理；Claude Code、Antigravity CLI 来自 `llm-agents.nix`。
