@@ -1,5 +1,6 @@
 {
   lib,
+  pkgs,
   user,
   profile,
   ...
@@ -103,9 +104,11 @@ in
     # 🔄 支持自动化清洗、更新及底层应用升级
     onActivation = {
       cleanup = "zap"; # 移除所有未在列表中声明的包
-      autoUpdate = true; # 构建前自动更新 Homebrew 仓库
+      autoUpdate = false; # Brew 和 taps 由 flake.lock 统一更新
       upgrade = true; # 👈 自动将所有 Casks 升级到最新版本
       extraFlags = [ "--force" ];
+      # Activation starts with a minimal root PATH, before Home Manager is activated.
+      extraEnv.PATH = "/opt/homebrew/opt/python/libexec/bin:/opt/homebrew/opt/openjdk/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin";
     };
 
     taps = [
@@ -122,6 +125,15 @@ in
     brews = software.brews;
     casks = software.casks;
   };
+
+  # G HUB uses a vendor installer: Brew's receipt can outlive the actual application.
+  system.activationScripts.homebrew.text = lib.mkIf (profile == "home") (
+    lib.mkAfter ''
+      sudo --user=${lib.escapeShellArg user} --set-home ${pkgs.bash}/bin/bash \
+        ${./scripts/ensure-cask-app.sh} /opt/homebrew/bin/brew logitech-g-hub \
+        /Applications/lghub.app ${lib.escapeShellArg "/Users/${user}/Applications/lghub.app"}
+    ''
+  );
 
   # Register the JDK with /usr/libexec/java_home as recommended by Homebrew.
   system.activationScripts.postActivation.text = ''

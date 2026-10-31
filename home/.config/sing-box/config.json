@@ -333,6 +333,9 @@
           {
             "domain_suffix": [
               "github.com",
+              "npass.app",
+              "logitechg.com",
+              "logi.com",
               "githubusercontent.com",
               "githubassets.com",
               "cache.nixos.org",

@@ -36,7 +36,20 @@ source "$DIR/scripts/nix-cache-env.sh"
 "$DIR/scripts/check-sops-age-key.sh"
 
 if [ "$update_inputs" = true ]; then
-  nix flake update --flake "$DIR"
+  # Updating without input names also contacts work-only providers on a home Mac.
+  input_names="$(jq -er '.nodes[.root].inputs | keys[]' "$DIR/flake.lock")"
+  update_targets=()
+  while IFS= read -r input_name; do
+    case "$PROFILE:$input_name" in
+      home:atlassian-tap | home:nordpass-tap) continue ;;
+    esac
+    update_targets+=("$input_name")
+  done <<<"$input_names"
+  if [ "${#update_targets[@]}" -eq 0 ]; then
+    echo "No inputs selected for $PROFILE; refusing to update all inputs." >&2
+    exit 2
+  fi
+  nix flake update --flake "$DIR" "${update_targets[@]}"
   bash "$DIR/scripts/update-macos-binaries.sh"
 fi
 
@@ -64,3 +77,5 @@ sudo --preserve-env=NIX_CONFIG darwin-rebuild switch --flake "$DIR#$PROFILE"
 
 # IDE 配置与插件属于当前用户，必须在系统应用安装完成后执行。
 bash "$DIR/scripts/sync-editors.sh"
+
+echo "==> Done. Open a new terminal to load updated PATH and shell settings."

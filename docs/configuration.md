@@ -42,7 +42,8 @@ Claude 的 `home/.claude/settings.json` 只在本机配置不存在时复制，�
 ./rebuild.sh --update
 ```
 
-`--update` 先更新 `flake.lock`，再通过 GitHub CLI 查询对应版本的官方发布包并更新
+`--update` 按本机分组更新 `flake.lock`：home 更新共享依赖，跳过 work 专用的 NordPass、Atlassian tap；
+work 更新全部依赖。随后通过 GitHub CLI 查询对应版本的官方发布包并更新
 `macos-binaries.json`，随后校验并应用配置。首次使用 `gh` 时先运行 `gh auth login`。
 普通 rebuild 和 bootstrap 使用已有二进制记录，不查询这些发布包的 GitHub API。
 缺少发布包或有效 SHA-256 时更新停止，不回退源码编译。
@@ -54,9 +55,32 @@ Claude 的 `home/.claude/settings.json` 只在本机配置不存在时复制，�
 git diff -- flake.lock macos-binaries.json
 ```
 
-Homebrew 激活时会更新、升级软件，并以 `cleanup = "zap"` 清理声明之外的包和 cask，
+Brew 引擎（`brew-src`）与 taps 都由 `flake.lock` 固定，`--update` 会一起更新，
+避免旧引擎无法解析新配方。激活时不运行 `brew update`，仍会安装、升级声明的软件，并以 `cleanup = "zap"` 清理声明之外的包和 cask，
 可能同时清理被移除应用的数据。移除软件声明前先确认本机数据是否需要保留。
 Nix 的构建和回退不等于撤销 Homebrew 升级或 IDE 配置写入。
+
+G HUB 的安装器可能留下安装记录却没有应用。home 激活后会检查实际应用路径，缺失时自动重跑安装器；
+若仍没有应用则停止，不把安装记录当作成功。重复运行不会重装已经存在的应用。
+
+### 安装日志与终端环境
+
+- **Python / Java**：Homebrew 阶段失败会阻止后续 Home Manager 激活。修复后重跑即可继续；
+  成功后打开新终端，让 `python`、`python3`、`pip` 和 `JAVA_HOME` 加载新配置。
+  子脚本不能修改已经打开的父终端环境。
+- **Git tree has uncommitted changes / updating lock file**：`--update` 会改动版本记录，这些提示正常。
+  审查改动后提交即可，不要让脚本自动提交或隐藏未提交修改。
+- **Homebrew managed by Nix / Tier 3**：这是 Homebrew 对 Nix 管理方式的支持范围提示，不是安装失败。
+- **running through sudo**：系统激活以 sudo 切换回当前用户安装 cask，
+  Homebrew 因此提示服务域；不代表启动了 sing-box 服务。
+- **Command Line Tools 更新**：通过系统设置的软件更新检查并安装 Apple 提供的更新，
+  不删除现有 CLT，不由脚本绕过系统更新授权。
+- **quarantine approval / 首次启动授权**：macOS 可能要求重新批准应用，保留系统校验。
+  OrbStack 首次运行仍需完成初始化；SFM 升级可能重启应用，安装和后续下载时应确认代理已连接。
+- **NordPass TLS 证书错误**：home 不更新该 work 专用源。work 需要代理正确转发其官方域名
+  `downloads.npass.app`，且服务提供匹配的有效证书。模板已将 `npass.app` 加入代理 DNS 和路由；
+  使用旧 SFM 导入副本时，需按 [SFM 文档](sing-box.md#发布与导入) 导入新配置。
+  证书错误时停止并检查网络，不禁用证书校验。
 
 ## 二进制优先与缓存
 
@@ -124,4 +148,6 @@ nix build --no-link .#darwinConfigurations.home.system .#darwinConfigurations.wo
 
 这些 Nix 命令不会激活系统，也不会执行 Homebrew 应用安装。
 测试中的 bootstrap 使用临时目录和模拟安装命令，不能替代全新 macOS 上的安装验收。
+`tests/homebrew-formulae.sh` 在临时前缀中使用实际锁定的 Brew 与 core tap 解析 Java 依赖，
+覆盖 Nix 构建本身不会执行的配方兼容性检查，不安装 Homebrew 软件。
 官方选项和命令说明见 README 的 [参考资料](../README.md#参考资料)。

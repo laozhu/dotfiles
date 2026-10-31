@@ -50,12 +50,12 @@ Homebrew 安装或升级 SFM 可能中断代理连接，操作前保留可离线
 
 以下行为来自仓库模板，运行时以导入 SFM 的那份配置为准：
 
-| 流量                                                                      | 去向                                                  |
-| ------------------------------------------------------------------------- | ----------------------------------------------------- |
-| 私网 IP、代理服务器自身、未匹配其他规则的流量                             | 直连                                                  |
-| GitHub、Nix 缓存等 `custom-proxy` 目标，以及 GFWList、OpenAI、Google Meet | `🚀 proxy` 选择的出口                                 |
-| Antigravity、Claude                                                       | `🇸🇬 singapore`，对应 DNS 也走新加坡                   |
-| 远程规则集下载                                                            | 经 `rule-set-download` HTTP client 固定走 `🇺🇸 us-hy2` |
+| 流量                                                                                     | 去向                                                  |
+| ---------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| 私网 IP、代理服务器自身、未匹配其他规则的流量                                            | 直连                                                  |
+| GitHub、Nix 缓存、NordPass 下载等 `custom-proxy` 目标，以及 GFWList、OpenAI、Google Meet | `🚀 proxy` 选择的出口                                 |
+| Antigravity、Claude                                                                      | `🇸🇬 singapore`，对应 DNS 也走新加坡                   |
+| 远程规则集下载                                                                           | 经 `rule-set-download` HTTP client 固定走 `🇺🇸 us-hy2` |
 
 `🚀 proxy` 默认选择 `⚡ auto`，也可手动指定地区或节点。
 三个自动组每 3 分钟探测，容差 50 ms；HY2 在候选中优先排列，探测后按延迟选择。
@@ -67,6 +67,11 @@ DNS 使用 IPv4 策略并拒绝 AAAA 查询；代理目标按规则使用代理 
 启用 DNS 持久缓存和最多 5 分钟的过期缓存后台刷新。
 字段含义见 [DNS 配置](https://sing-box.sagernet.org/configuration/dns/) 和
 [URLTest](https://sing-box.sagernet.org/configuration/outbound/urltest/)。
+
+`npass.app`、`logitechg.com`、`logi.com` 使用代理 DNS 和出口，避免 NordPass tap 和 G HUB 在线安装器落到直连。
+G HUB 的 cask 下载的是在线安装器，安装时仍须访问 Logitech 更新服务器；安装记录存在不代表应用安装成功。
+旧的 SFM 导入副本不会自动获得这条规则，更新后按上面的步骤重新导入；
+实际 TLS 请求仍须在代理生效后验证，不关闭 Git/curl 的证书校验。
 
 ## 检查与恢复
 

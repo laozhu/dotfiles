@@ -59,6 +59,27 @@ jq -e '
 config_test_root="$(mktemp -d)"
 trap 'rm -rf "$config_test_root"' EXIT
 
+# Vendor installers and NordPass must use proxy DNS and routing rather than the direct fallback.
+proxy_fixture="$config_test_root/custom-proxy.json"
+jq '{version: 3, rules: first(.route.rule_set[] |
+  select(.tag == "custom-proxy")).rules}' "$config" >"$proxy_fixture"
+for domain in npass.app downloads.npass.app updates.ghub.logitechg.com download01.logi.com; do
+  result="$(sing-box rule-set match "$proxy_fixture" "$domain" 2>&1)"
+  if [ -z "$result" ]; then
+    echo "Proxy rule did not match $domain" >&2
+    exit 1
+  fi
+done
+if [ -n "$(sing-box rule-set match "$proxy_fixture" downloads.npass.app.example.invalid 2>&1)" ]; then
+  echo 'NordPass proxy rule crossed its domain boundary' >&2
+  exit 1
+fi
+jq -e '
+  ([.dns.rules[] | select(.rule_set | if type == "array" then index("custom-proxy") != null else . == "custom-proxy" end) |
+    .server] == ["proxy-dns"]) and
+  ([.route.rules[] | select(.rule_set == "custom-proxy") | .outbound] == ["🚀 proxy"])
+' "$config" >/dev/null
+
 # Render the actual template with synthetic secrets, then use the real core to
 # validate it. This exercises schema changes without needing the user's age key.
 node --input-type=module - "$repo_dir" "$config_test_root/rendered.json" <<'NODE'

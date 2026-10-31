@@ -188,6 +188,7 @@ CI 分别执行 `format:check` 和 `test`；本地运行测试使用 `bash tests
 ./rebuild.sh --update
 ```
 
+`--update` 按本机分组选择依赖；home 会跳过 NordPass、Atlassian 等 work 专用源。
 更新需要可用的 GitHub 连接；首次使用 GitHub CLI 时先执行 `gh auth login`。
 安装优先使用官方二进制和预编译缓存；bootstrap、rebuild 与 CI 共用 `nix-caches.conf`，
 其中的 sops-nix 上游缓存可减少首次安装的源码编译。详见 [配置维护](docs/configuration.md#二进制优先与缓存)。
