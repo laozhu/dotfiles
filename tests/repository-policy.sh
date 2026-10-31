@@ -2,6 +2,13 @@
 set -euo pipefail
 
 repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+
+# NordPass serves dumb HTTP Git, which cannot fetch shallow clones on fresh CI.
+if ! jq -e '.nodes["nordpass-tap"] | .original.shallow == false and .locked.shallow == false' \
+  "$repo_dir/flake.lock" >/dev/null; then
+  echo 'NordPass tap must explicitly disable shallow fetching in the input and lock.' >&2
+  exit 1
+fi
 nix eval --json "$repo_dir#darwinConfigurations.mac.pkgs" --apply '
   pkgs: map (name: {
     inherit name;
