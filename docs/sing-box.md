@@ -42,20 +42,50 @@ SFM 的 Local Profile 是导入副本，不会自动读取仓库后续修改：
 3. 替换旧副本，保留一个容易辨认的配置，例如 `config`。
 4. 连接；首次使用时按 macOS 提示批准网络扩展和 VPN 权限。
 
-每次修改模板、规则或秘密并成功 rebuild 后，都要重新导入。
+每次修改模板、规则或秘密并发布新配置后，都要重新导入。
 不要直接修改 SFM 的私有容器；应用内临时修改也不会同步回仓库。
 Homebrew 安装或升级 SFM 可能中断代理连接，操作前保留可离线使用的安装包和配置。
+
+### rebuild 被软件下载卡住时
+
+Homebrew 安装在代理配置发布之前执行；若安装器无法下载，rebuild 可能无法发布新的分流规则。
+已有 Nix、Node、SOPS、jq 和 age 密钥的机器，可在仓库根目录独立生成并发布配置：
+
+```bash
+bash <<'SH'
+set -euo pipefail
+source scripts/nix-cache-env.sh
+bash scripts/check-sops-age-key.sh
+coreutils_dir="$(nix build --no-link --print-out-paths .#darwinConfigurations.home.pkgs.coreutils)"
+sing_box_dir="$(nix build --no-link --print-out-paths .#darwinConfigurations.home.pkgs.sing-box)"
+umask 077
+candidate="$(mktemp)"
+trap 'rm -f "$candidate"' EXIT
+export SOPS_AGE_KEY_FILE="$HOME/Library/Application Support/sops/age/keys.txt"
+sops decrypt --output-type json secrets/sing-box.yaml |
+  node scripts/render-sing-box-config.mjs \
+    home/.config/sing-box/config.json home/.config/sing-box/secrets-map.json >"$candidate"
+bash scripts/publish-sing-box-config.sh \
+  "$HOME/.local/state/sing-box" "$HOME/.local/state/sing-box/config.json" \
+  "$candidate" "$coreutils_dir/bin" "$(command -v jq)" "$sing_box_dir/bin/sing-box"
+SH
+```
+
+这里的 `home` 仅用于获取两组共用的校验工具，work 机器也可使用，不更改本机分组。
+命令只构建工具、渲染、校验并原子发布配置，不安装 Homebrew 软件或启动代理；校验失败保留旧配置。
+然后按上面的步骤在 SFM 中导入并连接，确认下载恢复后再重试 rebuild。
+新机尚未安装这些工具时，先在旧 Mac 生成并导入新配置，再按 Quick start 一次传到新机。
 
 ## 当前分流
 
 以下行为来自仓库模板，运行时以导入 SFM 的那份配置为准：
 
-| 流量                                                                                     | 去向                                                  |
-| ---------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| 私网 IP、代理服务器自身、未匹配其他规则的流量                                            | 直连                                                  |
-| GitHub、Nix 缓存、NordPass 下载等 `custom-proxy` 目标，以及 GFWList、OpenAI、Google Meet | `🚀 proxy` 选择的出口                                 |
-| Antigravity、Claude                                                                      | `🇸🇬 singapore`，对应 DNS 也走新加坡                   |
-| 远程规则集下载                                                                           | 经 `rule-set-download` HTTP client 固定走 `🇺🇸 us-hy2` |
+| 流量                                                                                                 | 去向                                                  |
+| ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| 私网 IP、代理服务器自身、未匹配其他规则的流量                                                        | 直连                                                  |
+| GitHub、Nix 缓存、NordPass 和 Logitech 下载等 `custom-proxy` 目标，以及 GFWList、OpenAI、Google Meet | `🚀 proxy` 选择的出口                                 |
+| Antigravity、Claude                                                                                  | `🇸🇬 singapore`，对应 DNS 也走新加坡                   |
+| 远程规则集下载                                                                                       | 经 `rule-set-download` HTTP client 固定走 `🇺🇸 us-hy2` |
 
 `🚀 proxy` 默认选择 `⚡ auto`，也可手动指定地区或节点。
 三个自动组每 3 分钟探测，容差 50 ms；HY2 在候选中优先排列，探测后按延迟选择。

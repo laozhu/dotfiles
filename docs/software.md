@@ -110,6 +110,8 @@ Homebrew Python 是明确替换系统版本的工具，因此保留。RabbitPro 
   默认版本，Gradle 使用对应的 `JAVA_HOME`。Kotlin 由项目 Gradle 插件管理，不安装全局 `kotlinc`。
 - **官方二进制**：pnpm、uv、bws、sing-box、Herdr、Kimi Code 和 Pi 由 Nix 管理固定版本的
   官方 macOS 二进制；版本和校验值见 [macos-binaries.json](../macos-binaries.json)。
+- **Logitech G HUB**：Homebrew 调用在线安装器，仍需联网下载软件主体。安装记录存在不代表应用安装成功；
+  网络失败时见 [独立生成代理配置](sing-box.md#rebuild-被软件下载卡住时)。
 - **RabbitPro**：用户自行安装到 `/Applications` 或 `~/Applications`，检查脚本会识别这两个位置。
 - **Bitdefender**：需使用公司的安装包或 MDM，不通过通用 cask 猜测企业版本。
 - **项目格式化工具**：Oxfmt、shfmt、nixfmt、StyLua 通过 `format.sh` 按需提供，不全局安装。

@@ -28,7 +28,8 @@ Claude 的 `home/.claude/settings.json` 只在本机配置不存在时复制，�
   版本及 SHA-256 记录在 `macos-binaries.json`，Nix 负责校验、解包和链接。
 - 桌面应用及 Codex CLI 由 Homebrew cask 管理；im-select、mo、Atlassian CLI 和 NordPass CLI 使用上游 tap。
   Python、OpenJDK、Gradle 及工作机的 AWS、SAM、Temporal 使用 Homebrew formula。
-  tap 的源码由 `flake.lock` 锁定，实际安装和升级还会受 Homebrew API、应用自动更新影响。
+  Brew 与 tap 源码由 `flake.lock` 锁定，核心配方从锁定的 tap 读取，不从 API 加载核心配方。
+  应用自动更新、在线安装器和未固定的下载地址仍可能影响实际安装结果。
 
 应用当前配置：
 
@@ -61,7 +62,10 @@ Brew 引擎（`brew-src`）与 taps 都由 `flake.lock` 固定，`--update` 会�
 Nix 的构建和回退不等于撤销 Homebrew 升级或 IDE 配置写入。
 
 G HUB 的安装器可能留下安装记录却没有应用。home 激活后会检查实际应用路径，缺失时自动重跑安装器；
-若仍没有应用则停止，不把安装记录当作成功。重复运行不会重装已经存在的应用。
+该检查在 Brew bundle 成功返回后执行；重装命令失败，或返回后仍没有应用时会停止。
+检查本身会跳过已有应用，但正常 Brew bundle 仍可能升级它。厂商安装器若不退出，检查也会等待，未设置超时。
+G HUB 的详细日志由厂商安装器直接输出，目前没有进度条或日志精简功能；
+下载失败时先按 [独立发布配置流程](sing-box.md#rebuild-被软件下载卡住时) 更新 SFM 的分流规则。
 
 ### 安装日志与终端环境
 
@@ -150,4 +154,6 @@ nix build --no-link .#darwinConfigurations.home.system .#darwinConfigurations.wo
 测试中的 bootstrap 使用临时目录和模拟安装命令，不能替代全新 macOS 上的安装验收。
 `tests/homebrew-formulae.sh` 在临时前缀中使用实际锁定的 Brew 与 core tap 解析 Java 依赖，
 覆盖 Nix 构建本身不会执行的配方兼容性检查，不安装 Homebrew 软件。
+G HUB 补装测试用替身覆盖应用存在、缺失、安装失败及假成功；域名测试验证 sing-box 匹配和 DNS/路由引用。
+这些测试不验证真实服务器连通性、厂商安装器退出行为、SFM 导入或系统授权。
 官方选项和命令说明见 README 的 [参考资料](../README.md#参考资料)。
