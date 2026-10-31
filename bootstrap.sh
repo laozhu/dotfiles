@@ -29,10 +29,15 @@ MACHINE_NAME_FILE="$HOME/.config/dotfiles/hostname"
 if [ -f "$MACHINE_NAME_FILE" ]; then
   echo "    Machine name already configured, skipping"
 else
+  CURRENT_MACHINE_NAME="$(scutil --get ComputerName)"
+  printf '    Current computer name: %s\n' "$CURRENT_MACHINE_NAME"
   while true; do
-    if ! read -r -p "    Computer name (e.g. rich-macbook, without .local): " MACHINE_NAME; then
-      echo '    A computer name is required. Run bootstrap again in an interactive terminal.' >&2
+    if ! read -r -p "    New name (e.g. rich-macbook, without .local; Enter to keep current): " MACHINE_NAME; then
+      echo '    No reply received. Run bootstrap again in an interactive terminal.' >&2
       exit 1
+    fi
+    if [ -z "$MACHINE_NAME" ]; then
+      break
     fi
     if [ "${#MACHINE_NAME}" -le 63 ] &&
       [[ "$MACHINE_NAME" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$ ]]; then
@@ -40,9 +45,14 @@ else
     fi
     echo '    Use 1-63 ASCII letters, digits or hyphens; start and end with a letter or digit.' >&2
   done
-  sudo scutil --set ComputerName "$MACHINE_NAME"
-  sudo scutil --set LocalHostName "$MACHINE_NAME"
-  sudo scutil --set HostName "$MACHINE_NAME"
+  if [ -n "$MACHINE_NAME" ]; then
+    sudo scutil --set ComputerName "$MACHINE_NAME"
+    sudo scutil --set LocalHostName "$MACHINE_NAME"
+    sudo scutil --set HostName "$MACHINE_NAME"
+  else
+    MACHINE_NAME="$CURRENT_MACHINE_NAME"
+    echo '    Keeping current computer name.'
+  fi
   mkdir -p "$(dirname "$MACHINE_NAME_FILE")"
   printf '%s\n' "$MACHINE_NAME" >"$MACHINE_NAME_FILE"
 fi
