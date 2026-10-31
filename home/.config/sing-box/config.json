@@ -340,6 +340,7 @@
               "githubassets.com",
               "cache.nixos.org",
               "cache.thalheim.io",
+              "cloudfront.net",
               "s3.ap-southeast-2.amazonaws.com",
               "hcaptcha.com",
               "challenges.cloudflare.com",

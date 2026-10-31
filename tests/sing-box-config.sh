@@ -63,14 +63,16 @@ trap 'rm -rf "$config_test_root"' EXIT
 proxy_fixture="$config_test_root/custom-proxy.json"
 jq '{version: 3, rules: first(.route.rule_set[] |
   select(.tag == "custom-proxy")).rules}' "$config" >"$proxy_fixture"
-for domain in cache.thalheim.io npass.app downloads.npass.app updates.ghub.logitechg.com download01.logi.com; do
+for domain in cloudfront.net dr2v7l5emb758.cloudfront.net other.cloudfront.net \
+  cache.thalheim.io npass.app downloads.npass.app updates.ghub.logitechg.com download01.logi.com; do
   result="$(sing-box rule-set match "$proxy_fixture" "$domain" 2>&1)"
   if [ -z "$result" ]; then
     echo "Proxy rule did not match $domain" >&2
     exit 1
   fi
 done
-for domain in cache.thalheim.io.example.invalid notcache.thalheim.io \
+for domain in cloudfront.net.example.invalid notcloudfront.net \
+  cache.thalheim.io.example.invalid notcache.thalheim.io \
   downloads.npass.app.example.invalid updates.ghub.logitechg.com.example.invalid \
   download01.logi.com.example.invalid notnpass.app notlogitechg.com notlogi.com; do
   if [ -n "$(sing-box rule-set match "$proxy_fixture" "$domain" 2>&1)" ]; then
