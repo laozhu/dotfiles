@@ -1,0 +1,712 @@
+[
+  {
+    "id": "chatgpt",
+    "name": "ChatGPT",
+    "group": "shared",
+    "type": "GUI",
+    "manager": "Homebrew Cask",
+    "package": "chatgpt",
+    "apps": ["ChatGPT.app"]
+  },
+  {
+    "id": "claude",
+    "name": "Claude",
+    "group": "shared",
+    "type": "GUI",
+    "manager": "Homebrew Cask",
+    "package": "claude",
+    "apps": ["Claude.app"]
+  },
+  {
+    "id": "google-gemini",
+    "name": "Google Gemini",
+    "group": "shared",
+    "type": "GUI",
+    "manager": "Homebrew Cask",
+    "package": "google-gemini",
+    "apps": ["Gemini.app"]
+  },
+  {
+    "id": "google-chrome",
+    "name": "Google Chrome",
+    "group": "shared",
+    "type": "GUI",
+    "manager": "Homebrew Cask",
+    "package": "google-chrome",
+    "apps": ["Google Chrome.app"]
+  },
+  {
+    "id": "antigravity-ide",
+    "name": "Antigravity IDE",
+    "group": "shared",
+    "type": "GUI + CLI",
+    "manager": "Homebrew Cask",
+    "package": "antigravity-ide",
+    "apps": ["Antigravity IDE.app"],
+    "commands": ["/Applications/Antigravity IDE.app/Contents/Resources/app/bin/antigravity-ide"]
+  },
+  {
+    "id": "visual-studio-code",
+    "name": "VS Code",
+    "group": "shared",
+    "type": "GUI + CLI",
+    "manager": "Homebrew Cask",
+    "package": "visual-studio-code",
+    "apps": ["Visual Studio Code.app"],
+    "commands": ["/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"]
+  },
+  {
+    "id": "wezterm",
+    "name": "WezTerm",
+    "group": "shared",
+    "type": "GUI + CLI",
+    "manager": "Homebrew Cask",
+    "package": "wezterm",
+    "apps": ["WezTerm.app"],
+    "commands": ["/Applications/WezTerm.app/Contents/MacOS/wezterm"]
+  },
+  {
+    "id": "sfm",
+    "name": "SFM",
+    "group": "shared",
+    "type": "GUI",
+    "manager": "Homebrew Cask",
+    "package": "sfm",
+    "apps": ["SFM.app"]
+  },
+  {
+    "id": "doubaoime",
+    "name": "豆包输入法",
+    "group": "shared",
+    "type": "GUI",
+    "manager": "Homebrew Cask",
+    "package": "doubaoime",
+    "apps": ["/Library/Input Methods/DoubaoIme.app"]
+  },
+  {
+    "id": "imageoptim",
+    "name": "ImageOptim",
+    "group": "shared",
+    "type": "GUI",
+    "manager": "Homebrew Cask",
+    "package": "imageoptim",
+    "apps": ["ImageOptim.app"]
+  },
+  {
+    "id": "keka",
+    "name": "Keka",
+    "group": "shared",
+    "type": "GUI",
+    "manager": "Homebrew Cask",
+    "package": "keka",
+    "apps": ["Keka.app"]
+  },
+  {
+    "id": "bitwarden",
+    "name": "Bitwarden",
+    "group": "shared",
+    "type": "GUI",
+    "manager": "Homebrew Cask",
+    "package": "bitwarden",
+    "apps": ["Bitwarden.app"]
+  },
+  {
+    "id": "wechat",
+    "name": "微信",
+    "group": "shared",
+    "type": "GUI",
+    "manager": "Homebrew Cask",
+    "package": "wechat",
+    "apps": ["WeChat.app"]
+  },
+  {
+    "id": "wechatwebdevtools",
+    "name": "微信开发者工具",
+    "group": "shared",
+    "type": "GUI + CLI",
+    "manager": "Homebrew Cask",
+    "package": "wechatwebdevtools",
+    "apps": ["wechatwebdevtools.app"],
+    "commands": ["/Applications/wechatwebdevtools.app/Contents/MacOS/cli"]
+  },
+  {
+    "id": "orbstack",
+    "name": "OrbStack / Docker / Compose / buildx",
+    "group": "shared",
+    "type": "GUI + CLI",
+    "manager": "Homebrew Cask",
+    "package": "orbstack",
+    "commands": ["orb", "docker"],
+    "apps": ["OrbStack.app"]
+  },
+  {
+    "id": "stablyai/orca/orca",
+    "name": "Orca",
+    "group": "shared",
+    "type": "GUI + CLI",
+    "manager": "Homebrew Cask",
+    "package": "stablyai/orca/orca",
+    "commands": ["orca"],
+    "apps": ["Orca.app"]
+  },
+  {
+    "id": "codex",
+    "name": "Codex CLI",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Homebrew Cask",
+    "package": "codex",
+    "commands": ["codex"]
+  },
+  {
+    "id": "ngrok",
+    "name": "ngrok",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Homebrew Cask",
+    "package": "ngrok",
+    "commands": ["ngrok"]
+  },
+  {
+    "id": "slack",
+    "name": "Slack",
+    "group": "work",
+    "type": "GUI",
+    "manager": "Homebrew Cask",
+    "package": "slack",
+    "apps": ["Slack.app"]
+  },
+  {
+    "id": "nordpass",
+    "name": "NordPass",
+    "group": "work",
+    "type": "GUI",
+    "manager": "Homebrew Cask",
+    "package": "nordpass",
+    "apps": ["NordPass.app"]
+  },
+  {
+    "id": "granola",
+    "name": "Granola",
+    "group": "work",
+    "type": "GUI",
+    "manager": "Homebrew Cask",
+    "package": "granola",
+    "apps": ["Granola.app"]
+  },
+  {
+    "id": "loom",
+    "name": "Loom",
+    "group": "work",
+    "type": "GUI",
+    "manager": "Homebrew Cask",
+    "package": "loom",
+    "apps": ["Loom.app"]
+  },
+  {
+    "id": "slack-cli",
+    "name": "Slack CLI",
+    "group": "work",
+    "type": "CLI",
+    "manager": "Homebrew Cask",
+    "package": "slack-cli",
+    "commands": ["slack"]
+  },
+  {
+    "id": "steam",
+    "name": "Steam",
+    "group": "home",
+    "type": "GUI",
+    "manager": "Homebrew Cask",
+    "package": "steam",
+    "apps": ["Steam.app"]
+  },
+  {
+    "id": "uu-booster",
+    "name": "UU 加速器",
+    "group": "home",
+    "type": "GUI",
+    "manager": "Homebrew Cask",
+    "package": "uu-booster",
+    "apps": ["UUBooster.app"]
+  },
+  {
+    "id": "logitech-g-hub",
+    "name": "Logitech G HUB",
+    "group": "home",
+    "type": "GUI",
+    "manager": "Homebrew Cask",
+    "package": "logitech-g-hub",
+    "apps": ["lghub.app"]
+  },
+  {
+    "id": "tencent-meeting",
+    "name": "腾讯会议",
+    "group": "home",
+    "type": "GUI",
+    "manager": "Homebrew Cask",
+    "package": "tencent-meeting",
+    "apps": ["TencentMeeting.app"]
+  },
+  {
+    "id": "python",
+    "name": "Python 3 / pip3",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Homebrew",
+    "package": "python",
+    "commands": ["python3", "pip3"]
+  },
+  {
+    "id": "openjdk",
+    "name": "OpenJDK",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Homebrew",
+    "package": "openjdk",
+    "commands": ["java", "javac"]
+  },
+  {
+    "id": "gradle",
+    "name": "Gradle",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Homebrew",
+    "package": "gradle",
+    "commands": ["gradle"]
+  },
+  {
+    "id": "daipeihust/tap/im-select",
+    "name": "im-select",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Homebrew",
+    "package": "daipeihust/tap/im-select",
+    "commands": ["im-select"]
+  },
+  {
+    "id": "k1low/tap/mo",
+    "name": "mo",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Homebrew",
+    "package": "k1low/tap/mo",
+    "commands": ["mo"]
+  },
+  {
+    "id": "atlassian/acli/acli",
+    "name": "Atlassian CLI",
+    "group": "work",
+    "type": "CLI",
+    "manager": "Homebrew",
+    "package": "atlassian/acli/acli",
+    "commands": ["acli"]
+  },
+  {
+    "id": "nordpass/tap/np",
+    "name": "NordPass CLI",
+    "group": "work",
+    "type": "CLI",
+    "manager": "Homebrew",
+    "package": "nordpass/tap/np",
+    "commands": ["np"]
+  },
+  {
+    "id": "awscli",
+    "name": "AWS CLI",
+    "group": "work",
+    "type": "CLI",
+    "manager": "Homebrew",
+    "package": "awscli",
+    "commands": ["aws"]
+  },
+  {
+    "id": "aws-sam-cli",
+    "name": "AWS SAM CLI",
+    "group": "work",
+    "type": "CLI",
+    "manager": "Homebrew",
+    "package": "aws-sam-cli",
+    "commands": ["sam"]
+  },
+  {
+    "id": "temporal",
+    "name": "Temporal CLI",
+    "group": "work",
+    "type": "CLI",
+    "manager": "Homebrew",
+    "package": "temporal",
+    "commands": ["temporal"]
+  },
+  {
+    "id": "ripgrep",
+    "name": "ripgrep",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "ripgrep",
+    "commands": ["rg"]
+  },
+  {
+    "id": "fd",
+    "name": "fd",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "fd",
+    "commands": ["fd"]
+  },
+  {
+    "id": "fzf",
+    "name": "fzf",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "fzf",
+    "commands": ["fzf"]
+  },
+  {
+    "id": "jq",
+    "name": "jq",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "jq",
+    "commands": ["jq"]
+  },
+  {
+    "id": "yq-go",
+    "name": "yq (Mike Farah)",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "yq-go",
+    "commands": ["yq"]
+  },
+  {
+    "id": "lazygit",
+    "name": "Lazygit",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "lazygit",
+    "commands": ["lazygit"]
+  },
+  {
+    "id": "tig",
+    "name": "tig",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "tig",
+    "commands": ["tig"]
+  },
+  {
+    "id": "neovim",
+    "name": "Neovim",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "neovim",
+    "commands": ["nvim"]
+  },
+  {
+    "id": "github-cli",
+    "name": "GitHub CLI",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "github-cli",
+    "commands": ["gh"]
+  },
+  {
+    "id": "age",
+    "name": "age",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "age",
+    "commands": ["age"]
+  },
+  {
+    "id": "bitwarden-cli",
+    "name": "Bitwarden CLI",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "bitwarden-cli",
+    "commands": ["bw"]
+  },
+  {
+    "id": "sops",
+    "name": "SOPS",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "sops",
+    "commands": ["sops"]
+  },
+  {
+    "id": "sing-box",
+    "name": "sing-box",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "sing-box",
+    "commands": ["sing-box"],
+    "note": "仅用于配置校验，不启动独立服务；代理运行及 TUN 由 SFM 负责"
+  },
+  {
+    "id": "gnumake",
+    "name": "GNU Make",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "gnumake",
+    "commands": ["make"],
+    "inventory": false
+  },
+  {
+    "id": "gcc",
+    "name": "GCC",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "gcc",
+    "commands": ["gcc"],
+    "inventory": false
+  },
+  {
+    "id": "unzip",
+    "name": "unzip",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "unzip",
+    "commands": ["unzip"],
+    "inventory": false
+  },
+  {
+    "id": "curl",
+    "name": "curl",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "curl",
+    "commands": ["curl"],
+    "inventory": false
+  },
+  {
+    "id": "wget",
+    "name": "wget",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "wget",
+    "commands": ["wget"]
+  },
+  {
+    "id": "nodejs_26",
+    "name": "Node.js / npm / npx",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "nodejs_26",
+    "commands": ["node", "npm", "npx"]
+  },
+  {
+    "id": "pnpm",
+    "name": "pnpm / pnpx",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "pnpm",
+    "commands": ["pnpm", "pnpx"]
+  },
+  {
+    "id": "bun",
+    "name": "Bun",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "bun",
+    "commands": ["bun"]
+  },
+  {
+    "id": "uv",
+    "name": "uv / uvx",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "uv",
+    "commands": ["uv", "uvx"]
+  },
+  {
+    "id": "bws",
+    "name": "Bitwarden Secrets Manager",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "bws",
+    "commands": ["bws"]
+  },
+  {
+    "id": "rustc",
+    "name": "Rust",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "rustc",
+    "commands": ["rustc"]
+  },
+  {
+    "id": "cargo",
+    "name": "Cargo",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "cargo",
+    "commands": ["cargo"]
+  },
+  {
+    "id": "caddy",
+    "name": "Caddy",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "caddy",
+    "commands": ["caddy"]
+  },
+  {
+    "id": "ffmpeg",
+    "name": "FFmpeg / ffprobe",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "ffmpeg",
+    "commands": ["ffmpeg", "ffprobe"]
+  },
+  {
+    "id": "herdr",
+    "name": "Herdr",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "herdr",
+    "commands": ["herdr"]
+  },
+  {
+    "id": "kimi-code",
+    "name": "Kimi Code",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "kimi-code",
+    "commands": ["kimi"]
+  },
+  {
+    "id": "pi",
+    "name": "Pi",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "pi",
+    "commands": ["pi"]
+  },
+  {
+    "id": "hack-font",
+    "name": "Hack Nerd Font",
+    "group": "shared",
+    "type": "Font",
+    "manager": "Nix",
+    "package": "nerd-fonts.hack",
+    "apps": ["~/Library/Fonts/HomeManager/truetype/NerdFonts/Hack/HackNerdFont-Regular.ttf"]
+  },
+  {
+    "id": "claude-code",
+    "name": "Claude Code",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "llm-agents.nix",
+    "package": "claude-code",
+    "commands": ["claude"]
+  },
+  {
+    "id": "antigravity-cli",
+    "name": "Antigravity CLI",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "llm-agents.nix",
+    "package": "antigravity-cli",
+    "commands": ["agy"]
+  },
+  {
+    "id": "git",
+    "name": "Git",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Home Manager",
+    "commands": ["git"],
+    "inventory": false
+  },
+  {
+    "id": "git-lfs",
+    "name": "Git LFS",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Home Manager",
+    "commands": ["git-lfs"]
+  },
+  {
+    "id": "direnv",
+    "name": "direnv",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Home Manager",
+    "commands": ["direnv"]
+  },
+  {
+    "id": "zsh",
+    "name": "Zsh",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Home Manager",
+    "commands": ["zsh"],
+    "inventory": false
+  },
+  {
+    "id": "starship",
+    "name": "Starship",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Home Manager",
+    "commands": ["starship"]
+  },
+  {
+    "id": "bash",
+    "name": "Bash",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "bash",
+    "commands": ["bash"],
+    "inventory": false
+  },
+  {
+    "id": "kotlin",
+    "name": "Kotlin",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Gradle",
+    "note": "由项目 Kotlin Gradle 插件管理，不安装全局 kotlinc"
+  },
+  {
+    "id": "bitdefender",
+    "name": "Bitdefender",
+    "group": "work",
+    "type": "GUI / Service",
+    "manager": "Manual",
+    "apps": ["Bitdefender Endpoint Security for Mac.app", "Bitdefender.app"],
+    "note": "使用公司安装包或 MDM，不猜测企业版本"
+  }
+]

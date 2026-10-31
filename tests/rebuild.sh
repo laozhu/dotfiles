@@ -26,6 +26,9 @@ mkdir -p \
 ln -s "$rebuild_home_repo" "$rebuild_fixture_home/.dotfiles"
 test "$(readlink "$rebuild_fixture_home/.dotfiles")" = "$rebuild_home_repo"
 cp "$repo_dir/rebuild.sh" "$rebuild_fixture"
+cp "$repo_dir/scripts/profile.sh" "$rebuild_test_root/scripts/profile.sh"
+mkdir -p "$rebuild_fixture_home/.config/dotfiles"
+printf 'home\n' >"$rebuild_fixture_home/.config/dotfiles/profile"
 
 cat >"$rebuild_test_root/scripts/check-sops-age-key.sh" <<'SH'
 #!/usr/bin/env bash
@@ -126,11 +129,11 @@ assert_rebuild_operations() {
 expected_rebuild="$rebuild_test_root/expected-rebuild"
 printf '%s\n' \
   "identity preflight $rebuild_fixture_real" \
-  "nix build --no-link --print-out-paths $rebuild_fixture_real#darwinConfigurations.mac.pkgs.sing-box" \
+  "nix build --no-link --print-out-paths $rebuild_fixture_real#darwinConfigurations.home.pkgs.sing-box" \
   "config check $rebuild_fixture_real" \
   "nix eval --raw --impure --expr (builtins.getFlake (builtins.getEnv \"DOTFILES_REBUILD_FLAKE\")).inputs.homebrew-cask.outPath" \
   "UU prefetch $rebuild_fixture_real $rebuild_cask_source/Casks/u/uu-booster.rb" \
-  "sudo darwin-rebuild switch --flake $rebuild_fixture_real#mac" \
+  "sudo darwin-rebuild switch --flake $rebuild_fixture_real#home" \
   "editor sync" \
   >"$expected_rebuild"
 assert_rebuild_operations "$expected_rebuild"
@@ -140,11 +143,11 @@ printf '%s\n' \
   "identity preflight $rebuild_fixture_real" \
   "nix flake update --flake $rebuild_fixture_real" \
   "binary pins update" \
-  "nix build --no-link --print-out-paths $rebuild_fixture_real#darwinConfigurations.mac.pkgs.sing-box" \
+  "nix build --no-link --print-out-paths $rebuild_fixture_real#darwinConfigurations.home.pkgs.sing-box" \
   "config check $rebuild_fixture_real" \
   "nix eval --raw --impure --expr (builtins.getFlake (builtins.getEnv \"DOTFILES_REBUILD_FLAKE\")).inputs.homebrew-cask.outPath" \
   "UU prefetch $rebuild_fixture_real $rebuild_cask_source/Casks/u/uu-booster.rb" \
-  "sudo darwin-rebuild switch --flake $rebuild_fixture_real#mac" \
+  "sudo darwin-rebuild switch --flake $rebuild_fixture_real#home" \
   "editor sync" \
   >"$expected_update_rebuild"
 assert_rebuild_operations "$expected_update_rebuild" -u
@@ -186,6 +189,27 @@ if HOME="$rebuild_fixture_home" PATH="$rebuild_test_path" \
 fi
 grep -Fq 'Usage:' "$multiple_rebuild_output"
 test ! -s "$rebuild_log"
+
+# Work must never fetch UU or use the home flake target.
+printf 'work\n' >"$rebuild_fixture_home/.config/dotfiles/profile"
+: >"$rebuild_log"
+HOME="$rebuild_fixture_home" PATH="$rebuild_test_path" bash "$rebuild_fixture" >/dev/null
+grep -Fq "$rebuild_fixture_real#work" "$rebuild_log"
+grep -Fq 'darwinConfigurations.work.pkgs.sing-box' "$rebuild_log"
+if grep -Eq 'UU prefetch|nix eval' "$rebuild_log"; then
+  echo 'work must skip UU prefetch and its tap lookup' >&2
+  exit 1
+fi
+for profile_value in missing invalid; do
+  if [ "$profile_value" = missing ]; then
+    rm "$rebuild_fixture_home/.config/dotfiles/profile"
+  else
+    printf 'invalid\n' >"$rebuild_fixture_home/.config/dotfiles/profile"
+  fi
+  : >"$rebuild_log"
+  if HOME="$rebuild_fixture_home" PATH="$rebuild_test_path" bash "$rebuild_fixture" >/dev/null 2>&1; then exit 1; fi
+  test ! -s "$rebuild_log"
+done
 
 trap - EXIT
 cleanup_rebuild_tests

@@ -91,12 +91,57 @@
 
    ```bash
    cd "$HOME/GitHub/laozhu/dotfiles"
-   ./bootstrap.sh
+   ./bootstrap.sh --profile home
    ```
 
-   按提示输入管理员密码。脚本会安装 Nix、命令行工具和桌面应用，
+   家用电脑选择 `home`，工作电脑改为 `--profile work`。选择保存在
+   `~/.config/dotfiles/profile`，后续无需重复指定，脚本不会自动切换已有分组。
+   按提示输入管理员密码。脚本会安装 shared 和所选分组的命令行工具、桌面应用，
    并同步 VS Code、Antigravity 的配置与插件。完成后重新打开终端。
    代理配置后续变更时，按 [SFM 文档](docs/sing-box.md) 重新导入。
+
+## 软件分组与安装检查
+
+`software.json` 是软件名称、类型、安装来源和分组的统一清单，Nix 与检查脚本共用：
+
+- `shared`：两台 Mac 共用的应用和开发工具，包括 OrbStack、Python、OpenJDK、Gradle。
+- `home`：Steam、UU 加速器、Logitech G HUB、腾讯会议。
+- `work`：Slack、NordPass / np、Granola、Loom、Atlassian / Slack CLI、AWS / SAM、Temporal。
+
+Kotlin 由各项目的 Gradle 插件管理，不安装全局编译器。Bitdefender 列为 work 的人工项，
+需使用公司的安装包或 MDM；RabbitPro 不由本项目管理。Homebrew Python 优先于系统 Python，
+OpenJDK 使用 Homebrew 默认版本，Gradle 使用对应的 `JAVA_HOME`。
+
+查看本机标记及安装状态（需要 Node.js，bootstrap 会安装）：
+
+```bash
+cat "$HOME/.config/dotfiles/profile"
+node scripts/software-inventory.mjs --profile home
+```
+
+工作电脑改为 `--profile work`；不传参数会列出所有分组。也可以只列 shared 或导出 JSON：
+
+```bash
+node scripts/software-inventory.mjs --group shared
+node scripts/software-inventory.mjs --profile home --json
+```
+
+默认输出 Markdown 表格，可重定向为文件。Git、Bash/Zsh、GNU Make、GCC、curl、unzip 等
+基础工具保留现有 Nix 配置，但不列入软件表格；明确替换系统版本的 Homebrew Python 仍显示。
+检查只读取应用文件和可执行路径，不启动应用、
+不读取凭证，也不代表应用已登录、系统权限已批准或服务可正常运行。安装方式表示配置声明的来源。
+OrbStack 首次启动后会准备 Docker、Compose 和 buildx，仍需按提示完成初始化。
+sing-box CLI 仅用于配置校验，不启动独立服务；代理运行和 TUN 由 SFM 负责。
+
+已有机器首次使用分组时，在运行 rebuild 前保存一次标记：
+
+```bash
+mkdir -p "$HOME/.config/dotfiles"
+printf 'home\n' > "$HOME/.config/dotfiles/profile"
+```
+
+工作机写入 `work`。不要随意修改已有标记：Homebrew 的 `cleanup = "zap"` 会移除当前分组外的软件，
+可能同时清理应用数据。日常 rebuild 自动读取标记；缺少或无效时停止。
 
 ## 日常维护
 
@@ -132,6 +177,7 @@ CI 分别执行 `format:check` 和 `test`；本地运行测试使用 `bash tests
 
 项目指南：
 
+- [软件安装列表](docs/software.md)：shared、home only、work only 分组、安装方式与本机状态检查。
 - [配置维护](docs/configuration.md)：配置文件分工、依赖更新、IDE 同步与验证。
 - [sing-box 与 SFM](docs/sing-box.md)：配置发布、导入、分流与故障恢复。
 

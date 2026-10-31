@@ -5,6 +5,9 @@ tests_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 
 tests=(
   format.sh
+  profile.sh
+  software-inventory.sh
+  software-profiles.sh
   check-sops-age-key.sh
   bootstrap.sh
   prefetch-uu-booster.sh

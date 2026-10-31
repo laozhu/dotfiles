@@ -37,3 +37,5 @@ jobs:
             nixpkgs#nodejs_26 nixpkgs#ripgrep \
             .#darwinConfigurations.mac.pkgs.sing-box \
             --command bash tests/run.sh
+      - name: Build both profiles without activation
+        run: nix build --no-link .#darwinConfigurations.home.system .#darwinConfigurations.work.system

@@ -28,6 +28,10 @@ case "$#" in
     ;;
 esac
 
+source "$DIR/scripts/profile.sh"
+PROFILE="$(dotfiles_profile)"
+echo "==> Machine profile: $PROFILE (shared + $PROFILE)"
+
 "$DIR/scripts/check-sops-age-key.sh"
 
 if [ "$update_inputs" = true ]; then
@@ -38,22 +42,24 @@ fi
 # 使用即将安装的内核校验，避免旧版本拒绝升级后的配置格式。
 target_sing_box="$(
   nix build --no-link --print-out-paths \
-    "$DIR#darwinConfigurations.mac.pkgs.sing-box"
+    "$DIR#darwinConfigurations.$PROFILE.pkgs.sing-box"
 )"
 PATH="$target_sing_box/bin:$PATH" "$DIR/scripts/check-sing-box-config.sh"
 
-homebrew_cask_source="$(
-  DOTFILES_REBUILD_FLAKE="path:$DIR" nix eval \
-    --raw \
-    --impure \
-    --expr \
-    '(builtins.getFlake (builtins.getEnv "DOTFILES_REBUILD_FLAKE")).inputs.homebrew-cask.outPath'
-)"
-"$DIR/scripts/prefetch-uu-booster.sh" \
-  "$homebrew_cask_source/Casks/u/uu-booster.rb"
+if [ "$PROFILE" = home ]; then
+  homebrew_cask_source="$(
+    DOTFILES_REBUILD_FLAKE="path:$DIR" nix eval \
+      --raw \
+      --impure \
+      --expr \
+      '(builtins.getFlake (builtins.getEnv "DOTFILES_REBUILD_FLAKE")).inputs.homebrew-cask.outPath'
+  )"
+  "$DIR/scripts/prefetch-uu-booster.sh" \
+    "$homebrew_cask_source/Casks/u/uu-booster.rb"
+fi
 
 # 共享配置通过 Homebrew cask 安装或升级 Codex 官方 macOS 二进制。
-sudo darwin-rebuild switch --flake "$DIR#mac"
+sudo darwin-rebuild switch --flake "$DIR#$PROFILE"
 
 # IDE 配置与插件属于当前用户，必须在系统应用安装完成后执行。
 bash "$DIR/scripts/sync-editors.sh"
