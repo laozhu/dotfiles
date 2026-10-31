@@ -134,6 +134,20 @@ if find "$(dirname "$uu_test_cache")" -name '*.incomplete.*' -print -quit |
   exit 1
 fi
 
+# Current casks use NetEase's direct endpoint and must bypass legacy prefetch.
+cat >"$uu_test_cask" <<'RUBY'
+cask "uu-booster" do
+  version "2.8.20"
+  sha256 :no_check
+  url "https://adl.netease.com/d/g/uu/c/gw?type=mac&direct=1"
+end
+RUBY
+: >"$uu_test_curl_log"
+PATH="$uu_test_bin:/usr/bin:/bin" \
+  bash "$uu_prefetch" "$uu_test_cask" >/dev/null
+test ! -s "$uu_test_curl_log"
+cmp "$previous_cache" "$uu_test_cache"
+
 trap - EXIT
 cleanup_uu_tests
 
