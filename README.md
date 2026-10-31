@@ -10,18 +10,32 @@
 1. **创建管理员用户。** macOS 首次设置时，账户短名称建议使用 `rich`。
    使用其他名称也可以，bootstrap 会提示修改配置中的用户名。
 
-2. **先让 SFM 代理可用。** 在旧电脑下载 SFM 安装包，通过 AirDrop 发到新机并安装。
-   在旧电脑定位已经可用的代理配置：
+2. **获取安装包和配置。** 在旧 Mac 下载官方 SFM `.pkg` 安装包，并准备好以下三个文件：
+
+   | 文件 | 旧 Mac 上的位置 |
+   | --- | --- |
+   | SFM 安装包 | 刚下载的 `SFM-…-Universal.pkg` |
+   | 代理配置 | `~/.local/state/sing-box/config.json` |
+   | SOPS age 解密密钥 | `~/Library/Application Support/sops/age/keys.txt` |
+
+   在旧 Mac 的终端中定位配置和密钥：
 
    ```bash
    open -R "$HOME/.local/state/sing-box/config.json"
+   open -R "$HOME/Library/Application Support/sops/age/keys.txt"
    ```
 
-   将该文件通过 AirDrop 发到新机，在 SFM 中选择“文件 → 从文件导入”，
+   通过 AirDrop、加密存储设备等安全方式，将三个文件一次传到新 Mac。
+   以下步骤假设它们保存在新机的 `~/Downloads`，位置不同时调整对应路径。
+   使用原有 age 密钥，不要重新生成。代理配置和密钥都包含秘密，
+   不要提交到 Git 或通过明文消息发送，全部使用完后清理传输用的临时副本。
+
+3. **准备网络。** 打开收到的 `.pkg` 安装 SFM。在 SFM 中选择“文件 → 从文件导入”，
+   导入 `~/Downloads/config.json`，
    按提示批准网络扩展和 VPN 权限，然后连接。用浏览器确认能打开 GitHub，再继续。
    后续安装期间保持 SFM 连接。
 
-3. **安装 Command Line Tools。** 打开新机终端执行，在弹窗中确认安装并等待完成：
+4. **安装 Command Line Tools。** 打开新机终端执行，在弹窗中确认安装并等待完成：
 
    ```bash
    xcode-select --install
@@ -34,7 +48,7 @@
    git --version
    ```
 
-4. **配置 GitHub SSH。** 在新机生成密钥，按提示回车使用默认路径并设置口令。
+5. **配置 GitHub SSH。** 在新机生成密钥，按提示回车使用默认路径并设置口令。
    如果已有密钥，不要覆盖。
 
    ```bash
@@ -57,22 +71,14 @@
    首次连接时，核对 [GitHub 官方主机指纹](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints)
    后输入 `yes`。看到 `You've successfully authenticated` 即可继续；退出码 `1` 是正常的。
 
-5. **克隆仓库。** 使用 SSH 下载到新机：
+6. **克隆仓库。** 使用 SSH 下载到新机：
 
    ```bash
    mkdir -p "$HOME/GitHub/laozhu"
    git clone git@github.com:laozhu/dotfiles.git "$HOME/GitHub/laozhu/dotfiles"
    ```
 
-6. **恢复解密密钥。** 在旧电脑定位原有的 SOPS age 密钥：
-
-   ```bash
-   open -R "$HOME/Library/Application Support/sops/age/keys.txt"
-   ```
-
-   通过 AirDrop、加密存储设备等安全方式发到新机，也可以从 Bitwarden 的
-   `dotfiles - sops age identity` 条目恢复。使用原有密钥，不要重新生成。
-   假设收到的文件在 `~/Downloads/keys.txt`，在新机执行：
+7. **恢复解密密钥。** 将准备好的 `keys.txt` 移到目标位置，并设置权限：
 
    ```bash
    mkdir -p "$HOME/Library/Application Support/sops/age"
@@ -81,10 +87,7 @@
    chmod 600 "$HOME/Library/Application Support/sops/age/keys.txt"
    ```
 
-   如果接收位置不同，调整源文件路径。代理配置和解密密钥都包含秘密，
-   不要提交到 Git 或通过明文消息发送，导入后清理传输用的临时副本。
-
-7. **运行 bootstrap。** 在新机终端执行，不要在命令前加 `sudo`：
+8. **运行 bootstrap。** 在新机终端执行，不要在命令前加 `sudo`：
 
    ```bash
    cd "$HOME/GitHub/laozhu/dotfiles"
