@@ -4,7 +4,8 @@
 本页列出配置要求，不记录随机器变化的安装状态。
 
 Git、Bash/Zsh、GNU Make、GCC、curl、unzip 等基础工具保留现有 Nix 配置，按约定不列入本表。
-Homebrew Python 是明确替换系统版本的工具，因此保留。RabbitPro 由用户自行安装，不纳入清单。
+Homebrew Python 是明确替换系统版本的工具，因此保留。RabbitPro 和 Bitdefender 列为人工安装项，
+只检测安装状态，bootstrap/rebuild 不负责安装。
 
 ## Shared
 
@@ -71,7 +72,7 @@ Homebrew Python 是明确替换系统版本的工具，因此保留。RabbitPro 
 
 ## Home only
 
-仅家用电脑安装。
+仅家用电脑安装，RabbitPro 为人工项。
 
 | 软件           | 类型 | 命令 | 安装方式      |
 | -------------- | ---- | ---- | ------------- |
@@ -79,6 +80,7 @@ Homebrew Python 是明确替换系统版本的工具，因此保留。RabbitPro 
 | UU 加速器      | GUI  | -    | Homebrew Cask |
 | Logitech G HUB | GUI  | -    | Homebrew Cask |
 | 腾讯会议       | GUI  | -    | Homebrew Cask |
+| RabbitPro      | GUI  | -    | 人工安装      |
 
 ## Work only
 
@@ -108,8 +110,22 @@ Homebrew Python 是明确替换系统版本的工具，因此保留。RabbitPro 
   默认版本，Gradle 使用对应的 `JAVA_HOME`。Kotlin 由项目 Gradle 插件管理，不安装全局 `kotlinc`。
 - **官方二进制**：pnpm、uv、bws、sing-box、Herdr、Kimi Code 和 Pi 由 Nix 管理固定版本的
   官方 macOS 二进制；版本和校验值见 [macos-binaries.json](../macos-binaries.json)。
+- **RabbitPro**：用户自行安装到 `/Applications` 或 `~/Applications`，检查脚本会识别这两个位置。
 - **Bitdefender**：需使用公司的安装包或 MDM，不通过通用 cask 猜测企业版本。
 - **项目格式化工具**：Oxfmt、shfmt、nixfmt、StyLua 通过 `format.sh` 按需提供，不全局安装。
+
+## 开发工具默认设置
+
+两台 Mac 共用以下设置，由 Home Manager 管理：
+
+| 工具   | 默认设置                                                                                    |
+| ------ | ------------------------------------------------------------------------------------------- |
+| PATH   | 加入 `~/.local/bin`、`~/.cargo/bin`，Homebrew 和 Nix 管理的工具保持优先                     |
+| uv     | `python-preference = "system"`，优先使用已安装且满足项目要求的 Python，仍允许下载缺少的版本 |
+| Gradle | `~/.gradle/gradle.properties` 启用 `org.gradle.caching=true`，复用构建产物                  |
+| fzf    | 普通搜索和 `Ctrl-T` 使用 fd，包含隐藏文件，遵守 `.gitignore` 并排除 `.git`                  |
+
+Gradle 不额外开启全局并行或配置缓存；项目可用 `--no-build-cache` 临时禁用构建缓存。
 
 ## 检查本机安装状态
 

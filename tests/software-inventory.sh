@@ -42,8 +42,15 @@ try {
   assert.ok(!rows.some(r => r.group === 'work'));
   assert.ok(!rows.some(r => ['git', 'bash', 'zsh', 'gnumake', 'gcc', 'curl', 'unzip'].includes(r.id)), 'base tools must be hidden from the inventory');
   assert.ok(rows.some(r => r.id === 'python'), 'explicit Homebrew replacements remain visible');
-  assert.ok(!rows.some(r => /magnet|rabbitpro|dart|tencent-video/i.test(r.id)));
+  assert.ok(!rows.some(r => /magnet|dart|tencent-video/i.test(r.id)));
   assert.equal(rows.find(r => r.id === 'tencent-meeting').group, 'home');
+  const rabbit = rows.find(r => r.id === 'rabbitpro');
+  assert.ok(rabbit, 'RabbitPro must be listed for home');
+  assert.equal(rabbit.group, 'home'); assert.equal(rabbit.manager, 'Manual');
+  assert.equal(rabbit.package, undefined, 'manual software must not declare an automatic package');
+  assert.equal(inspectSoftware(rabbit, options).status, '需人工安装');
+  fs.mkdirSync(path.join(apps, 'RabbitPro.app'));
+  assert.equal(inspectSoftware(rabbit, options).status, '已安装');
   const work = JSON.parse(run(['--profile', 'work', '--json']).stdout);
   assert.ok(work.some(r => r.id === 'nordpass/tap/np')); assert.ok(!work.some(r => r.group === 'home'));
   assert.equal(run(['--profile', 'bad']).status, 2);

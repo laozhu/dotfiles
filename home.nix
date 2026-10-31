@@ -18,6 +18,7 @@ let
 
   # 提取当前系统的 llm-agents 包集合
   llmPkgs = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
+  fileSearch = "${pkgs.fd}/bin/fd --type f --strip-cwd-prefix --hidden --exclude .git";
 in
 {
   home.username = user;
@@ -31,8 +32,17 @@ in
     "/opt/homebrew/opt/python/libexec/bin"
     "/opt/homebrew/opt/openjdk/bin"
     "/opt/homebrew/bin"
+    "${config.home.profileDirectory}/bin"
+    "/run/current-system/sw/bin"
+    "$HOME/.local/bin"
+    "$HOME/.cargo/bin"
   ];
   home.sessionVariables.JAVA_HOME = "/opt/homebrew/opt/openjdk/libexec/openjdk.jdk/Contents/Home";
+  programs.uv = {
+    enable = true;
+    package = null; # The pinned binary is already declared in software.json.
+    settings.python-preference = "system";
+  };
   programs.direnv = {
     enable = true;
     enableZshIntegration = true;
@@ -64,6 +74,8 @@ in
   programs.fzf = {
     enable = true;
     enableZshIntegration = true;
+    defaultCommand = fileSearch;
+    fileWidget.command = fileSearch;
   };
 
   programs.zsh = {
@@ -120,6 +132,10 @@ in
 
   # 统一文件映射 (使用软链接便于实时修改)
   home.file = {
+    ".gradle/gradle.properties".text = ''
+      org.gradle.caching=true
+    '';
+
     # 基础应用配置
     ".config/wezterm".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/wezterm";
     ".config/nvim".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/nvim";
