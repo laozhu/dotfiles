@@ -18,8 +18,7 @@ for managed_path in \
   .pi/agent/AGENTS.md \
   .claude/CLAUDE.md \
   .claude/AGENTS.md \
-  .codex/AGENTS.md \
-  .config/opencode/AGENTS.md; do
+  .codex/AGENTS.md; do
   if ! grep -Fxq "$managed_path" <<<"$managed_files"; then
     printf 'Home Manager does not manage %s\n' "$managed_path" >&2
     exit 1
@@ -41,8 +40,7 @@ fi
 
 for shared_agents_path in \
   .pi/agent/AGENTS.md \
-  .codex/AGENTS.md \
-  .config/opencode/AGENTS.md; do
+  .codex/AGENTS.md; do
   if [[ "$(managed_source "$shared_agents_path")" != "$claude_agents_source" ]]; then
     printf '%s must share the global AGENTS.md source\n' "$shared_agents_path" >&2
     exit 1

@@ -75,4 +75,10 @@ sudo "$NIX_BIN" run github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild
 # If this still fails with "nix: command not found", open a new terminal
 # (Determinate adds nix to new shells' PATH) and re-run ./bootstrap.sh.
 
+echo "==> Step 7: sync IDE settings and extensions"
+# IDE 配置与插件属于当前用户，必须在系统应用安装完成后执行。
+# 首次 switch 不会更新当前终端的 PATH，显式提供刚安装的 Node、jq 等工具。
+PATH="/etc/profiles/per-user/$REAL_USER/bin:/run/current-system/sw/bin:$PATH" \
+  bash "$DIR/scripts/sync-editors.sh"
+
 echo "==> Done. Use ./rebuild.sh for future changes."

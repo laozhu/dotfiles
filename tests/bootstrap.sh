@@ -30,6 +30,16 @@ fixture_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 printf 'identity preflight %s\n' "$fixture_dir" >>"$BOOTSTRAP_TEST_LOG"
 exit "${BOOTSTRAP_PREFLIGHT_STATUS:-0}"
 SH
+cat >"$bootstrap_test_root/scripts/sync-editors.sh" <<'SH'
+#!/usr/bin/env bash
+set -euo pipefail
+case "$PATH" in
+  /etc/profiles/per-user/fixture-user/bin:/run/current-system/sw/bin:*) ;;
+  *) echo 'editor sync cannot find newly installed tools' >&2; exit 42 ;;
+esac
+printf 'editor sync\n' >>"$BOOTSTRAP_TEST_LOG"
+exit "${BOOTSTRAP_EDITOR_STATUS:-0}"
+SH
 cat >"$bootstrap_fixture_bin/whoami" <<'SH'
 #!/usr/bin/env bash
 printf '%s\n' 'fixture-user'
@@ -66,6 +76,7 @@ printf '\n' >>"$BOOTSTRAP_TEST_LOG"
 if [ "$1" = "/usr/sbin/softwareupdate" ]; then
   exit "${BOOTSTRAP_ROSETTA_INSTALL_STATUS:-0}"
 fi
+exit "${BOOTSTRAP_DARWIN_STATUS:-0}"
 SH
 chmod 0755 \
   "$bootstrap_test_root/scripts/check-sops-age-key.sh" \
@@ -89,6 +100,7 @@ printf '%s\n' \
   "nix shell nixpkgs#age nixpkgs#sops --command $bootstrap_fixture_real/scripts/check-sops-age-key.sh" \
   "identity preflight $bootstrap_fixture_real" \
   "sudo $bootstrap_fixture_bin/nix run github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild -- switch --flake $bootstrap_fixture_real#mac" \
+  "editor sync" \
   >"$expected_bootstrap"
 if ! cmp -s "$expected_bootstrap" "$bootstrap_log"; then
   echo "bootstrap skipped or misordered the identity preflight" >&2
@@ -106,6 +118,7 @@ printf '%s\n' \
   "nix shell nixpkgs#age nixpkgs#sops --command $bootstrap_fixture_real/scripts/check-sops-age-key.sh" \
   "identity preflight $bootstrap_fixture_real" \
   "sudo $bootstrap_fixture_bin/nix run github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild -- switch --flake $bootstrap_fixture_real#mac" \
+  "editor sync" \
   >"$expected_bootstrap_without_rosetta"
 
 : >"$bootstrap_log"
@@ -126,6 +139,7 @@ printf '%s\n' \
   "nix shell nixpkgs#age nixpkgs#sops --command $bootstrap_fixture_real/scripts/check-sops-age-key.sh" \
   "identity preflight $bootstrap_fixture_real" \
   "sudo $bootstrap_fixture_bin/nix run github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild -- switch --flake $bootstrap_fixture_real#mac" \
+  "editor sync" \
   >"$intel_bootstrap"
 if ! cmp -s "$intel_bootstrap" "$bootstrap_log"; then
   echo "bootstrap attempted to install Rosetta on an Intel Mac" >&2
@@ -174,6 +188,27 @@ if ! cmp -s "$failed_bootstrap" "$bootstrap_log"; then
   diff -u "$failed_bootstrap" "$bootstrap_log" >&2 || true
   exit 1
 fi
+
+# A failed switch must skip IDE sync; a failed sync must not report success.
+for failure_stage in DARWIN EDITOR; do
+  : >"$bootstrap_log"
+  bootstrap_output="$bootstrap_test_root/failure-output"
+  bootstrap_status=0
+  env "BOOTSTRAP_${failure_stage}_STATUS=43" \
+    HOME="$bootstrap_fixture_home" PATH="$bootstrap_test_path" \
+    bash "$bootstrap_fixture" >"$bootstrap_output" || bootstrap_status="$?"
+  test "$bootstrap_status" = 43
+  if grep -Fq '==> Done.' "$bootstrap_output"; then
+    echo 'bootstrap reported success after a failure' >&2
+    exit 1
+  fi
+  if [ "$failure_stage" = DARWIN ]; then
+    head -n 5 "$expected_bootstrap" >"$bootstrap_test_root/expected-switch-failure"
+    cmp "$bootstrap_test_root/expected-switch-failure" "$bootstrap_log"
+  else
+    cmp "$expected_bootstrap" "$bootstrap_log"
+  fi
+done
 
 trap - EXIT
 cleanup_bootstrap_tests
