@@ -58,6 +58,29 @@ Homebrew 激活时会更新、升级软件，并以 `cleanup = "zap"` 清理声�
 可能同时清理被移除应用的数据。移除软件声明前先确认本机数据是否需要保留。
 Nix 的构建和回退不等于撤销 Homebrew 升级或 IDE 配置写入。
 
+## 二进制优先与缓存
+
+优先使用官方 macOS 二进制、Nix 预编译缓存和 Homebrew bottles；缓存命中时，
+使用 Nix 安装的工具不需要在本机编译源码。日志中的 `building` 也可能只是解包、链接或生成配置。
+
+`nix-caches.conf` 声明 [sops-nix 上游](https://github.com/Mic92/sops-nix/blob/master/flake.nix)
+提供的二进制缓存和签名公钥。bootstrap、rebuild 通过 `scripts/nix-cache-env.sh` 加载，
+并将配置传给 sudo 下的 Nix 构建；CI 通过 Nix 安装 action 读取同一文件。
+它补充 Nix 默认缓存，保留已有 `NIX_CONFIG`，不修改 Determinate 管理的 daemon 配置，不关闭签名校验。
+
+该缓存用于获取 `sops-install-secrets`，命中时可避免首次安装编译这段 Go 程序。
+缓存可用性会随版本变化；缓存缺失不等于软件没有预编译版本，先检查代理、下载和上游缓存。
+新增缓存前，先验证可访问性及签名公钥的上游来源；AI CLI 继续使用已经声明的官方二进制。
+
+手动构建并使用项目缓存时，在仓库根目录执行：
+
+```bash
+bash -c 'source scripts/nix-cache-env.sh; nix build --no-link .#darwinConfigurations.home.system .#darwinConfigurations.work.system'
+```
+
+不能对整套配置设置 `max-jobs = 0`：配置生成、包装和官方二进制解包也需要执行少量本地构建。
+格式化工具使用该限制是因为它们本身应直接从缓存获取。
+
 ## IDE 配置与插件
 
 bootstrap 和 rebuild 均在系统应用安装成功后，以当前用户执行 `scripts/sync-editors.sh`：

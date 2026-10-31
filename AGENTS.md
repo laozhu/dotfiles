@@ -14,6 +14,9 @@ for file ownership and update workflows, and [SFM operations](docs/sing-box.md) 
 - Determinate manages the Nix daemon, so `nix.enable = false` is intentional.
 - Keep the official macOS binary sources defined in `macos-binaries.nix` and the
   Homebrew Codex cask. Do not silently fall back to source builds or change package managers.
+- Prefer official macOS binaries, Nix substitutes and Homebrew bottles over source compilation.
+  `nix-caches.conf` adds the signed upstream sops-nix cache to bootstrap, rebuild and CI.
+  Keep signature checks enabled. Unpacking binaries and generating configuration still use Nix builds.
 - SFM owns the proxy runtime and TUN. Do not add another sing-box service or process.
   Edit the repository template and SOPS ciphertext, not the generated plaintext or SFM container.
 - `home/AGENTS.md` contains global preferences deployed to other projects.

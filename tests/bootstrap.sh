@@ -23,6 +23,8 @@ ln -s "$bootstrap_home_repo" "$bootstrap_fixture_home/.dotfiles"
 test "$(readlink "$bootstrap_fixture_home/.dotfiles")" = "$bootstrap_home_repo"
 cp "$repo_dir/bootstrap.sh" "$bootstrap_fixture"
 cp "$repo_dir/scripts/profile.sh" "$bootstrap_test_root/scripts/profile.sh"
+cp "$repo_dir/scripts/nix-cache-env.sh" "$bootstrap_test_root/scripts/nix-cache-env.sh"
+cp "$repo_dir/nix-caches.conf" "$bootstrap_test_root/nix-caches.conf"
 mkdir -p "$bootstrap_fixture_home/.config/dotfiles"
 printf 'home\n' >"$bootstrap_fixture_home/.config/dotfiles/profile"
 printf '%s\n' '  user = "fixture-user";' >"$bootstrap_test_root/flake.nix"
@@ -60,6 +62,10 @@ exit "${BOOTSTRAP_ROSETTA_RECEIPT_STATUS:-1}"
 SH
 cat >"$bootstrap_fixture_bin/nix" <<'SH'
 #!/usr/bin/env bash
+case "${NIX_CONFIG:-}" in
+  *https://cache.thalheim.io*) ;;
+  *) echo 'Nix command did not inherit the binary cache configuration' >&2; exit 44 ;;
+esac
 printf 'nix' >>"$BOOTSTRAP_TEST_LOG"
 printf ' %s' "$@" >>"$BOOTSTRAP_TEST_LOG"
 printf '\n' >>"$BOOTSTRAP_TEST_LOG"
@@ -102,7 +108,7 @@ printf '%s\n' \
   "sudo /usr/sbin/softwareupdate --install-rosetta --agree-to-license" \
   "nix shell nixpkgs#age nixpkgs#sops --command $bootstrap_fixture_real/scripts/check-sops-age-key.sh" \
   "identity preflight $bootstrap_fixture_real" \
-  "sudo $bootstrap_fixture_bin/nix run github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild -- switch --flake $bootstrap_fixture_real#home" \
+  "sudo --preserve-env=NIX_CONFIG $bootstrap_fixture_bin/nix run github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild -- switch --flake $bootstrap_fixture_real#home" \
   "editor sync" \
   >"$expected_bootstrap"
 if ! cmp -s "$expected_bootstrap" "$bootstrap_log"; then
@@ -120,7 +126,7 @@ printf '%s\n' \
   "pkgutil --pkg-info com.apple.pkg.RosettaUpdateAuto" \
   "nix shell nixpkgs#age nixpkgs#sops --command $bootstrap_fixture_real/scripts/check-sops-age-key.sh" \
   "identity preflight $bootstrap_fixture_real" \
-  "sudo $bootstrap_fixture_bin/nix run github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild -- switch --flake $bootstrap_fixture_real#home" \
+  "sudo --preserve-env=NIX_CONFIG $bootstrap_fixture_bin/nix run github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild -- switch --flake $bootstrap_fixture_real#home" \
   "editor sync" \
   >"$expected_bootstrap_without_rosetta"
 
@@ -141,7 +147,7 @@ intel_bootstrap="$bootstrap_test_root/expected-intel-bootstrap"
 printf '%s\n' \
   "nix shell nixpkgs#age nixpkgs#sops --command $bootstrap_fixture_real/scripts/check-sops-age-key.sh" \
   "identity preflight $bootstrap_fixture_real" \
-  "sudo $bootstrap_fixture_bin/nix run github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild -- switch --flake $bootstrap_fixture_real#home" \
+  "sudo --preserve-env=NIX_CONFIG $bootstrap_fixture_bin/nix run github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild -- switch --flake $bootstrap_fixture_real#home" \
   "editor sync" \
   >"$intel_bootstrap"
 if ! cmp -s "$intel_bootstrap" "$bootstrap_log"; then

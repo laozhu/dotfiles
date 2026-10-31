@@ -22,6 +22,7 @@ case "$#" in
     ;;
 esac
 echo "==> Machine profile: $PROFILE (shared + $PROFILE)"
+source "$DIR/scripts/nix-cache-env.sh"
 
 echo "==> Step 1: Determinate Nix"
 if command -v nix >/dev/null 2>&1; then
@@ -86,7 +87,7 @@ echo "==> Step 6: first darwin-rebuild switch (pinned to nix-darwin-26.05)"
 # This fetches the darwin-rebuild tool from the nix-darwin-26.05 release branch,
 # not the exact flake.lock revision. The system config it applies is still pinned
 # by this repo's flake.lock.
-sudo "$NIX_BIN" run github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild -- \
+sudo --preserve-env=NIX_CONFIG "$NIX_BIN" run github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild -- \
   switch --flake "$DIR#$PROFILE"
 # If this still fails with "nix: command not found", open a new terminal
 # (Determinate adds nix to new shells' PATH) and re-run ./bootstrap.sh.
