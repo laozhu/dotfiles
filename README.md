@@ -31,15 +31,55 @@
    git --version
    ```
 
-4. **克隆仓库。** 使用 HTTPS，无需提前配置 GitHub SSH 密钥：
+4. **生成新机器的 SSH 密钥。** 使用 GitHub 账户邮箱作为备注，以下为当前配置使用的邮箱。
+   按提示回车采用默认保存位置 `~/.ssh/id_ed25519`，并设置密钥口令。
+   如果该位置已有密钥，不要覆盖，确认是否可以复用：
+
+   ```bash
+   mkdir -p "$HOME/.ssh"
+   chmod 700 "$HOME/.ssh"
+   ssh-keygen -t ed25519 -C "laozhu.me@gmail.com"
+   ```
+
+   启动 SSH agent 并添加私钥，将口令保存到 macOS 钥匙串：
+
+   ```bash
+   eval "$(ssh-agent -s)"
+   /usr/bin/ssh-add --apple-use-keychain "$HOME/.ssh/id_ed25519"
+   ```
+
+5. **将 SSH 公钥加入 GitHub。** 复制新机器的公钥：
+
+   ```bash
+   pbcopy < "$HOME/.ssh/id_ed25519.pub"
+   ```
+
+   在浏览器登录 GitHub，进入 **Settings → SSH and GPG keys → New SSH key**
+   （[直接打开](https://github.com/settings/ssh/new)）。填写能识别这台电脑的 Title，
+   Key type 选择 **Authentication Key**，粘贴公钥并保存。
+   只上传 `.pub` 公钥，私钥 `id_ed25519` 留在本机。
+
+   验证连接：
+
+   ```bash
+   ssh -T git@github.com
+   ```
+
+   首次连接时，核对提示中的主机指纹与
+   [GitHub 官方指纹](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints)
+   一致，再输入 `yes`。出现 `Hi laozhu! You've successfully authenticated` 表示验证成功；
+   GitHub 不提供 shell，因此此命令成功认证后仍会返回退出码 `1`。
+   详细步骤见 [GitHub SSH 文档](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)。
+
+6. **克隆仓库。** 使用 SSH：
 
    ```bash
    mkdir -p "$HOME/GitHub/laozhu"
-   git clone https://github.com/laozhu/dotfiles.git "$HOME/GitHub/laozhu/dotfiles"
+   git clone git@github.com:laozhu/dotfiles.git "$HOME/GitHub/laozhu/dotfiles"
    cd "$HOME/GitHub/laozhu/dotfiles"
    ```
 
-5. **恢复已有的 SOPS age 密钥。** 可以从已安装好的旧机器复制
+7. **恢复已有的 SOPS age 密钥。** 可以从已安装好的旧机器复制
    `~/Library/Application Support/sops/age/keys.txt`，通过 AirDrop、加密存储设备等
    安全方式传到新机；也可以从 Bitwarden 的 `dotfiles - sops age identity` 条目恢复。
    必须使用能解密本仓库的原有密钥，不要重新生成。
