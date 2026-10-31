@@ -31,7 +31,7 @@ cp "$repo_dir/scripts/nix-cache-env.sh" "$rebuild_test_root/scripts/nix-cache-en
 cp "$repo_dir/nix-caches.conf" "$rebuild_test_root/nix-caches.conf"
 ln -s "$(command -v jq)" "$rebuild_fixture_bin/jq"
 cat >"$rebuild_test_root/flake.lock" <<'JSON'
-{"root":"root","nodes":{"root":{"inputs":{"nixpkgs":"nixpkgs","shared-tap":"shared-tap","atlassian-tap":"atlassian-tap","nordpass-tap":"nordpass-tap"}}}}
+{"root":"root","nodes":{"root":{"inputs":{"brew-src":"brew-src","nixpkgs":"nixpkgs","shared-tap":"shared-tap","atlassian-tap":"atlassian-tap","nordpass-tap":"nordpass-tap"}}}}
 JSON
 mkdir -p "$rebuild_fixture_home/.config/dotfiles"
 printf 'home\n' >"$rebuild_fixture_home/.config/dotfiles/profile"
@@ -151,7 +151,7 @@ assert_rebuild_operations "$expected_rebuild"
 expected_update_rebuild="$rebuild_test_root/expected-update-rebuild"
 printf '%s\n' \
   "identity preflight $rebuild_fixture_real" \
-  "nix flake update --flake $rebuild_fixture_real nixpkgs shared-tap" \
+  "nix flake update --flake $rebuild_fixture_real brew-src nixpkgs shared-tap" \
   "binary pins update" \
   "nix build --no-link --print-out-paths $rebuild_fixture_real#darwinConfigurations.home.pkgs.sing-box" \
   "config check $rebuild_fixture_real" \
@@ -213,7 +213,7 @@ fi
 # Work updates shared inputs and its own provider taps.
 : >"$rebuild_log"
 HOME="$rebuild_fixture_home" PATH="$rebuild_test_path" bash "$rebuild_fixture" --update >/dev/null
-grep -Fxq "nix flake update --flake $rebuild_fixture_real atlassian-tap nixpkgs nordpass-tap shared-tap" "$rebuild_log"
+grep -Fxq "nix flake update --flake $rebuild_fixture_real atlassian-tap brew-src nixpkgs nordpass-tap shared-tap" "$rebuild_log"
 
 for profile_value in missing invalid; do
   if [ "$profile_value" = missing ]; then

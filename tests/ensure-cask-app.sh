@@ -15,7 +15,7 @@ esac
 BREW
 chmod +x "$fixture/brew"
 check() { bash "$repo_dir/scripts/ensure-cask-app.sh" "$fixture/brew" logitech-g-hub "$fixture/lghub.app" "$fixture/user/lghub.app"; }
-# A receipt alone cannot count as installation: repair the missing application.
+# A missing app must rerun the installer, regardless of any prior Brew receipt.
 check
 test -d "$fixture/lghub.app"
 grep -Fxq 'reinstall --cask logitech-g-hub' "$fixture/operations"

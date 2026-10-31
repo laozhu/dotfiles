@@ -1,5 +1,8 @@
 # Software profiles
 
+Historical implementation plan. For current usage and software groups, see
+[configuration maintenance](../configuration.md) and [software inventory](../software.md).
+
 Implement the confirmed shared/work/home software groups using one JSON catalog.
 Nix consumes its package identifiers; the read-only inventory script consumes its
 names, types, installation sources and executable/application probes.

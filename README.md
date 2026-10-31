@@ -192,6 +192,7 @@ CI 分别执行 `format:check` 和 `test`；本地运行测试使用 `bash tests
 更新需要可用的 GitHub 连接；首次使用 GitHub CLI 时先执行 `gh auth login`。
 安装优先使用官方二进制和预编译缓存；bootstrap、rebuild 与 CI 共用 `nix-caches.conf`，
 其中的 sops-nix 上游缓存可减少首次安装的源码编译。详见 [配置维护](docs/configuration.md#二进制优先与缓存)。
+若软件下载失败，导致新代理规则也无法发布，见 [独立生成代理配置](docs/sing-box.md#rebuild-被软件下载卡住时)。
 
 ## 参考资料
 

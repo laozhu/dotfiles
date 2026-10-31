@@ -70,10 +70,13 @@ for domain in npass.app downloads.npass.app updates.ghub.logitechg.com download0
     exit 1
   fi
 done
-if [ -n "$(sing-box rule-set match "$proxy_fixture" downloads.npass.app.example.invalid 2>&1)" ]; then
-  echo 'NordPass proxy rule crossed its domain boundary' >&2
-  exit 1
-fi
+for domain in downloads.npass.app.example.invalid updates.ghub.logitechg.com.example.invalid \
+  download01.logi.com.example.invalid notnpass.app notlogitechg.com notlogi.com; do
+  if [ -n "$(sing-box rule-set match "$proxy_fixture" "$domain" 2>&1)" ]; then
+    echo "Vendor proxy rule crossed its domain boundary: $domain" >&2
+    exit 1
+  fi
+done
 jq -e '
   ([.dns.rules[] | select(.rule_set | if type == "array" then index("custom-proxy") != null else . == "custom-proxy" end) |
     .server] == ["proxy-dns"]) and
