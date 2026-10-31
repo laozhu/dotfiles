@@ -9,6 +9,8 @@ tests=(
   nix-cache-env.sh
   software-inventory.sh
   software-profiles.sh
+  homebrew-formulae.sh
+  ensure-cask-app.sh
   check-sops-age-key.sh
   bootstrap.sh
   prefetch-uu-booster.sh

@@ -29,7 +29,15 @@
     };
 
     # Nix-Homebrew 官方 Taps and Casks
-    nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
+    nix-homebrew = {
+      url = "github:zhaofengli-wip/nix-homebrew";
+      inputs.brew-src.follows = "brew-src";
+    };
+    # Update Brew together with the formulae, rather than inheriting an older release.
+    brew-src = {
+      url = "github:Homebrew/brew";
+      flake = false;
+    };
     homebrew-core = {
       url = "github:homebrew/homebrew-core";
       flake = false;
@@ -103,6 +111,10 @@
           nix-homebrew = {
             enable = true;
             user = user;
+            # This input follows Brew's main branch; do not label it with nix-homebrew's release.
+            package = inputs.brew-src // {
+              name = "brew-${inputs.brew-src.shortRev}";
+            };
             taps = {
               "homebrew/homebrew-core" = inputs.homebrew-core;
               "homebrew/homebrew-cask" = inputs.homebrew-cask;

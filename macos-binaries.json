@@ -10,14 +10,14 @@
     "version": "0.9.5"
   },
   "kimi-code": {
-    "sha256": "034b37fee68e242b8d1800470c502d5870602fb54e1597d99d20d9e9f3fa8f59",
-    "url": "https://github.com/MoonshotAI/kimi-code/releases/download/%40moonshot-ai/kimi-code%402.2.0/kimi-code-darwin-arm64.tar.gz",
-    "version": "2.2.0"
+    "sha256": "17f848e7b9b159aed9b2ad0df917c4be3c484393d924a6540171ede7b87cc66d",
+    "url": "https://github.com/MoonshotAI/kimi-code/releases/download/%40moonshot-ai/kimi-code%402.4.1/kimi-code-darwin-arm64.tar.gz",
+    "version": "2.4.1"
   },
   "pi": {
-    "sha256": "1f9ae61cdeae04dd68caf1a1e8ab8ec9b292062f6ccb3252e0a9cbe93b5b16f1",
-    "url": "https://github.com/earendil-works/pi/releases/download/v1.3.0/pi-darwin-arm64.tar.gz",
-    "version": "1.3.0"
+    "sha256": "79d9979d76a2a5adb7c28e27e9b44629928ccd0dc9fbb6ae7217860bd5e8be5d",
+    "url": "https://github.com/earendil-works/pi/releases/download/v1.4.0/pi-darwin-arm64.tar.gz",
+    "version": "1.4.0"
   },
   "pnpm": {
     "sha256": "4dcea94654bc8f2189dfd591aea7af4adddd29243e4bfcc8d4c8b4289e7983ba",
@@ -25,13 +25,13 @@
     "version": "12.9.1"
   },
   "sing-box": {
-    "sha256": "0360ce634a04c26a6b4fd957517987bb4f6c8950f63435ce3c5af2fcae5860c5",
-    "url": "https://github.com/SagerNet/sing-box/releases/download/v1.14.3/sing-box-1.14.3-darwin-arm64.tar.gz",
-    "version": "1.14.3"
+    "sha256": "0d8c7f5ed5d587b0f1a5e9772a708ec3bfa4ac4c9329604b01d8d9c2ba406838",
+    "url": "https://github.com/SagerNet/sing-box/releases/download/v1.14.4/sing-box-1.14.4-darwin-arm64.tar.gz",
+    "version": "1.14.4"
   },
   "uv": {
-    "sha256": "cfe454573412ff7380d15fc7dae5997ab53ffce72fce0a78e91ddbc84001acd2",
-    "url": "https://github.com/astral-sh/uv/releases/download/0.13.1/uv-aarch64-apple-darwin.tar.gz",
-    "version": "0.13.1"
+    "sha256": "743f85035a1996ecb350659e01cd9faea9709829be09b1b4b03c73eaf3c9cd73",
+    "url": "https://github.com/astral-sh/uv/releases/download/0.13.5/uv-aarch64-apple-darwin.tar.gz",
+    "version": "0.13.5"
   }
 }
