@@ -19,6 +19,7 @@
 ### Task 1: Split the monolithic test
 
 **Files:**
+
 - Delete: `tests/sing-box-static.sh`
 - Create: `tests/check-sops-age-key.sh`
 - Create: `tests/bootstrap.sh`
@@ -30,6 +31,7 @@
 - Create: `tests/publish-sing-box-config.sh`
 
 **Interfaces:**
+
 - Consumes: repository files through a root derived from `BASH_SOURCE[0]`.
 - Produces: eight independently executable test scripts with exit code 0 on success.
 
@@ -56,10 +58,12 @@ Expected: every command exits 0.
 ### Task 2: Add the suite entrypoint
 
 **Files:**
+
 - Create: `tests/run.sh`
 - Modify: `docs/superpowers/plans/2026-07-26-sing-box-macos-client.md`
 
 **Interfaces:**
+
 - Consumes: explicit ordered test script names.
 - Produces: `bash tests/run.sh`, the canonical full-suite command.
 
@@ -79,9 +83,11 @@ Expected: all named tests pass.
 ### Task 3: Verify and commit
 
 **Files:**
+
 - Test: all files under `tests/`
 
 **Interfaces:**
+
 - Consumes: the completed test suite.
 - Produces: a reviewed commit containing only the test reorganization and its documentation.
 

@@ -1,7 +1,10 @@
 { lib, user, ... }:
 
 let
-  preferredLanguages = [ "en-SG" "zh-SG" ];
+  preferredLanguages = [
+    "en-SG"
+    "zh-SG"
+  ];
   locale = "en_SG";
   terminalLocale = "${locale}.UTF-8";
   timeZone = "Asia/Singapore";
@@ -9,16 +12,29 @@ in
 {
   # Determinate 已经管理了 Nix daemon，关闭 nix-darwin 的管理防止冲突
   nix.enable = false;
-  
+
   nixpkgs.config.allowUnfree = true;
   nixpkgs.hostPlatform = "aarch64-darwin"; # Apple Silicon
 
   # These tools always use pinned official macOS binaries, never source builds.
   nixpkgs.overlays = [
-    (final: prev:
-      let binaries = prev.callPackage ./macos-binaries.nix { }; in {
-        inherit (binaries) pnpm uv sing-box bws herdr kimi-code pi;
-      })
+    (
+      final: prev:
+      let
+        binaries = prev.callPackage ./macos-binaries.nix { };
+      in
+      {
+        inherit (binaries)
+          pnpm
+          uv
+          sing-box
+          bws
+          herdr
+          kimi-code
+          pi
+          ;
+      }
+    )
   ];
 
   system.primaryUser = user;
@@ -38,29 +54,29 @@ in
     CustomUserPreferences."com.google.Chrome".ForcedLanguages = preferredLanguages;
 
     NSGlobalDomain = {
-      KeyRepeat = 2;          # 极速按键重复 (开发者必需)
-      InitialKeyRepeat = 15;  # 缩短长按触发重复的延迟
+      KeyRepeat = 2; # 极速按键重复 (开发者必需)
+      InitialKeyRepeat = 15; # 缩短长按触发重复的延迟
       # 🛑 开发者防坑必备：关闭 macOS 各类“自作聪明”的文本替换
-      NSAutomaticCapitalizationEnabled = false;      # 关闭自动首字母大写
-      NSAutomaticInlinePredictionEnabled = true;    # 显示行内预测文字
-      NSAutomaticDashSubstitutionEnabled = false;    # 关闭自动双横杠替换为长破折号（防止 --help 报错）
-      NSAutomaticPeriodSubstitutionEnabled = false;  # 关闭双击空格自动输入句号
-      NSAutomaticQuoteSubstitutionEnabled = false;   # 关闭智能引号（防止破坏 JSON/代码结构）
-      NSAutomaticSpellingCorrectionEnabled = false;  # 关闭自动拼写纠正
+      NSAutomaticCapitalizationEnabled = false; # 关闭自动首字母大写
+      NSAutomaticInlinePredictionEnabled = true; # 显示行内预测文字
+      NSAutomaticDashSubstitutionEnabled = false; # 关闭自动双横杠替换为长破折号（防止 --help 报错）
+      NSAutomaticPeriodSubstitutionEnabled = false; # 关闭双击空格自动输入句号
+      NSAutomaticQuoteSubstitutionEnabled = false; # 关闭智能引号（防止破坏 JSON/代码结构）
+      NSAutomaticSpellingCorrectionEnabled = false; # 关闭自动拼写纠正
     };
 
     dock = {
-      show-recents = false;            # 隐藏 Dock 右侧的最近使用
-      mru-spaces = false;              # 🛑 核心痛点：关闭“根据最近使用情况自动重新排列空间”
+      show-recents = false; # 隐藏 Dock 右侧的最近使用
+      mru-spaces = false; # 🛑 核心痛点：关闭“根据最近使用情况自动重新排列空间”
     };
 
     finder = {
-      FXPreferredViewStyle = "Nlsv";   # 默认列表视图
-      CreateDesktop = false;           # 隐藏桌面图标，保持专注
+      FXPreferredViewStyle = "Nlsv"; # 默认列表视图
+      CreateDesktop = false; # 隐藏桌面图标，保持专注
     };
 
     trackpad = {
-      Clicking = true;                 # 轻触点击
+      Clicking = true; # 轻触点击
     };
   };
 
@@ -80,9 +96,9 @@ in
 
     # 🔄 支持自动化清洗、更新及底层应用升级
     onActivation = {
-      cleanup = "zap";       # 移除所有未在列表中声明的包
-      autoUpdate = true;     # 构建前自动更新 Homebrew 仓库
-      upgrade = true;        # 👈 自动将所有 Casks 升级到最新版本
+      cleanup = "zap"; # 移除所有未在列表中声明的包
+      autoUpdate = true; # 构建前自动更新 Homebrew 仓库
+      upgrade = true; # 👈 自动将所有 Casks 升级到最新版本
       extraFlags = [ "--force" ];
     };
 

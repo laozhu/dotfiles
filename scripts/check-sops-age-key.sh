@@ -65,8 +65,8 @@ repository_recipients="$(
   }' "$sops_config" 2>/dev/null
 )"
 recipient_count="$(
-  printf '%s\n' "$repository_recipients" \
-    | awk '/^age1[0-9a-z]+$/ { count++ } END { print count + 0 }'
+  printf '%s\n' "$repository_recipients" |
+    awk '/^age1[0-9a-z]+$/ { count++ } END { print count + 0 }'
 )"
 if [ "$recipient_count" != '1' ]; then
   printf 'Expected one repository recipient in: %s\n' "$sops_config" >&2

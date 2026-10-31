@@ -98,7 +98,7 @@ jq -e '
   [.route.rule_set[] | select(.tag == "antigravity.google")] | length == 1
 ' "$config" >/dev/null
 jq '{version: 3, rules: first(.route.rule_set[] |
-  select(.tag == "antigravity.google")).rules}' "$config" > "$rule_fixture"
+  select(.tag == "antigravity.google")).rules}' "$config" >"$rule_fixture"
 for domain in \
   antigravity.google www.antigravity.google antigravity.google.com \
   aicode.googleapis.com cloudcode-pa.googleapis.com daily-cloudcode-pa.googleapis.com \

@@ -78,21 +78,21 @@ configured_home="$(
 )"
 
 nix eval --raw \
-  "$repo_dir#darwinConfigurations.mac.config.sops.templates.sing-box-candidate.path" \
-  | grep -Fx '/run/secrets/rendered/sing-box-candidate.json'
+  "$repo_dir#darwinConfigurations.mac.config.sops.templates.sing-box-candidate.path" |
+  grep -Fx '/run/secrets/rendered/sing-box-candidate.json'
 
 nix eval --raw \
-  "$repo_dir#darwinConfigurations.mac.config.sops.age.keyFile" \
-  | grep -Fx "$configured_home/Library/Application Support/sops/age/keys.txt"
+  "$repo_dir#darwinConfigurations.mac.config.sops.age.keyFile" |
+  grep -Fx "$configured_home/Library/Application Support/sops/age/keys.txt"
 
 nix eval --raw \
-  "$repo_dir#darwinConfigurations.mac.config.sops.templates.sing-box-candidate.owner" \
-  | grep -Fx "$configured_user"
+  "$repo_dir#darwinConfigurations.mac.config.sops.templates.sing-box-candidate.owner" |
+  grep -Fx "$configured_user"
 
 nix eval --raw \
-  "$repo_dir#darwinConfigurations.mac.config.sops.templates.sing-box-candidate.group" \
-  | grep -Fx 'staff'
+  "$repo_dir#darwinConfigurations.mac.config.sops.templates.sing-box-candidate.group" |
+  grep -Fx 'staff'
 
 nix eval --raw \
-  "$repo_dir#darwinConfigurations.mac.config.sops.templates.sing-box-candidate.mode" \
-  | grep -Fx '0400'
+  "$repo_dir#darwinConfigurations.mac.config.sops.templates.sing-box-candidate.mode" |
+  grep -Fx '0400'

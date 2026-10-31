@@ -48,11 +48,13 @@
 ### Task 1: 统一 Nix 拓扑、软件包和 GUI 所有权
 
 **Files:**
+
 - Modify: `flake.nix`
 - Modify: `configuration.nix`
 - Modify: `home.nix`
 
 **Interfaces:**
+
 - Consumes: 当前 `sharedModules`、Home Manager 和 nix-homebrew 配置。
 - Produces: `inputs.sops-nix`、`darwinConfigurations.mac`、SFM cask、四个所需 CLI 包和最终配置链接。
 
@@ -159,11 +161,13 @@ git commit -m "feat: define sing-box macOS dependencies"
 ### Task 2: 创建共享 age identity 并迁移加密秘密
 
 **Files:**
+
 - Create: `.sops.yaml`
 - Create: `secrets/sing-box.yaml`
 - Read only: `/Users/rich/Downloads/config.json`
 
 **Interfaces:**
+
 - Consumes: 旧配置中四个实际出站及本机 `age-keygen`、`sops`。
 - Produces: 通用 dotfiles age recipient 和以下 18 个 SOPS key path：
   - `sing-box/singapore/server-hostname`
@@ -361,6 +365,7 @@ git commit -m "feat: encrypt sing-box server credentials"
 ### Task 3: 创建单一配置模板、秘密映射和无落盘校验器
 
 **Files:**
+
 - Create: `home/.config/sing-box/config.json`
 - Create: `home/.config/sing-box/secrets-map.json`
 - Create: `scripts/render-sing-box-config.mjs`
@@ -368,6 +373,7 @@ git commit -m "feat: encrypt sing-box server credentials"
 - Create: `tests/sing-box-static.sh`
 
 **Interfaces:**
+
 - Consumes: Task 2 的 18 个 SOPS key path。
 - Produces:
   - `renderConfig(templateText: string, secretMap: object, secrets: object): string`
@@ -458,7 +464,7 @@ Expected: 因模板和映射文件不存在而失败。
     `proxy-dns`。
 14. `route.default_domain_resolver = "proxy-dns"`，避免 1.13.14 的缺失解析器错误，并让未被更具体 DNS 规则覆盖的域名继续使用防污染的代理 DoH；四个物理代理出站用自己的 `hosts-dns` 覆盖它，避免启动递归。`route.auto_detect_interface = true`，让 macOS TUN 出站绑定默认物理接口，防止重新进入 TUN。路由规则顺序严格为 sniff、DNS hijack、代理服务器目标直连、私网直连、`custom-reject`、`custom-direct`、`custom-proxy`、OpenAI、Claude、Google Meet UDP、Google Meet 通用、GFWList、final direct。
 15. `custom-reject`、`custom-direct` 和 `custom-proxy` 是可编辑的 inline rule-set。sing-box 1.13.14 拒绝空的 inline rule-set，因此三个 `rules` 数组初始都包含一个精确匹配保留域名 `sing-box-placeholder.invalid` 的无害哨兵规则。用户以后向对应 `rules` 数组追加自定义规则，不要删除哨兵。
-15.1. `proxy-server` 是包含两个加密服务器域名的 inline rule-set；DNS 规则引用它并交给 `hosts-dns` 返回加密保存的固定 IP，路由规则引用它并强制直连，避免启动递归和 DNS 污染。
+    15.1. `proxy-server` 是包含两个加密服务器域名的 inline rule-set；DNS 规则引用它并交给 `hosts-dns` 返回加密保存的固定 IP，路由规则引用它并强制直连，避免启动递归和 DNS 污染。
 16. Google Meet inline rule-set 包含 `meet.google.com`、`meetings.googleapis.com`、`stun.l.google.com`、`workspace.turns.goog`、`meet.turns.goog`，以及 `74.125.250.0/24`、`142.250.82.0/24`、`2001:4860:4864:5::/64`、`2001:4860:4864:6::/64`。UDP `3478` 和 `19302:19309` 在该服务规则中经 `proxy`。
 17. 远程规则集只保留 GFWList、OpenAI 和 Claude，URL 分别为 MetaCubeX 的 `gfw.srs`、`openai.srs` 和 `anthropic.srs`，更新间隔均为 `24h`。
 18. GFWList URL 固定为 `https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/gfw.srs`。
@@ -574,12 +580,14 @@ git commit -m "feat: add validated sing-box client template"
 ### Task 4: 用 sops-nix Darwin 模块事务性发布配置
 
 **Files:**
+
 - Create: `sing-box.nix`
 - Create: `scripts/publish-sing-box-config.sh`
 - Modify: `flake.nix`
 - Modify: `tests/sing-box-static.sh`
 
 **Interfaces:**
+
 - Consumes: Task 3 的模板、映射和 18 个 SOPS key path。
 - Produces:
   - `/run/secrets/rendered/sing-box-candidate.json`
@@ -772,12 +780,14 @@ git commit -m "feat: render sing-box config with sops-nix"
 ### Task 5: 加固 bootstrap 和 rebuild
 
 **Files:**
+
 - Create: `scripts/check-sops-age-key.sh`
 - Modify: `bootstrap.sh`
 - Modify: `rebuild.sh`
 - Modify: `tests/sing-box-static.sh`
 
 **Interfaces:**
+
 - Consumes: `.sops.yaml` recipient、标准 identity 路径、`secrets/sing-box.yaml`。
 - Produces: 可复用的零明文 preflight，以及固定 `#mac` 的安全重建入口。
 
@@ -898,11 +908,13 @@ git commit -m "feat: add safe sing-box rebuild preflight"
 ### Task 6: 激活配置并验证单实例边界
 
 **Files:**
+
 - Runtime: `/run/secrets/rendered/sing-box-candidate.json`
 - Runtime: `/Users/rich/.local/state/sing-box/config.json`
 - Runtime link: `/Users/rich/.config/sing-box/config.json`
 
 **Interfaces:**
+
 - Consumes: Tasks 1-5 的完整声明式配置。
 - Produces: 当前 Mac 上通过校验、权限正确、尚未自动启动 SFM 的运行配置。
 
@@ -992,10 +1004,12 @@ Expected: rebuild 没有启动 sing-box 或 SFM，没有 Dashboard。
 ### Task 7: SFM 导入和网络端到端验收
 
 **Files:**
+
 - Modify: `docs/sing-box.md`
 - SFM derived state: 只通过官方 UI 导入，不直接编辑应用容器。
 
 **Interfaces:**
+
 - Consumes: 已校验的 `~/.config/sing-box/config.json`。
 - Produces: 一个 SFM Local Profile、一个 Network Extension 实例、可切换的四节点运行配置。
 
@@ -1103,10 +1117,12 @@ git commit -m "docs: add sing-box and SFM operations guide"
 ### Task 8: 最终验证、安全审计和旧文件处置
 
 **Files:**
+
 - Verify: all files changed by Tasks 1-7
 - Optional delete after approval: `/Users/rich/Downloads/config.json`
 
 **Interfaces:**
+
 - Consumes: 完整实现和当前运行状态。
 - Produces: 可复现的新机流程、无明文泄漏的 Git 差异和用户确认的最终状态。
 

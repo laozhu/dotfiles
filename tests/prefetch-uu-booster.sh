@@ -150,4 +150,3 @@ cmp "$previous_cache" "$uu_test_cache"
 
 trap - EXIT
 cleanup_uu_tests
-

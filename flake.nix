@@ -4,7 +4,7 @@
   inputs = {
     # 核心包集合
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    
+
     # Nix-darwin
     darwin = {
       url = "github:nix-darwin/nix-darwin";
@@ -48,12 +48,22 @@
     };
   };
 
-  outputs = inputs@{ self, darwin, nixpkgs, home-manager, llm-agents, nix-homebrew, sops-nix, ... }:
+  outputs =
+    inputs@{
+      self,
+      darwin,
+      nixpkgs,
+      home-manager,
+      llm-agents,
+      nix-homebrew,
+      sops-nix,
+      ...
+    }:
     let
       user = "rich";
       # M4 芯片架构统一为 aarch64-darwin
-      system = "aarch64-darwin"; 
-      
+      system = "aarch64-darwin";
+
       # 💡 提取共享模块：笔记本和台式机共用的所有配置
       sharedModules = [
         ./configuration.nix

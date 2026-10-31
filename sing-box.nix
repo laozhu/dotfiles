@@ -1,14 +1,17 @@
-{ config, lib, pkgs, user, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  user,
+  ...
+}:
 
 let
   templatePath = ./home/.config/sing-box/config.json;
-  secretMap =
-    builtins.fromJSON
-      (builtins.readFile ./home/.config/sing-box/secrets-map.json);
+  secretMap = builtins.fromJSON (builtins.readFile ./home/.config/sing-box/secrets-map.json);
   markers = builtins.attrNames secretMap;
   secretPaths = lib.unique (map (marker: secretMap.${marker}) markers);
-  replacements =
-    map (marker: config.sops.placeholder.${secretMap.${marker}}) markers;
+  replacements = map (marker: config.sops.placeholder.${secretMap.${marker}}) markers;
   candidate = config.sops.templates.sing-box-candidate.path;
   stateDir = "/Users/${user}/.local/state/sing-box";
   finalConfig = "${stateDir}/config.json";
@@ -23,10 +26,7 @@ in
     };
     secrets = lib.genAttrs secretPaths (_: { });
     templates.sing-box-candidate = {
-      content = builtins.replaceStrings
-        markers
-        replacements
-        (builtins.readFile templatePath);
+      content = builtins.replaceStrings markers replacements (builtins.readFile templatePath);
       path = "/run/secrets/rendered/sing-box-candidate.json";
       owner = user;
       group = "staff";

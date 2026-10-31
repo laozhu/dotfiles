@@ -21,11 +21,13 @@
 ### Task 1: 锁定 Orca tap 并声明 GUI 应用
 
 **Files:**
+
 - Modify: `flake.nix`
 - Modify: `flake.lock`
 - Modify: `configuration.nix`
 
 **Interfaces:**
+
 - Consumes: 现有 `inputs.homebrew-core`、`inputs.homebrew-cask` 和 `nix-homebrew.taps`
 - Produces: 锁定的 `inputs.orca-tap`、`stablyai/orca` tap 和五个新增 Cask 声明
 
@@ -110,9 +112,11 @@ git commit -m "feat: add local development desktop apps"
 ### Task 2: 声明 uv 和 bws CLI
 
 **Files:**
+
 - Modify: `home.nix`
 
 **Interfaces:**
+
 - Consumes: 当前锁定 nixpkgs 的 `pkgs.uv` 和 `pkgs.bws`
 - Produces: 用户 profile 中的 `uv` 和 `bws` 可执行文件
 
@@ -127,7 +131,7 @@ nix eval --offline --json '.#darwinConfigurations.mac.pkgs' --apply 'p: { uv = p
 Expected:
 
 ```json
-{"bws":"bws","uv":"uv"}
+{ "bws": "bws", "uv": "uv" }
 ```
 
 - [ ] **Step 2: 加入 Home Manager 包列表**
@@ -159,12 +163,14 @@ git commit -m "feat: install uv and Bitwarden Secrets Manager CLI"
 ### Task 3: 验证完整配置
 
 **Files:**
+
 - Verify: `flake.nix`
 - Verify: `flake.lock`
 - Verify: `configuration.nix`
 - Verify: `home.nix`
 
 **Interfaces:**
+
 - Consumes: Tasks 1 和 2 的声明式配置
 - Produces: 可求值且无重复容器运行时的最终 darwin 配置
 

@@ -212,4 +212,3 @@ done
 
 trap - EXIT
 cleanup_bootstrap_tests
-
