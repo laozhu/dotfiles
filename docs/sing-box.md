@@ -1,159 +1,104 @@
 # sing-box 与 SFM
 
-SFM 独占 sing-box 运行时、Network Extension 和 TUN。nix-darwin 负责解密、
-渲染、校验和发布配置，Home Manager 提供命令行工具与配置链接。
-不要创建额外的 LaunchAgent、LaunchDaemon 或 `sing-box run` 进程。
+SFM 负责运行代理、Network Extension 和 TUN；仓库负责生成、校验和发布配置。
+不额外启动 `sing-box run`、LaunchAgent 或 LaunchDaemon，以免与 SFM 冲突。
+新机安装前准备网络和密钥的步骤见 [Quick start](../README.md#quick-start)。
 
-## 版本与配置来源
+## 配置来源与版本
 
-当前模板要求 **sing-box / SFM 1.14 或更新版本**。DNS 使用 `evaluate` 和
-`match_response` 判断直连 DNS 响应是否为私网地址。`rebuild.sh` 使用即将安装的
-Nix 内核预检配置。
+| 文件 | 用途 |
+| --- | --- |
+| `home/.config/sing-box/config.json` | 无凭据的配置模板，持久修改在这里完成 |
+| `home/.config/sing-box/secrets-map.json` | 模板占位符与秘密字段的映射 |
+| `secrets/sing-box.yaml` | SOPS 加密的秘密 |
+| `~/.local/state/sing-box/config.json` | 解密并校验后发布的完整配置，权限 `0600` |
+| `~/.config/sing-box/config.json` | 指向已发布配置的链接，供检查和导入使用 |
 
-升级 SFM 前备份应用、配置和数据库，按
-[官方迁移说明](https://sing-box.sagernet.org/migration/#migrate-the-macos-standalone-client-data)
-迁移数据。Homebrew 升级 SFM 可能中断连接，应提前准备离线恢复材料。
-系统扩展与 VPN 授权在 macOS 界面完成。
+当前模板使用 sing-box 1.14 的 DNS 响应匹配、HTTP client 和缓存功能。
+CLI 的固定版本见 `macos-binaries.json`；SFM 使用 Homebrew `sfm` cask，
+两者的版本来源不同。CLI 校验通过不代表 SFM 内置核心一定兼容，升级时需分别确认版本，
+并阅读 [官方迁移说明](https://sing-box.sagernet.org/migration/)。
+跨越 SFM 1.14 的应用身份变更时，旧配置与设置不会自动继承，按
+[官方数据迁移说明](https://sing-box.sagernet.org/migration/#migrate-the-macos-standalone-client-data)
+处理。不要把以前版本的兼容性测试结论当作当前验收结果。
 
-- 模板：`home/.config/sing-box/config.json`，持久修改应在这里完成。
-- 秘密：`secrets/sing-box.yaml`，只保存 SOPS 密文。
-- 已发布配置：`~/.local/state/sing-box/config.json`，通过
-  `~/.config/sing-box/config.json` 链接访问。
-- SFM 的 `config` Local Profile 是导入副本，配置变化后必须重新导入。
-  不要编辑应用私有容器或把 SFM 的临时修改覆盖回仓库。
+## 发布与导入
 
-## 部署与重新导入
-
-在仓库根目录运行：
+在仓库根目录执行：
 
 ```bash
 ./rebuild.sh
-bash scripts/check-sing-box-config.sh
 open -a SFM
 ```
 
-`rebuild.sh` 不负责启停 SFM。首次部署前，断开其他代理客户端，确认没有独立
-sing-box 核心或端口冲突。
+rebuild 先用即将安装的 CLI 校验配置；系统激活时，sops-nix 解密并渲染候选文件，
+发布脚本再次校验，成功后原子替换已发布配置。发布失败保留上一个有效文件，
+但不代表整个系统或 Homebrew 变更都会回退。
+
+SFM 的 Local Profile 是导入副本，不会自动读取仓库后续修改：
 
 1. 在 SFM 中断开 VPN。
-2. 选择“文件” -> “从文件导入”，按 `Command-Shift-G` 输入
-   `~/.config/sing-box/config.json`。
-3. 删除或替换旧副本，只保留一个名为 `config` 的 Local Profile。
-4. 连接并检查下面的运行状态。首次使用时按 macOS 提示授权。
+2. 选择“文件 → 从文件导入”，按 `Command-Shift-G` 输入 `~/.config/sing-box/config.json`。
+3. 替换旧副本，保留一个容易辨认的配置，例如 `config`。
+4. 连接；首次使用时按 macOS 提示批准网络扩展和 VPN 权限。
 
-每次修改模板、规则或秘密后，重复以上步骤。
+每次修改模板、规则或秘密并成功 rebuild 后，都要重新导入。
+不要直接修改 SFM 的私有容器；应用内临时修改也不会同步回仓库。
+Homebrew 安装或升级 SFM 可能中断代理连接，操作前保留可离线使用的安装包和配置。
 
-## 运行检查
+## 当前分流
 
-```bash
-pgrep -alf 'sing-box|SFM'
-launchctl list | rg -i 'sing-box|sfm'
-lsof -nP -iTCP:7777 -sTCP:LISTEN
-lsof -nP -iTCP:9090 -sTCP:LISTEN
-netstat -anv -p tcp | rg '[.:](7777|9090).*LISTEN'
-```
+以下行为来自仓库模板，运行时以导入 SFM 的那份配置为准：
 
-- 只有 SFM 管理的一个核心，`127.0.0.1:7777` 有一个 mixed 入站监听。
-- 没有 `9090` 监听、Clash API 或 Web Dashboard。
-- Network Extension 的监听可能不出现在普通用户的 `lsof` 中，可用 `netstat`
-  和 `nc -G 1 -z 127.0.0.1 7777` 确认。
-- SFM 显示已连接，IPv4/IPv6 默认路由与 DNS 由 TUN 接管。比较连接前后的
-  路由与接口，不能只凭存在 `utun` 判断。
-
-通过 SFM 日志、连接记录与出口 IP 检查分流：
-
-- `localhost`、`.local`、局域网及未匹配目标直连。
-- GFWList、GitHub、OpenAI 和 Google Meet（TCP/UDP）走 `🚀 proxy`。
-- Antigravity 和 Claude 固定走 `🇸🇬 singapore`，DNS 使用 `singapore-dns`。
-- DNS 请求由 TUN 劫持，结果符合规则；并非所有域名都返回 FakeIP。
-
-`direct.domain_resolver` 使用 AliDNS，避免国内直连目标继承代理 DNS。
-远程规则集通过共享 HTTP client `rule-set-download`，固定经 `🇺🇸 us-hy2`
-下载，避免首次启动依赖尚未完成探测的 `⚡ auto`。使用 sing-box 1.14 的
-`http_client` / `default_http_client`，不再使用已弃用的 `download_detour`。
-GitHub 的主站、Raw 和静态资源域名使用内联规则，避免依赖远程规则集缓存。
-
-### Antigravity 分流
-
-独立内联规则集 `antigravity.google` 固定使用 `🇸🇬 singapore`，
-域名查询使用同样经新加坡组出站的 `singapore-dns`，优先于通用代理 DNS 规则。
-全局 `🚀 proxy` 或 `⚡ auto` 的选择不会改变 Antigravity 的新加坡出口。
-官网与 API 已从 `custom-proxy` 迁入此规则集，不依赖 GFWList 是否覆盖这些域名。
-新加坡组仍可在 VLESS 与 Hysteria2 节点间测速选择，但不会切到美国节点。
-
-| 用途 | 域名 |
+| 流量 | 去向 |
 | --- | --- |
-| 官网与网页入口（包含子域名） | `antigravity.google`、`antigravity.google.com` |
-| 模型与账号服务（精确匹配） | `aicode.googleapis.com`、`cloudcode-pa.googleapis.com`、`daily-cloudcode-pa.googleapis.com` |
-| Google 登录（精确匹配） | `accounts.google.com`、`oauth2.googleapis.com`、`www.googleapis.com` |
-| 配置与遥测（精确匹配） | `antigravity-unleash.goog`、`play.googleapis.com` |
-| 安装与更新（精确匹配） | `antigravity-cli-auto-updater-974169037036.us-central1.run.app`、`storage.googleapis.com` |
+| 私网 IP、代理服务器自身、未匹配其他规则的流量 | 直连 |
+| GitHub、Nix 缓存等 `custom-proxy` 目标，以及 GFWList、OpenAI、Google Meet | `🚀 proxy` 选择的出口 |
+| Antigravity、Claude | `🇸🇬 singapore`，对应 DNS 也走新加坡 |
+| 远程规则集下载 | 经 `rule-set-download` HTTP client 固定走 `🇺🇸 us-hy2` |
 
-范围依据本机 `agy 1.4.3`、Antigravity IDE 内置 language server 的端点字面量、
-CLI 日志、[官方安装说明](https://antigravity.google/docs/getting-started?tab=cli)
-及[上游网络问题记录](https://github.com/google-antigravity/antigravity-cli/issues/181)整理。
-二进制包含端点不代表当前会话都访问过；未纳入测试环境或 Google 企业服务端点。
-规则保证这些目标走代理，但不能保证 Google 的账号或出口 IP 地区资格校验通过。
+`🚀 proxy` 默认选择 `⚡ auto`，也可手动指定地区或节点。
+三个自动组每 3 分钟探测，容差 50 ms；HY2 在候选中优先排列，探测后按延迟选择。
+自动选择变化保留既有连接，手动切换全局 selector 会中断既有连接。
+延迟测试不等于吞吐量测试，不能据此保证下载速度。
 
-### Claude 分流
+DNS 使用 IPv4 策略并拒绝 AAAA 查询；代理目标按规则使用代理 DNS，
+其他请求先查询直连 DNS，部分 A 查询使用 FakeIP，并非所有域名都返回 FakeIP。
+启用 DNS 持久缓存和最多 5 分钟的过期缓存后台刷新。
+字段含义见 [DNS 配置](https://sing-box.sagernet.org/configuration/dns/) 和
+[URLTest](https://sing-box.sagernet.org/configuration/outbound/urltest/)。
 
-`claude` 规则集固定使用 `🇸🇬 singapore`，域名查询使用 `singapore-dns`。
-DNS 规则优先于通用代理 DNS 规则，全局 `🚀 proxy` 或 `⚡ auto` 的选择不会
-改变 Claude 的新加坡出口。新加坡组仍可在同一机房的 VLESS 与 Hysteria2
-节点间测速选择，不会切到美国节点。
+## 检查与恢复
 
-### 节点与连接
-
-`🚀 proxy` 可选择 `⚡ auto`、`🇸🇬 singapore`、`🇺🇸 usa`、`🇸🇬 sg-vless`、
-`🇸🇬 sg-hy2`、`🇺🇸 us-vless` 和 `🇺🇸 us-hy2`。三个 URLTest 组每 3 分钟
-探测一次，容差 50 ms，自动选择变化时保留既有连接。组内 HY2 优先排列，
-使首次探测前的候选优先使用 HY2；完成探测后按延迟选择，不永久锁定协议。
-手动切换会中断既有连接。节点失败时先切回 `⚡ auto`，再检查错误与延迟。
-不要公开完整日志、出口 IP 或凭据。
-
-DNS 缓存随现有 cache file 持久保存；过期记录最多再使用 5 分钟，同时后台
-刷新，减少重复查询和等待。DNS 分流、IPv4 策略与 FakeIP 规则保持原样。
-速度测试和两台服务器的差异见 [性能审计](sing-box-performance.md)。
-
-历史验收（2026-07-28）：`us-vless` 未通过，其余节点与组通过；断开恢复及
-重复启停未测试。升级后应重新验收，不能沿用历史结果。
-
-2026-10-16：美国 VLESS 与 Hysteria2 均通过本机直连测试，VLESS 另经 SFM
-实测确认。VLESS 原故障是 Xray 26.4.25 的 REALITY 目标 TLS 记录缓冲区仅有
-8192 字节，无法处理 Microsoft 返回的 8273 字节证书记录。服务端现使用
-`26.4.25 local-reality17k` 兼容补丁版，只回移
-[官方缓冲区修复](https://github.com/XTLS/REALITY/pull/33)，将其扩大至 17 KiB；
-目标、SNI 和认证参数均未改变。
-
-官方 Xray 26.10.10 已在隔离实例中测试，但当前 sing-box 1.14.2 返回
-`reality verification failed`，对应
-[新版 REALITY 握手兼容问题](https://github.com/SagerNet/sing-box/issues/4520)。
-因此未部署该官方新版。x-ui 更新核心会覆盖兼容补丁版，更新前需先验证客户端
-兼容性。服务端备份、补丁、构建清单和回滚说明位于
-`/root/xray-upgrade-20261016-snkd26te/`；本仓库不管理服务端二进制。
-
-## 停止与恢复
-
-在 SFM 界面断开后，确认 `7777`、`9090` 没有监听，DNS 与 IPv4/IPv6 默认路由
-恢复到连接前状态，没有残留 CLI 核心。SFM 前端仍打开不代表核心仍运行。
-首次部署或升级后，重复两轮“导入 -> 连接 -> 切换节点 -> 断开”检查。
-
-故障时先在 SFM 界面断开，排除其他代理冲突，再运行配置检查。
-校验失败则修复仓库输入并重新 rebuild；发布脚本会保留上一个有效配置。
-校验通过但运行异常则退出并重开 SFM，重新导入；权限缺失时按官方提示授权。
-
-## age identity 恢复
-
-标准位置为 `~/Library/Application Support/sops/age/keys.txt`，目录权限 `0700`，
-文件权限 `0600`。Bitwarden 备份项目为 `dotfiles - sops age identity`，可选
-item ID 环境变量为 `BITWARDEN_SOPS_AGE_IDENTITY_ITEM_ID`。
-
-新 Mac 上通过 Bitwarden 官方客户端恢复完整文件到标准位置，然后运行：
+检查仓库配置，或检查已经发布的文件：
 
 ```bash
-bash scripts/check-sops-age-key.sh
+bash scripts/check-sing-box-config.sh
+bash scripts/check-sing-box-config.sh "$HOME/.config/sing-box/config.json"
 ```
 
-检查验证权限、recipient 匹配与 SOPS 解密，不输出秘密。恢复失败时不要生成新
-identity。私钥不得放入仓库、Nix Store、命令参数、环境变量或公开材料。
-保持 FileVault 开启。
+前者会解密秘密并在管道中渲染，检查过程不主动打印完整配置。
+核心版本不兼容时，先确认 `sing-box version`，不要直接删掉校验不认识的字段。
+
+连接 SFM 后检查本机代理端口，并通过 HTTP 代理发起请求：
+
+```bash
+nc -G 1 -z 127.0.0.1 7777
+curl --proxy http://127.0.0.1:7777 --connect-timeout 15 --max-time 30   -I https://github.com
+```
+
+模板只在 `127.0.0.1:7777` 提供 mixed 入站，没有开放局域网代理或 Clash API。
+端口和 HTTP 请求正常只证明 mixed 代理可用；TUN 还要在 SFM 中确认连接状态，
+并检查普通浏览器访问、DNS、IPv4/IPv6 默认路由是否符合预期。
+断开后确认 `7777` 不再提供代理，网络与 DNS 恢复；升级后重复连接和断开测试。
+
+- **校验失败**：修复仓库模板或秘密，重新 rebuild。秘密用 `sops secrets/sing-box.yaml` 编辑。
+- **连接失败**：查看 SFM 错误，排除其他代理冲突，重新导入或重开应用，并检查系统授权。
+- **单个节点失败**：测试同地区其他节点，并检查规则集下载依赖的美国 HY2 是否可用。
+  全局 selector 的切换不会改变 Claude、Antigravity 和规则集下载各自固定的出口。
+- **密钥检查失败**：运行 `bash scripts/check-sops-age-key.sh`，按提示恢复原有密钥或修正权限。
+  脚本检查文件权限、仓库 recipient 匹配和解密能力，不会自动登录 Bitwarden 取回密钥。
+
+完整配置、密钥和运行日志可能包含凭据，不要提交到 Git 或公开粘贴。
+[2026-10-16 性能审计](sing-box-performance.md) 保留为历史记录，不能证明当前节点或服务端状态；
+本仓库不部署、升级或回退服务端程序。
