@@ -63,7 +63,10 @@ trap 'rm -rf "$config_test_root"' EXIT
 proxy_fixture="$config_test_root/custom-proxy.json"
 jq '{version: 3, rules: first(.route.rule_set[] |
   select(.tag == "custom-proxy")).rules}' "$config" >"$proxy_fixture"
-for domain in cloudfront.net dr2v7l5emb758.cloudfront.net other.cloudfront.net \
+for domain in slack-edge.com emoji.slack-edge.com a.slack-edge.com \
+  slack-imgs.com files.slack-imgs.com \
+  open-vsx.org openvsx.eclipsecontent.org \
+  cloudfront.net dr2v7l5emb758.cloudfront.net other.cloudfront.net \
   cache.thalheim.io npass.app downloads.npass.app updates.ghub.logitechg.com download01.logi.com; do
   result="$(sing-box rule-set match "$proxy_fixture" "$domain" 2>&1)"
   if [ -z "$result" ]; then
@@ -71,7 +74,11 @@ for domain in cloudfront.net dr2v7l5emb758.cloudfront.net other.cloudfront.net \
     exit 1
   fi
 done
-for domain in cloudfront.net.example.invalid notcloudfront.net \
+for domain in slack-edge.com.example.invalid notslack-edge.com \
+  slack-imgs.com.example.invalid notslack-imgs.com \
+  open-vsx.org.example.invalid notopen-vsx.org \
+  openvsx.eclipsecontent.org.example.invalid notopenvsx.eclipsecontent.org \
+  cloudfront.net.example.invalid notcloudfront.net \
   cache.thalheim.io.example.invalid notcache.thalheim.io \
   downloads.npass.app.example.invalid updates.ghub.logitechg.com.example.invalid \
   download01.logi.com.example.invalid notnpass.app notlogitechg.com notlogi.com; do
