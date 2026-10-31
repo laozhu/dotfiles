@@ -137,7 +137,7 @@ function main(args) {
   console.log("| --- | --- | --- | --- | --- | --- |");
   for (const row of rows)
     console.log(
-      `| ${[row.name, row.group, row.type, row.manager, row.status, row.detail].map(cell).join(" | ")} |`,
+      `| ${[row.name, row.group, row.type, row.manager === "Manual" ? "人工安装" : row.manager, row.status, row.detail].map(cell).join(" | ")} |`,
     );
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href)

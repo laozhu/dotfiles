@@ -87,17 +87,33 @@
    chmod 600 "$HOME/Library/Application Support/sops/age/keys.txt"
    ```
 
-8. **运行 bootstrap。** 在新机终端执行，不要在命令前加 `sudo`：
+8. **选择电脑用途并运行 bootstrap。** 在新机终端进入仓库，不要在命令前加 `sudo`：
 
    ```bash
    cd "$HOME/GitHub/laozhu/dotfiles"
+   ```
+
+   根据电脑用途，选择下面一条命令。
+
+   **家用电脑**：安装 shared 和 home only 软件。
+
+   ```bash
    ./bootstrap.sh --profile home
    ```
 
-   家用电脑选择 `home`，工作电脑改为 `--profile work`。选择保存在
-   `~/.config/dotfiles/profile`，后续无需重复指定，脚本不会自动切换已有分组。
-   按提示输入管理员密码。脚本会安装 shared 和所选分组的命令行工具、桌面应用，
-   并同步 VS Code、Antigravity 的配置与插件。完成后重新打开终端。
+   **工作电脑**：安装 shared 和 work only 软件。
+
+   ```bash
+   ./bootstrap.sh --profile work
+   ```
+
+   各组软件见 [软件安装列表](docs/software.md)。按提示输入管理员密码，
+   脚本会安装 Nix、命令行工具和桌面应用，并同步 VS Code、Antigravity 的配置与插件。
+   完成后重新打开终端。
+
+   分组保存在本机的 `~/.config/dotfiles/profile`，不提交到仓库。
+   安装中断后，重新运行 `./bootstrap.sh` 会沿用已选分组；首次运行必须指定 `--profile`。
+   已有分组时，指定另一个分组会停止。日常更新使用下方的 `rebuild.sh`，自动读取本机分组。
    代理配置后续变更时，按 [SFM 文档](docs/sing-box.md) 重新导入。
 
 ## 软件分组与安装检查
@@ -105,11 +121,12 @@
 `software.json` 是软件名称、类型、安装来源和分组的统一清单，Nix 与检查脚本共用：
 
 - `shared`：两台 Mac 共用的应用和开发工具，包括 OrbStack、Python、OpenJDK、Gradle。
-- `home`：Steam、UU 加速器、Logitech G HUB、腾讯会议。
+- `home`：Steam、UU 加速器、Logitech G HUB、腾讯会议，以及人工安装的 RabbitPro。
 - `work`：Slack、NordPass / np、Granola、Loom、Atlassian / Slack CLI、AWS / SAM、Temporal。
 
 Kotlin 由各项目的 Gradle 插件管理，不安装全局编译器。Bitdefender 列为 work 的人工项，
-需使用公司的安装包或 MDM；RabbitPro 不由本项目管理。Homebrew Python 优先于系统 Python，
+需使用公司的安装包或 MDM；RabbitPro 列为 home 的人工项。这两个软件只检测安装状态，不由 bootstrap/rebuild 安装。
+Homebrew Python 优先于系统 Python，
 OpenJDK 使用 Homebrew 默认版本，Gradle 使用对应的 `JAVA_HOME`。
 
 查看本机标记及安装状态（需要 Node.js，bootstrap 会安装）：

@@ -249,6 +249,15 @@
     "apps": ["TencentMeeting.app"]
   },
   {
+    "id": "rabbitpro",
+    "name": "RabbitPro",
+    "group": "home",
+    "type": "GUI",
+    "manager": "Manual",
+    "apps": ["RabbitPro.app"],
+    "note": "人工安装；仅检测安装状态，bootstrap/rebuild 不自动安装"
+  },
+  {
     "id": "python",
     "name": "Python 3 / pip3",
     "group": "shared",
