@@ -77,6 +77,11 @@
       # M4 芯片架构统一为 aarch64-darwin
       system = "aarch64-darwin";
 
+      # Keep the official tap pinned by flake.lock without Determinate's shallow optimization.
+      nordpassTap = import ./lib/non-shallow-git.nix (
+        (builtins.fromJSON (builtins.readFile ./flake.lock)).nodes.nordpass-tap.locked
+      );
+
       # 💡 提取共享模块：笔记本和台式机共用的所有配置
       sharedModules = profile: [
         ./configuration.nix
@@ -107,7 +112,7 @@
             }
             // nixpkgs.lib.optionalAttrs (profile == "work") {
               "atlassian/homebrew-acli" = inputs.atlassian-tap;
-              "nordpass/homebrew-tap" = inputs.nordpass-tap;
+              "nordpass/homebrew-tap" = nordpassTap;
             };
             mutableTaps = false;
           };

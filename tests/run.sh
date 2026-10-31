@@ -15,6 +15,7 @@ tests=(
   sync-editors.sh
   update-macos-binaries.sh
   repository-policy.sh
+  non-shallow-git.sh
   pi-config.sh
   pi-help.sh
   sing-box-config.sh
