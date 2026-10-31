@@ -100,4 +100,3 @@ fi
 
 trap - EXIT
 cleanup_preflight_tests
-

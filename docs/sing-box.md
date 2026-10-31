@@ -6,13 +6,13 @@ SFM 负责运行代理、Network Extension 和 TUN；仓库负责生成、校验
 
 ## 配置来源与版本
 
-| 文件 | 用途 |
-| --- | --- |
-| `home/.config/sing-box/config.json` | 无凭据的配置模板，持久修改在这里完成 |
-| `home/.config/sing-box/secrets-map.json` | 模板占位符与秘密字段的映射 |
-| `secrets/sing-box.yaml` | SOPS 加密的秘密 |
-| `~/.local/state/sing-box/config.json` | 解密并校验后发布的完整配置，权限 `0600` |
-| `~/.config/sing-box/config.json` | 指向已发布配置的链接，供检查和导入使用 |
+| 文件                                     | 用途                                    |
+| ---------------------------------------- | --------------------------------------- |
+| `home/.config/sing-box/config.json`      | 无凭据的配置模板，持久修改在这里完成    |
+| `home/.config/sing-box/secrets-map.json` | 模板占位符与秘密字段的映射              |
+| `secrets/sing-box.yaml`                  | SOPS 加密的秘密                         |
+| `~/.local/state/sing-box/config.json`    | 解密并校验后发布的完整配置，权限 `0600` |
+| `~/.config/sing-box/config.json`         | 指向已发布配置的链接，供检查和导入使用  |
 
 当前模板使用 sing-box 1.14 的 DNS 响应匹配、HTTP client 和缓存功能。
 CLI 的固定版本见 `macos-binaries.json`；SFM 使用 Homebrew `sfm` cask，
@@ -50,12 +50,12 @@ Homebrew 安装或升级 SFM 可能中断代理连接，操作前保留可离线
 
 以下行为来自仓库模板，运行时以导入 SFM 的那份配置为准：
 
-| 流量 | 去向 |
-| --- | --- |
-| 私网 IP、代理服务器自身、未匹配其他规则的流量 | 直连 |
-| GitHub、Nix 缓存等 `custom-proxy` 目标，以及 GFWList、OpenAI、Google Meet | `🚀 proxy` 选择的出口 |
-| Antigravity、Claude | `🇸🇬 singapore`，对应 DNS 也走新加坡 |
-| 远程规则集下载 | 经 `rule-set-download` HTTP client 固定走 `🇺🇸 us-hy2` |
+| 流量                                                                      | 去向                                                  |
+| ------------------------------------------------------------------------- | ----------------------------------------------------- |
+| 私网 IP、代理服务器自身、未匹配其他规则的流量                             | 直连                                                  |
+| GitHub、Nix 缓存等 `custom-proxy` 目标，以及 GFWList、OpenAI、Google Meet | `🚀 proxy` 选择的出口                                 |
+| Antigravity、Claude                                                       | `🇸🇬 singapore`，对应 DNS 也走新加坡                   |
+| 远程规则集下载                                                            | 经 `rule-set-download` HTTP client 固定走 `🇺🇸 us-hy2` |
 
 `🚀 proxy` 默认选择 `⚡ auto`，也可手动指定地区或节点。
 三个自动组每 3 分钟探测，容差 50 ms；HY2 在候选中优先排列，探测后按延迟选择。

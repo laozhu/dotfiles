@@ -46,4 +46,3 @@ if rg -n 'sing-box[[:space:]]+run|launchctl.*sing-box' \
   echo "bootstrap and rebuild must not manage the sing-box runtime" >&2
   exit 1
 fi
-

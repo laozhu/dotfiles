@@ -4,14 +4,14 @@
 
 ## 修改哪里
 
-| 文件 | 用途 |
-| --- | --- |
-| `flake.nix` / `flake.lock` | 用户名、系统架构、依赖来源及锁定版本 |
-| `configuration.nix` | macOS 设置、Homebrew 软件清单、包覆盖 |
-| `home.nix` | 用户命令行工具、Shell、Git 和 dotfiles 映射 |
-| `macos-binaries.json` / `macos-binaries.nix` | 官方 macOS 二进制的版本、下载地址、校验值及安装方式 |
-| `home/ide/` | VS Code、Antigravity 的共享设置与插件清单 |
-| `sing-box.nix` / `home/.config/sing-box/` | 代理配置渲染、校验与发布，详见 [SFM 指南](sing-box.md) |
+| 文件                                         | 用途                                                   |
+| -------------------------------------------- | ------------------------------------------------------ |
+| `flake.nix` / `flake.lock`                   | 用户名、系统架构、依赖来源及锁定版本                   |
+| `configuration.nix`                          | macOS 设置、Homebrew 软件清单、包覆盖                  |
+| `home.nix`                                   | 用户命令行工具、Shell、Git 和 dotfiles 映射            |
+| `macos-binaries.json` / `macos-binaries.nix` | 官方 macOS 二进制的版本、下载地址、校验值及安装方式    |
+| `home/ide/`                                  | VS Code、Antigravity 的共享设置与插件清单              |
+| `sing-box.nix` / `home/.config/sing-box/`    | 代理配置渲染、校验与发布，详见 [SFM 指南](sing-box.md) |
 
 大多数 dotfiles 通过 `~/.dotfiles` 链接到仓库，修改后应用可能立即读到变化；
 新增文件映射、安装软件和系统设置需要 rebuild。

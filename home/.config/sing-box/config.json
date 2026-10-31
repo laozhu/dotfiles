@@ -70,12 +70,7 @@
         "server": "singapore-dns"
       },
       {
-        "rule_set": [
-          "custom-proxy",
-          "gfwlist",
-          "openai",
-          "google-meet"
-        ],
+        "rule_set": ["custom-proxy", "gfwlist", "openai", "google-meet"],
         "server": "proxy-dns"
       },
       {
@@ -103,10 +98,7 @@
     {
       "type": "tun",
       "tag": "tun-in",
-      "address": [
-        "172.19.0.1/30",
-        "fdfe:dcba:9876::1/126"
-      ],
+      "address": ["172.19.0.1/30", "fdfe:dcba:9876::1/126"],
       "auto_route": true,
       "strict_route": true,
       "stack": "mixed"
@@ -137,12 +129,7 @@
     {
       "type": "urltest",
       "tag": "⚡ auto",
-      "outbounds": [
-        "🇺🇸 us-hy2",
-        "🇸🇬 sg-hy2",
-        "🇺🇸 us-vless",
-        "🇸🇬 sg-vless"
-      ],
+      "outbounds": ["🇺🇸 us-hy2", "🇸🇬 sg-hy2", "🇺🇸 us-vless", "🇸🇬 sg-vless"],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "3m",
       "tolerance": 50,
@@ -151,10 +138,7 @@
     {
       "type": "urltest",
       "tag": "🇸🇬 singapore",
-      "outbounds": [
-        "🇸🇬 sg-hy2",
-        "🇸🇬 sg-vless"
-      ],
+      "outbounds": ["🇸🇬 sg-hy2", "🇸🇬 sg-vless"],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "3m",
       "interrupt_exist_connections": false,
@@ -163,10 +147,7 @@
     {
       "type": "urltest",
       "tag": "🇺🇸 usa",
-      "outbounds": [
-        "🇺🇸 us-hy2",
-        "🇺🇸 us-vless"
-      ],
+      "outbounds": ["🇺🇸 us-hy2", "🇺🇸 us-vless"],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "3m",
       "interrupt_exist_connections": false,
@@ -323,10 +304,7 @@
         "tag": "proxy-server",
         "rules": [
           {
-            "domain": [
-              "__SOPS_SG_SERVER_HOSTNAME__",
-              "__SOPS_US_SERVER_HOSTNAME__"
-            ]
+            "domain": ["__SOPS_SG_SERVER_HOSTNAME__", "__SOPS_US_SERVER_HOSTNAME__"]
           }
         ]
       },
@@ -407,10 +385,7 @@
               "antigravity-cli-auto-updater-974169037036.us-central1.run.app",
               "storage.googleapis.com"
             ],
-            "domain_suffix": [
-              "antigravity.google",
-              "antigravity.google.com"
-            ]
+            "domain_suffix": ["antigravity.google", "antigravity.google.com"]
           }
         ]
       },

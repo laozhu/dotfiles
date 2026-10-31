@@ -22,8 +22,8 @@ trap cleanup_publish_tests EXIT
 assert_no_publish_temps() {
   if find "$publish_test_root" \
     -name '.config.json.*' \
-    -print -quit \
-    | grep -q .; then
+    -print -quit |
+    grep -q .; then
     echo "publish helper left a temporary file behind" >&2
     exit 1
   fi
@@ -274,20 +274,20 @@ post_activation="$(
     "$repo_dir#darwinConfigurations.mac.config.system.activationScripts.postActivation.text"
 )"
 secrets_line="$(
-  printf '%s\n' "$post_activation" \
-    | grep -n -m1 'Setting up secrets' \
-    | cut -d: -f1
+  printf '%s\n' "$post_activation" |
+    grep -n -m1 'Setting up secrets' |
+    cut -d: -f1
 )"
 validation_line="$(
-  printf '%s\n' "$post_activation" \
-    | grep -n -m1 'validating sing-box configuration' \
-    | cut -d: -f1
+  printf '%s\n' "$post_activation" |
+    grep -n -m1 'validating sing-box configuration' |
+    cut -d: -f1
 )"
 test "$secrets_line" -lt "$validation_line"
 
 before_downgrade="${post_activation%%/usr/bin/sudo -u *}"
-if printf '%s\n' "$before_downgrade" \
-  | grep -Eq '/bin/(install|chown|chmod|mktemp|mv|cat|jq|sing-box)([[:space:]]|$)'; then
+if printf '%s\n' "$before_downgrade" |
+  grep -Eq '/bin/(install|chown|chmod|mktemp|mv|cat|jq|sing-box)([[:space:]]|$)'; then
   echo "root activation reads the candidate or mutates the user home" >&2
   exit 1
 fi
@@ -299,10 +299,10 @@ fi
 configured_user="$(
   nix eval --raw "$repo_dir#darwinConfigurations.mac.config.system.primaryUser"
 )"
-printf '%s\n' "$post_activation" \
-  | grep -F "/usr/bin/sudo -u $configured_user --" >/dev/null
-printf '%s\n' "$post_activation" \
-  | grep -F -- '-publish-sing-box-config.sh' >/dev/null
+printf '%s\n' "$post_activation" |
+  grep -F "/usr/bin/sudo -u $configured_user --" >/dev/null
+printf '%s\n' "$post_activation" |
+  grep -F -- '-publish-sing-box-config.sh' >/dev/null
 
 trap - EXIT
 cleanup_publish_tests

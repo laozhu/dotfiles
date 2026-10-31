@@ -86,7 +86,7 @@ install_extensions() {
   fi
   while IFS= read -r extension || [ -n "$extension" ]; do
     [ -n "$extension" ] || continue
-    if grep -Fxiq -- "$extension" <<< "$installed"; then
+    if grep -Fxiq -- "$extension" <<<"$installed"; then
       printf 'Already installed: %s\n' "$extension"
       continue
     fi
@@ -94,7 +94,7 @@ install_extensions() {
       printf 'Failed to install %s with %s\n' "$extension" "$cli" >&2
       status=1
     fi
-  done <<< "$extensions"
+  done <<<"$extensions"
 }
 
 install_extensions "$code_cli" "$shared_extensions"$'\n'"$vscode_extensions"

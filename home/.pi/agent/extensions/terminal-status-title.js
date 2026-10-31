@@ -44,7 +44,8 @@ function statusIndicator(status, spinnerFrame) {
 
 function formatTitle(pi, ctx, status, spinnerFrame) {
   const rawTitle = getRawTitle(pi, ctx);
-  const suffix = rawTitle === DEFAULT_TITLE ? DEFAULT_TITLE : `${PREFIX} | ${truncateTitle(rawTitle)}`;
+  const suffix =
+    rawTitle === DEFAULT_TITLE ? DEFAULT_TITLE : `${PREFIX} | ${truncateTitle(rawTitle)}`;
 
   return `${statusIndicator(status, spinnerFrame)} | ${suffix}`;
 }

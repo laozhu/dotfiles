@@ -20,9 +20,11 @@
 ### Task 1: Add pnpm to the user environment
 
 **Files:**
+
 - Modify: `home.nix`
 
 **Interfaces:**
+
 - Consumes: `pkgs.pnpm` from the nixpkgs revision pinned by `flake.lock`.
 - Produces: a `pnpm` executable in the Home Manager user profile after `./rebuild.sh`.
 

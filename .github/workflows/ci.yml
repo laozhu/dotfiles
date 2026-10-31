@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    name: format:check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: DeterminateSystems/nix-installer-action@v23
+      - name: Fetch formatter binaries
+        run: |
+          nix build --no-link --max-jobs 0 --inputs-from . \
+            nixpkgs#oxfmt nixpkgs#shfmt nixpkgs#nixfmt nixpkgs#stylua
+      - run: ./format.sh --check
+
+  test:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: DeterminateSystems/nix-installer-action@v23
+      - name: Build test utilities
+        run: nix build --no-link .#darwinConfigurations.mac.pkgs.coreutils
+      - name: Run unit tests
+        run: |
+          nix shell --inputs-from . \
+            nixpkgs#bash nixpkgs#age nixpkgs#sops nixpkgs#jq \
+            nixpkgs#nodejs_26 nixpkgs#ripgrep \
+            .#darwinConfigurations.mac.pkgs.sing-box \
+            --command bash tests/run.sh

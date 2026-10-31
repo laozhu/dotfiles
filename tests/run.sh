@@ -4,6 +4,7 @@ set -euo pipefail
 tests_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 
 tests=(
+  format.sh
   check-sops-age-key.sh
   bootstrap.sh
   prefetch-uu-booster.sh

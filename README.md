@@ -12,10 +12,10 @@
 
 2. **获取安装包和配置。** 在旧 Mac 下载官方 SFM `.pkg` 安装包，并准备好以下三个文件：
 
-   | 文件 | 旧 Mac 上的位置 |
-   | --- | --- |
-   | SFM 安装包 | 刚下载的 `SFM-…-Universal.pkg` |
-   | 代理配置 | `~/.local/state/sing-box/config.json` |
+   | 文件              | 旧 Mac 上的位置                                   |
+   | ----------------- | ------------------------------------------------- |
+   | SFM 安装包        | 刚下载的 `SFM-…-Universal.pkg`                    |
+   | 代理配置          | `~/.local/state/sing-box/config.json`             |
    | SOPS age 解密密钥 | `~/Library/Application Support/sops/age/keys.txt` |
 
    在旧 Mac 的终端中定位配置和密钥：
@@ -102,6 +102,18 @@
 
 以下命令在仓库根目录执行。
 
+格式化源码，或只检查格式（不改文件）：
+
+```bash
+./format.sh
+./format.sh --check
+```
+
+脚本通过 Nix 临时提供项目锁定版本的 Oxfmt、shfmt、nixfmt 和 StyLua，无需全局安装。
+工具二进制缓存在 `/nix/store`，不加入日常 Shell 的 PATH；没有预编译缓存时会报错，不在本机编译。
+格式化跳过 SOPS 密文、锁文件和生成的版本记录。
+CI 分别执行 `format:check` 和 `test`；本地运行测试使用 `bash tests/run.sh`。
+
 应用当前配置：
 
 ```bash
@@ -125,16 +137,16 @@
 
 官方文档与上游说明：
 
-| 主题 | 参考资料 |
-| --- | --- |
-| Nix 安装与使用 | [Determinate Nix](https://docs.determinate.systems/)、[Nix 手册](https://nix.dev/manual/nix/latest/) |
-| macOS 与用户配置 | [nix-darwin 配置选项](https://nix-darwin.github.io/nix-darwin/manual/)、[Home Manager 手册](https://nix-community.github.io/home-manager/) |
-| Homebrew 管理 | [Homebrew 命令手册](https://docs.brew.sh/Manpage)、[nix-homebrew](https://github.com/zhaofengli/nix-homebrew) |
-| 秘密与密钥 | [SOPS](https://getsops.io/docs/)、[age](https://github.com/FiloSottile/age)、[sops-nix](https://github.com/Mic92/sops-nix) |
-| 代理与客户端 | [SFM 下载与说明](https://sing-box.sagernet.org/clients/apple/)、[sing-box 配置](https://sing-box.sagernet.org/configuration/)、[版本迁移](https://sing-box.sagernet.org/migration/) |
-| IDE 插件管理 | [VS Code 命令行](https://code.visualstudio.com/docs/configure/command-line) |
-| AI 工具打包 | [llm-agents.nix](https://github.com/numtide/llm-agents.nix) |
-| GitHub 认证 | [配置 SSH](https://docs.github.com/en/authentication/connecting-to-github-with-ssh) |
+| 主题             | 参考资料                                                                                                                                                                            |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Nix 安装与使用   | [Determinate Nix](https://docs.determinate.systems/)、[Nix 手册](https://nix.dev/manual/nix/latest/)                                                                                |
+| macOS 与用户配置 | [nix-darwin 配置选项](https://nix-darwin.github.io/nix-darwin/manual/)、[Home Manager 手册](https://nix-community.github.io/home-manager/)                                          |
+| Homebrew 管理    | [Homebrew 命令手册](https://docs.brew.sh/Manpage)、[nix-homebrew](https://github.com/zhaofengli/nix-homebrew)                                                                       |
+| 秘密与密钥       | [SOPS](https://getsops.io/docs/)、[age](https://github.com/FiloSottile/age)、[sops-nix](https://github.com/Mic92/sops-nix)                                                          |
+| 代理与客户端     | [SFM 下载与说明](https://sing-box.sagernet.org/clients/apple/)、[sing-box 配置](https://sing-box.sagernet.org/configuration/)、[版本迁移](https://sing-box.sagernet.org/migration/) |
+| IDE 插件管理     | [VS Code 命令行](https://code.visualstudio.com/docs/configure/command-line)                                                                                                         |
+| AI 工具打包      | [llm-agents.nix](https://github.com/numtide/llm-agents.nix)                                                                                                                         |
+| GitHub 认证      | [配置 SSH](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)                                                                                                 |
 
 配置学习参考：[kunchenguid/dotfiles](https://github.com/kunchenguid/dotfiles/)。
 本项目的许多配置思路学习自该仓库，感谢作者的分享。

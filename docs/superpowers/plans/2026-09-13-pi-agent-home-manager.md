@@ -31,11 +31,13 @@
 ### Task 1: 用安全的 Claude wrapper 替代共享文件直链
 
 **Files:**
+
 - Create: `home/CLAUDE.md`
 - Modify: `home.nix:3-8,141-145`
 - Test: `tests/pi-config.sh:11-32`
 
 **Interfaces:**
+
 - `~/.claude/CLAUDE.md` 必须来自仓库的 `home/CLAUDE.md`。
 - `~/.claude/AGENTS.md`、`~/.codex/AGENTS.md` 和 `~/.config/opencode/AGENTS.md` 必须继续共享 `home/AGENTS.md`。
 - Claude wrapper 的有效指令必须只有 `@AGENTS.md`，并且不能与共享规则源使用同一个 Home Manager source。
@@ -149,10 +151,12 @@ git commit -m "fix: isolate Claude agent instructions"
 ### Task 2: 声明并验证精确版本的 Pi packages
 
 **Files:**
+
 - Modify: `home/.pi/agent/settings.json:8-14`
 - Modify: `tests/pi-config.sh:34-39`
 
 **Interfaces:**
+
 - `settings.json.packages` 必须严格等于 `npm:pi-web-access@0.29.0` 与 `npm:@ryan_nookpi/pi-extension-codex-fast-mode@0.2.7`。
 - Home Manager 仍只管理 settings 和两个精确资源文件，不管理 Pi 的 npm 下载目录或认证数据。
 - Pi 0.83 必须能在隔离配置目录中安装两个 package、验证安装的精确版本，并在不调用 provider 的情况下加载两者的 extension resource；不得读取真实 HOME 中的凭证或会话。
@@ -345,9 +349,11 @@ git commit -m "feat: manage Pi packages declaratively"
 ### Task 3: 提交后验证和交接
 
 **Files:**
+
 - Verify only: repository worktree and the two new commits
 
 **Interfaces:**
+
 - 本阶段不修改文件，不运行 rebuild，不合并其他分支。
 
 - [ ] **Step 1: 从已提交状态重复核心验证**
