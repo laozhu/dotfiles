@@ -59,6 +59,7 @@ in
     CustomUserPreferences.".GlobalPreferences".AppleLanguages = preferredLanguages;
     CustomUserPreferences.".GlobalPreferences".AppleLocale = locale;
     CustomUserPreferences."com.google.Chrome".ForcedLanguages = preferredLanguages;
+    CustomUserPreferences."com.apple.sharingd".DiscoverableMode = "Everyone"; # AirDrop 对所有人可见
 
     NSGlobalDomain = {
       KeyRepeat = 2; # 极速按键重复 (开发者必需)
@@ -83,7 +84,7 @@ in
     };
 
     trackpad = {
-      Clicking = true; # 轻触点击
+      Clicking = true; # 轻点以点按
     };
   };
 

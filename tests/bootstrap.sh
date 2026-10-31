@@ -82,6 +82,9 @@ cat >"$bootstrap_fixture_bin/sudo" <<'SH'
 printf 'sudo' >>"$BOOTSTRAP_TEST_LOG"
 printf ' %s' "$@" >>"$BOOTSTRAP_TEST_LOG"
 printf '\n' >>"$BOOTSTRAP_TEST_LOG"
+if [ "$1" = scutil ]; then
+  exit "${BOOTSTRAP_HOSTNAME_STATUS:-0}"
+fi
 if [ "$1" = "/usr/sbin/softwareupdate" ]; then
   exit "${BOOTSTRAP_ROSETTA_INSTALL_STATUS:-0}"
 fi
@@ -97,8 +100,52 @@ chmod 0755 \
 
 export BOOTSTRAP_TEST_LOG="$bootstrap_log"
 bootstrap_test_path="$bootstrap_fixture_bin:/usr/bin:/bin"
+# First-run naming must stop on EOF or a failed system update, without saving
+# a completion marker or proceeding with installation.
+for naming_failure in eof scutil; do
+  : >"$bootstrap_log"
+  bootstrap_status=0
+  if [ "$naming_failure" = eof ]; then
+    HOME="$bootstrap_fixture_home" PATH="$bootstrap_test_path" \
+      bash "$bootstrap_fixture" </dev/null >/dev/null 2>&1 || bootstrap_status="$?"
+    test ! -s "$bootstrap_log"
+  else
+    BOOTSTRAP_HOSTNAME_STATUS=45 HOME="$bootstrap_fixture_home" PATH="$bootstrap_test_path" \
+      bash "$bootstrap_fixture" <<<'rich-macbook' >/dev/null 2>&1 || bootstrap_status="$?"
+    test "$(cat "$bootstrap_log")" = 'sudo scutil --set ComputerName rich-macbook'
+  fi
+  test "$bootstrap_status" -ne 0
+  test ! -e "$bootstrap_fixture_home/.config/dotfiles/hostname"
+done
+
+# Reject empty, dotted, non-ASCII, overlong and hyphen-ended names, then accept
+# a plain Bonjour label. Only the accepted value may reach scutil.
+: >"$bootstrap_log"
+long_machine_name="$(printf '%064d' 0)"
 HOME="$bootstrap_fixture_home" PATH="$bootstrap_test_path" \
-  bash "$bootstrap_fixture" >/dev/null
+  bash "$bootstrap_fixture" >"$bootstrap_test_root/naming-output" 2>&1 <<INPUT
+
+rich-macbook.local
+-rich
+rich-
+rich macbook
+电脑
+$long_machine_name
+rich-macbook
+INPUT
+test "$(cat "$bootstrap_fixture_home/.config/dotfiles/hostname")" = rich-macbook
+head -n 3 "$bootstrap_log" >"$bootstrap_test_root/naming-operations"
+printf '%s\n' \
+  'sudo scutil --set ComputerName rich-macbook' \
+  'sudo scutil --set LocalHostName rich-macbook' \
+  'sudo scutil --set HostName rich-macbook' >"$bootstrap_test_root/expected-naming"
+cmp "$bootstrap_test_root/expected-naming" "$bootstrap_test_root/naming-operations"
+test "$(grep -c '^sudo scutil ' "$bootstrap_log")" = 3
+
+# Rerunning bootstrap must not prompt or overwrite the machine name.
+: >"$bootstrap_log"
+HOME="$bootstrap_fixture_home" PATH="$bootstrap_test_path" \
+  bash "$bootstrap_fixture" </dev/null >/dev/null
 test "$(readlink "$bootstrap_fixture_home/.dotfiles")" = \
   "$bootstrap_fixture_real"
 

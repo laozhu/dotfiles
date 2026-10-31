@@ -107,7 +107,11 @@
    ./bootstrap.sh --profile work
    ```
 
-   各组软件见 [软件安装列表](docs/software.md)。按提示输入管理员密码，
+   各组软件见 [软件安装列表](docs/software.md)。首次运行会提示输入电脑名称，例如 `rich-macbook`，
+   使用 1-63 个英文字母、数字或连字符，首尾须为字母或数字，不加 `.local`。
+   脚本会将 `ComputerName`、`LocalHostName`、`HostName` 设为该名称；macOS 自动提供 `rich-macbook.local` 局域网地址。
+   设置成功后记录在本机 `~/.config/dotfiles/hostname`，重跑时跳过；如需重新设置，可删除此标记后重跑。
+   按提示输入管理员密码，
    脚本会安装 Nix、命令行工具和桌面应用，并同步 VS Code、Antigravity 的配置与插件。
    完成后重新打开终端。
 
