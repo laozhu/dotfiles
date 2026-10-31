@@ -49,6 +49,15 @@ cat >"$bootstrap_fixture_bin/whoami" <<'SH'
 #!/usr/bin/env bash
 printf '%s\n' 'fixture-user'
 SH
+cat >"$bootstrap_fixture_bin/scutil" <<'SH'
+#!/usr/bin/env bash
+if [ "$#" = 2 ] && [ "$1" = --get ] && [ "$2" = ComputerName ]; then
+  printf '%s\n' 'Rich 的 MacBook Pro'
+else
+  echo 'unexpected scutil query' >&2
+  exit 46
+fi
+SH
 cat >"$bootstrap_fixture_bin/uname" <<'SH'
 #!/usr/bin/env bash
 printf '%s\n' "${BOOTSTRAP_MACHINE_ARCH:-arm64}"
@@ -93,6 +102,7 @@ SH
 chmod 0755 \
   "$bootstrap_test_root/scripts/check-sops-age-key.sh" \
   "$bootstrap_fixture_bin/whoami" \
+  "$bootstrap_fixture_bin/scutil" \
   "$bootstrap_fixture_bin/uname" \
   "$bootstrap_fixture_bin/pkgutil" \
   "$bootstrap_fixture_bin/nix" \
@@ -118,13 +128,25 @@ for naming_failure in eof scutil; do
   test ! -e "$bootstrap_fixture_home/.config/dotfiles/hostname"
 done
 
-# Reject empty, dotted, non-ASCII, overlong and hyphen-ended names, then accept
+# Return keeps the current names, including a display name that is not a DNS
+# label. No system names should be rewritten when the user accepts it.
+: >"$bootstrap_log"
+HOME="$bootstrap_fixture_home" PATH="$bootstrap_test_path" \
+  bash "$bootstrap_fixture" <<<'' >"$bootstrap_test_root/keep-name-output" 2>&1
+grep -Fq 'Rich 的 MacBook Pro' "$bootstrap_test_root/keep-name-output"
+test "$(cat "$bootstrap_fixture_home/.config/dotfiles/hostname")" = 'Rich 的 MacBook Pro'
+if grep -q '^sudo scutil ' "$bootstrap_log"; then
+  echo 'bootstrap rewrote machine names after an empty reply' >&2
+  exit 1
+fi
+rm "$bootstrap_fixture_home/.config/dotfiles/hostname"
+
+# Reject dotted, non-ASCII, overlong and hyphen-ended names, then accept
 # a plain Bonjour label. Only the accepted value may reach scutil.
 : >"$bootstrap_log"
 long_machine_name="$(printf '%064d' 0)"
 HOME="$bootstrap_fixture_home" PATH="$bootstrap_test_path" \
   bash "$bootstrap_fixture" >"$bootstrap_test_root/naming-output" 2>&1 <<INPUT
-
 rich-macbook.local
 -rich
 rich-
