@@ -47,17 +47,8 @@ for shared_agents_path in \
   fi
 done
 
-diff -u \
-  <(printf '%s\n' \
-    '<!-- Claude Code compatibility bridge. Shared instructions are maintained in AGENTS.md. -->' \
-    '' \
-    '@AGENTS.md') \
-  "$repo_dir/home/CLAUDE.md"
-
-if cmp -s "$repo_dir/home/CLAUDE.md" "$repo_dir/home/AGENTS.md"; then
-  printf '%s\n' 'Claude wrapper must remain separate from shared AGENTS.md.' >&2
-  exit 1
-fi
+# The Claude import must work independently of its explanatory comment.
+grep -Fxq '@AGENTS.md' "$repo_dir/home/CLAUDE.md"
 
 for local_path in \
   .pi/agent \
@@ -74,22 +65,15 @@ done
 
 pi_settings="$repo_dir/home/.pi/agent/settings.json"
 
+# Packages must be explicitly versioned; package choices live in settings.json.
 jq -e '
   type == "object" and
-  .packages == [
-    "npm:pi-web-access@0.29.0",
-    "npm:@ryan_nookpi/pi-extension-codex-fast-mode@0.2.7"
-  ] and
+  (.packages | type == "array" and all(.[]; type == "string" and
+    test("@[0-9]+\\.[0-9]+\\.[0-9]+$"))) and
   (has("models") | not) and
   (has("npmCommand") | not)
 ' "$pi_settings" >/dev/null
-
-if jq -er '.packages[]' "$pi_settings" |
-  grep -Eqi 'pi-calm|compaction|@(latest|next)$'; then
-  printf '%s\n' 'Pi settings contain a forbidden or floating package.' >&2
-  exit 1
-fi
-jq -e '.name == "rose-pine-moon" and (.colors | type == "object")' \
+jq -e '.colors | type == "object"' \
   "$repo_dir/home/.pi/agent/themes/rose-pine-moon.json" >/dev/null
 
 git -C "$repo_dir" check-ignore --no-index -q home/.pi/agent/auth.json

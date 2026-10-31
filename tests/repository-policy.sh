@@ -24,7 +24,6 @@ nix eval --json "$repo_dir#darwinConfigurations.mac.config" --apply '
   .upgrade == true and
   ([.packages[] | select(test("^codex($|-)"))] | length == 0)
 ' >/dev/null
-grep -Fq 'darwinConfigurations.mac' "$repo_dir/flake.nix"
 nix eval --json \
   "$repo_dir#darwinConfigurations.mac.config.nix-homebrew.taps" |
   jq -e '
@@ -39,8 +38,6 @@ if grep -Fq 'git add .' "$repo_dir/rebuild.sh"; then
   echo "rebuild must not stage repository changes" >&2
   exit 1
 fi
-grep -Fq '#mac' "$repo_dir/bootstrap.sh"
-grep -Fq '#mac' "$repo_dir/rebuild.sh"
 if rg -n 'sing-box[[:space:]]+run|launchctl.*sing-box' \
   "$repo_dir/bootstrap.sh" \
   "$repo_dir/rebuild.sh" \

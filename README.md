@@ -135,3 +135,6 @@
 | IDE 插件管理 | [VS Code 命令行](https://code.visualstudio.com/docs/configure/command-line) |
 | AI 工具打包 | [llm-agents.nix](https://github.com/numtide/llm-agents.nix) |
 | GitHub 认证 | [配置 SSH](https://docs.github.com/en/authentication/connecting-to-github-with-ssh) |
+
+配置学习参考：[kunchenguid/dotfiles](https://github.com/kunchenguid/dotfiles/)。
+本项目的许多配置思路学习自该仓库，感谢作者的分享。

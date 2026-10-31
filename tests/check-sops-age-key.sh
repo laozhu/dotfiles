@@ -2,8 +2,6 @@
 set -euo pipefail
 
 repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
-config="$repo_dir/home/.config/sing-box/config.json"
-secret_map="$repo_dir/home/.config/sing-box/secrets-map.json"
 identity_preflight="$repo_dir/scripts/check-sops-age-key.sh"
 
 if [ ! -f "$identity_preflight" ]; then
