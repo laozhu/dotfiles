@@ -258,10 +258,12 @@
         "ref": "refs/heads/main",
         "rev": "705597e7df2c8d987c0a421de3ef8f1d050900d5",
         "revCount": 10,
+        "shallow": false,
         "type": "git",
         "url": "https://downloads.npass.app/cli/homebrew-tap.git"
       },
       "original": {
+        "shallow": false,
         "type": "git",
         "url": "https://downloads.npass.app/cli/homebrew-tap.git"
       }

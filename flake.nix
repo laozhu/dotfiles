@@ -55,7 +55,8 @@
       flake = false;
     };
     nordpass-tap = {
-      url = "git+https://downloads.npass.app/cli/homebrew-tap.git";
+      # This server uses dumb HTTP Git and cannot serve shallow clones.
+      url = "git+https://downloads.npass.app/cli/homebrew-tap.git?shallow=0";
       flake = false;
     };
   };
