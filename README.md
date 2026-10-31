@@ -48,13 +48,13 @@
    git --version
    ```
 
-5. **配置 GitHub SSH。** 在新机生成密钥，按提示回车使用默认路径并设置口令。
-   如果已有密钥，不要覆盖。
+5. **配置 GitHub SSH。** 将下面的示例邮箱替换为你的 GitHub 邮箱，再生成密钥。
+   按提示回车使用默认路径并设置口令。如果已有密钥，不要覆盖。
 
    ```bash
    mkdir -p "$HOME/.ssh"
    chmod 700 "$HOME/.ssh"
-   ssh-keygen -t ed25519 -C "laozhu.me@gmail.com"
+   ssh-keygen -t ed25519 -C "your_email@example.com"
    eval "$(ssh-agent -s)"
    /usr/bin/ssh-add --apple-use-keychain "$HOME/.ssh/id_ed25519"
    pbcopy < "$HOME/.ssh/id_ed25519.pub"
@@ -116,7 +116,22 @@
 
 更新需要可用的 GitHub 连接；首次使用 GitHub CLI 时先执行 `gh auth login`。
 
-## 文档
+## 参考资料
 
-- [配置维护](docs/configuration.md)：工具来源、IDE 配置与插件清单维护。
-- [sing-box](docs/sing-box.md)：SFM 导入与恢复。
+项目指南：
+
+- [配置维护](docs/configuration.md)：配置文件分工、依赖更新、IDE 同步与验证。
+- [sing-box 与 SFM](docs/sing-box.md)：配置发布、导入、分流与故障恢复。
+
+官方文档与上游说明：
+
+| 主题 | 参考资料 |
+| --- | --- |
+| Nix 安装与使用 | [Determinate Nix](https://docs.determinate.systems/)、[Nix 手册](https://nix.dev/manual/nix/latest/) |
+| macOS 与用户配置 | [nix-darwin 配置选项](https://nix-darwin.github.io/nix-darwin/manual/)、[Home Manager 手册](https://nix-community.github.io/home-manager/) |
+| Homebrew 管理 | [Homebrew 命令手册](https://docs.brew.sh/Manpage)、[nix-homebrew](https://github.com/zhaofengli/nix-homebrew) |
+| 秘密与密钥 | [SOPS](https://getsops.io/docs/)、[age](https://github.com/FiloSottile/age)、[sops-nix](https://github.com/Mic92/sops-nix) |
+| 代理与客户端 | [SFM 下载与说明](https://sing-box.sagernet.org/clients/apple/)、[sing-box 配置](https://sing-box.sagernet.org/configuration/)、[版本迁移](https://sing-box.sagernet.org/migration/) |
+| IDE 插件管理 | [VS Code 命令行](https://code.visualstudio.com/docs/configure/command-line) |
+| AI 工具打包 | [llm-agents.nix](https://github.com/numtide/llm-agents.nix) |
+| GitHub 认证 | [配置 SSH](https://docs.github.com/en/authentication/connecting-to-github-with-ssh) |
