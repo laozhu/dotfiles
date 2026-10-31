@@ -157,6 +157,5 @@ in
     ".claude/AGENTS.md".source          = sharedAgentContext;
     ".pi/agent/AGENTS.md".source         = sharedAgentContext;
     ".codex/AGENTS.md".source           = sharedAgentContext;
-    ".config/opencode/AGENTS.md".source = sharedAgentContext;
   };
 }

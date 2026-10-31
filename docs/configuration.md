@@ -21,8 +21,8 @@ Codex CLI 由 Homebrew `codex` cask 安装官方 Apple Silicon 预编译发布�
 
 ## IDE 配置与插件
 
-VS Code 与 Antigravity IDE 共用 `home/ide/settings.json`。每次 `rebuild.sh` 在系统配置
-应用成功后，以当前用户身份更新两个 IDE 的全局 `settings.json` 并安装插件。
+VS Code 与 Antigravity IDE 共用 `home/ide/settings.json`。`bootstrap.sh` 与 `rebuild.sh`
+均在系统配置应用成功后，以当前用户身份更新两个 IDE 的全局 `settings.json` 并安装插件。
 配置按仓库版本整体替换；内容不同时先在原文件旁保存 `settings.json.backup.*`，
 相同则不重复备份。每个 IDE 先查询一次已装插件，跳过已有项，只安装缺失项；
 已有的其他插件不会卸载。查询失败时跳过该 IDE 的插件安装并报错；
