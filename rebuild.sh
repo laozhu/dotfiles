@@ -31,6 +31,7 @@ esac
 source "$DIR/scripts/profile.sh"
 PROFILE="$(dotfiles_profile)"
 echo "==> Machine profile: $PROFILE (shared + $PROFILE)"
+source "$DIR/scripts/nix-cache-env.sh"
 
 "$DIR/scripts/check-sops-age-key.sh"
 
@@ -59,7 +60,7 @@ if [ "$PROFILE" = home ]; then
 fi
 
 # 共享配置通过 Homebrew cask 安装或升级 Codex 官方 macOS 二进制。
-sudo darwin-rebuild switch --flake "$DIR#$PROFILE"
+sudo --preserve-env=NIX_CONFIG darwin-rebuild switch --flake "$DIR#$PROFILE"
 
 # IDE 配置与插件属于当前用户，必须在系统应用安装完成后执行。
 bash "$DIR/scripts/sync-editors.sh"

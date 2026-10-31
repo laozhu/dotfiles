@@ -27,6 +27,8 @@ ln -s "$rebuild_home_repo" "$rebuild_fixture_home/.dotfiles"
 test "$(readlink "$rebuild_fixture_home/.dotfiles")" = "$rebuild_home_repo"
 cp "$repo_dir/rebuild.sh" "$rebuild_fixture"
 cp "$repo_dir/scripts/profile.sh" "$rebuild_test_root/scripts/profile.sh"
+cp "$repo_dir/scripts/nix-cache-env.sh" "$rebuild_test_root/scripts/nix-cache-env.sh"
+cp "$repo_dir/nix-caches.conf" "$rebuild_test_root/nix-caches.conf"
 mkdir -p "$rebuild_fixture_home/.config/dotfiles"
 printf 'home\n' >"$rebuild_fixture_home/.config/dotfiles/profile"
 
@@ -64,6 +66,10 @@ exit "${REBUILD_EDITOR_STATUS:-0}"
 SH
 cat >"$rebuild_fixture_bin/nix" <<'SH'
 #!/usr/bin/env bash
+case "${NIX_CONFIG:-}" in
+  *https://cache.thalheim.io*) ;;
+  *) echo 'Nix command did not inherit the binary cache configuration' >&2; exit 44 ;;
+esac
 printf 'nix' >>"$REBUILD_TEST_LOG"
 printf ' %s' "$@" >>"$REBUILD_TEST_LOG"
 printf '\n' >>"$REBUILD_TEST_LOG"
@@ -133,7 +139,7 @@ printf '%s\n' \
   "config check $rebuild_fixture_real" \
   "nix eval --raw --impure --expr (builtins.getFlake (builtins.getEnv \"DOTFILES_REBUILD_FLAKE\")).inputs.homebrew-cask.outPath" \
   "UU prefetch $rebuild_fixture_real $rebuild_cask_source/Casks/u/uu-booster.rb" \
-  "sudo darwin-rebuild switch --flake $rebuild_fixture_real#home" \
+  "sudo --preserve-env=NIX_CONFIG darwin-rebuild switch --flake $rebuild_fixture_real#home" \
   "editor sync" \
   >"$expected_rebuild"
 assert_rebuild_operations "$expected_rebuild"
@@ -147,7 +153,7 @@ printf '%s\n' \
   "config check $rebuild_fixture_real" \
   "nix eval --raw --impure --expr (builtins.getFlake (builtins.getEnv \"DOTFILES_REBUILD_FLAKE\")).inputs.homebrew-cask.outPath" \
   "UU prefetch $rebuild_fixture_real $rebuild_cask_source/Casks/u/uu-booster.rb" \
-  "sudo darwin-rebuild switch --flake $rebuild_fixture_real#home" \
+  "sudo --preserve-env=NIX_CONFIG darwin-rebuild switch --flake $rebuild_fixture_real#home" \
   "editor sync" \
   >"$expected_update_rebuild"
 assert_rebuild_operations "$expected_update_rebuild" -u
