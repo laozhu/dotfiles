@@ -31,6 +31,7 @@ nix eval --json \
       "daipeihust/homebrew-tap",
       "homebrew/homebrew-cask",
       "homebrew/homebrew-core",
+      "k1low/homebrew-tap",
       "stablyai/homebrew-orca"
     ]
   ' >/dev/null

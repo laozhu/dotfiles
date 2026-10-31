@@ -5,6 +5,24 @@ set -euo pipefail
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 
+# Validate selection before any installation or system changes.
+source "$DIR/scripts/profile.sh"
+case "$#" in
+  0) PROFILE="$(dotfiles_profile)" ;;
+  2)
+    if [ "$1" != --profile ]; then
+      echo 'Usage: bootstrap.sh [--profile home|work]' >&2
+      exit 2
+    fi
+    PROFILE="$(dotfiles_profile "$2")"
+    ;;
+  *)
+    echo 'Usage: bootstrap.sh [--profile home|work]' >&2
+    exit 2
+    ;;
+esac
+echo "==> Machine profile: $PROFILE (shared + $PROFILE)"
+
 echo "==> Step 1: Determinate Nix"
 if command -v nix >/dev/null 2>&1; then
   echo "    nix already installed, skipping"
@@ -68,10 +86,8 @@ echo "==> Step 6: first darwin-rebuild switch (pinned to nix-darwin-26.05)"
 # This fetches the darwin-rebuild tool from the nix-darwin-26.05 release branch,
 # not the exact flake.lock revision. The system config it applies is still pinned
 # by this repo's flake.lock.
-# "mac" is the flake host label - if you renamed it, change it in flake.nix
-# and rebuild.sh too.
 sudo "$NIX_BIN" run github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild -- \
-  switch --flake "$DIR#mac"
+  switch --flake "$DIR#$PROFILE"
 # If this still fails with "nix: command not found", open a new terminal
 # (Determinate adds nix to new shells' PATH) and re-run ./bootstrap.sh.
 

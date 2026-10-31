@@ -4,10 +4,12 @@
   pkgs,
   user,
   inputs,
+  profile,
   ...
 }:
 
 let
+  software = import ./software.nix { inherit lib profile; };
   dotfiles = "${config.home.homeDirectory}/.dotfiles";
 
   # 用于 AI 智能体的统一全局上下文规则
@@ -22,49 +24,20 @@ in
   home.homeDirectory = "/Users/${user}";
   home.stateVersion = "26.05";
 
-  # Search on https://search.nixos.org/packages
-  home.packages = [
-    # --- 高频使用的常规 CLI 工具 ---
-    pkgs.ripgrep # Telescope live_grep 必需
-    pkgs.fd # Telescope find_files 必需
-    pkgs.fzf # 模糊搜索工具
-    pkgs.jq # 命令行 JSON 处理
-    pkgs.lazygit
-    pkgs.neovim
-    pkgs.github-cli # GitHub 命令行工具
-    pkgs.nerd-fonts.hack
-    pkgs.age
-    pkgs.bitwarden-cli
-    pkgs.sops
-    pkgs.sing-box
+  home.packages = software.packages pkgs llmPkgs;
 
-    # -----------------------------------------------------------
-    # 🛠️ Neovim 核心底层依赖 (Treesitter & Mason 必需)
-    # -----------------------------------------------------------
-    pkgs.gnumake # 编译 Treesitter 语法解析器的必备构建工具
-    pkgs.gcc # C 编译器，Treesitter 强依赖
-    pkgs.unzip # Mason 下载并解压 LSP 的必备工具
-    pkgs.curl # Mason 的底层网络工具
-    pkgs.wget
-
-    # -----------------------------------------------------------
-    # 📦 运行时依赖
-    # -----------------------------------------------------------
-    pkgs.nodejs_26
-    pkgs.pnpm
-    pkgs.bun
-    pkgs.uv
-    pkgs.bws
-
-    # -----------------------------------------------------------
-    # 🤖 AI TUI Agents & 多开工具 (全部使用预编译发布包)
-    # -----------------------------------------------------------
-    pkgs.herdr
-    llmPkgs.claude-code
-    llmPkgs.antigravity-cli
-    pkgs.kimi-code
-    pkgs.pi
+  # Homebrew Python and Java must precede Apple's CLT Python and launcher stubs.
+  home.sessionPath = [
+    "/opt/homebrew/opt/python/libexec/bin"
+    "/opt/homebrew/opt/openjdk/bin"
+    "/opt/homebrew/bin"
   ];
+  home.sessionVariables.JAVA_HOME = "/opt/homebrew/opt/openjdk/libexec/openjdk.jdk/Contents/Home";
+  programs.direnv = {
+    enable = true;
+    enableZshIntegration = true;
+    nix-direnv.enable = true;
+  };
 
   fonts.fontconfig.enable = true;
   home.sessionVariables.EDITOR = "nvim";
@@ -72,6 +45,7 @@ in
   # 启用并完全接管 Git
   programs.git = {
     enable = true;
+    lfs.enable = true;
     settings = {
       core.editor = "nvim";
       init.defaultBranch = "main";
@@ -108,6 +82,8 @@ in
 
     initContent = ''
       bindkey '^f' autosuggest-accept
+      # Apply after macOS path_helper and Home Manager's Nix profile setup.
+      export PATH="/opt/homebrew/opt/python/libexec/bin:/opt/homebrew/opt/openjdk/bin:/opt/homebrew/bin:$PATH"
     '';
 
     shellAliases = {

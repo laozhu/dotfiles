@@ -1,6 +1,12 @@
-{ lib, user, ... }:
+{
+  lib,
+  user,
+  profile,
+  ...
+}:
 
 let
+  software = import ./software.nix { inherit lib profile; };
   preferredLanguages = [
     "en-SG"
     "zh-SG"
@@ -102,37 +108,24 @@ in
       extraFlags = [ "--force" ];
     };
 
-    # 显式声明你需要这些 Taps
     taps = [
       "homebrew/core"
       "homebrew/cask"
       "stablyai/orca"
       "daipeihust/tap"
+      "k1low/tap"
+    ]
+    ++ lib.optionals (profile == "work") [
+      "atlassian/acli"
+      "nordpass/tap"
     ];
-
-    # 常规 CLI 由 Nix 管理；im-select 使用上游 tap，Codex 使用官方 cask。
-    brews = [ "daipeihust/tap/im-select" ];
-
-    # 桌面应用及使用官方 macOS 二进制的 Codex CLI
-    casks = [
-      "doubaoime"
-      "codex"
-      "antigravity-ide"
-      "bitwarden"
-      "sfm"
-      "chatgpt"
-      "claude"
-      "google-chrome"
-      "google-gemini"
-      "visual-studio-code"
-      "wechat"
-      "wechatwebdevtools"
-      "wezterm"
-      "orbstack"
-      "logitech-g-hub"
-      "steam"
-      "uu-booster"
-      "stablyai/orca/orca"
-    ];
+    brews = software.brews;
+    casks = software.casks;
   };
+
+  # Register the JDK with /usr/libexec/java_home as recommended by Homebrew.
+  system.activationScripts.postActivation.text = ''
+    mkdir -p /Library/Java/JavaVirtualMachines
+    ln -sfn /opt/homebrew/opt/openjdk/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/homebrew-openjdk.jdk
+  '';
 }

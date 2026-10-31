@@ -22,6 +22,9 @@ mkdir -p \
 ln -s "$bootstrap_home_repo" "$bootstrap_fixture_home/.dotfiles"
 test "$(readlink "$bootstrap_fixture_home/.dotfiles")" = "$bootstrap_home_repo"
 cp "$repo_dir/bootstrap.sh" "$bootstrap_fixture"
+cp "$repo_dir/scripts/profile.sh" "$bootstrap_test_root/scripts/profile.sh"
+mkdir -p "$bootstrap_fixture_home/.config/dotfiles"
+printf 'home\n' >"$bootstrap_fixture_home/.config/dotfiles/profile"
 printf '%s\n' '  user = "fixture-user";' >"$bootstrap_test_root/flake.nix"
 
 cat >"$bootstrap_test_root/scripts/check-sops-age-key.sh" <<'SH'
@@ -99,7 +102,7 @@ printf '%s\n' \
   "sudo /usr/sbin/softwareupdate --install-rosetta --agree-to-license" \
   "nix shell nixpkgs#age nixpkgs#sops --command $bootstrap_fixture_real/scripts/check-sops-age-key.sh" \
   "identity preflight $bootstrap_fixture_real" \
-  "sudo $bootstrap_fixture_bin/nix run github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild -- switch --flake $bootstrap_fixture_real#mac" \
+  "sudo $bootstrap_fixture_bin/nix run github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild -- switch --flake $bootstrap_fixture_real#home" \
   "editor sync" \
   >"$expected_bootstrap"
 if ! cmp -s "$expected_bootstrap" "$bootstrap_log"; then
@@ -117,7 +120,7 @@ printf '%s\n' \
   "pkgutil --pkg-info com.apple.pkg.RosettaUpdateAuto" \
   "nix shell nixpkgs#age nixpkgs#sops --command $bootstrap_fixture_real/scripts/check-sops-age-key.sh" \
   "identity preflight $bootstrap_fixture_real" \
-  "sudo $bootstrap_fixture_bin/nix run github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild -- switch --flake $bootstrap_fixture_real#mac" \
+  "sudo $bootstrap_fixture_bin/nix run github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild -- switch --flake $bootstrap_fixture_real#home" \
   "editor sync" \
   >"$expected_bootstrap_without_rosetta"
 
@@ -138,7 +141,7 @@ intel_bootstrap="$bootstrap_test_root/expected-intel-bootstrap"
 printf '%s\n' \
   "nix shell nixpkgs#age nixpkgs#sops --command $bootstrap_fixture_real/scripts/check-sops-age-key.sh" \
   "identity preflight $bootstrap_fixture_real" \
-  "sudo $bootstrap_fixture_bin/nix run github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild -- switch --flake $bootstrap_fixture_real#mac" \
+  "sudo $bootstrap_fixture_bin/nix run github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild -- switch --flake $bootstrap_fixture_real#home" \
   "editor sync" \
   >"$intel_bootstrap"
 if ! cmp -s "$intel_bootstrap" "$bootstrap_log"; then
@@ -209,6 +212,18 @@ for failure_stage in DARWIN EDITOR; do
     cmp "$expected_bootstrap" "$bootstrap_log"
   fi
 done
+
+# Fresh bootstrap requires explicit selection and persists it before installing.
+rm "$bootstrap_fixture_home/.config/dotfiles/profile"
+: >"$bootstrap_log"
+if HOME="$bootstrap_fixture_home" PATH="$bootstrap_test_path" bash "$bootstrap_fixture" >/dev/null 2>&1; then exit 1; fi
+test ! -s "$bootstrap_log"
+HOME="$bootstrap_fixture_home" PATH="$bootstrap_test_path" bash "$bootstrap_fixture" --profile work >/dev/null
+test "$(cat "$bootstrap_fixture_home/.config/dotfiles/profile")" = work
+grep -Fq "$bootstrap_fixture_real#work" "$bootstrap_log"
+: >"$bootstrap_log"
+if HOME="$bootstrap_fixture_home" PATH="$bootstrap_test_path" bash "$bootstrap_fixture" --profile home >/dev/null 2>&1; then exit 1; fi
+test ! -s "$bootstrap_log"
 
 trap - EXIT
 cleanup_bootstrap_tests

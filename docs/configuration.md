@@ -7,11 +7,15 @@
 | 文件                                         | 用途                                                   |
 | -------------------------------------------- | ------------------------------------------------------ |
 | `flake.nix` / `flake.lock`                   | 用户名、系统架构、依赖来源及锁定版本                   |
-| `configuration.nix`                          | macOS 设置、Homebrew 软件清单、包覆盖                  |
-| `home.nix`                                   | 用户命令行工具、Shell、Git 和 dotfiles 映射            |
+| `configuration.nix`                          | macOS 设置、Homebrew 激活、包覆盖                      |
+| `home.nix`                                   | 用户软件接入、Shell、Git 和 dotfiles 映射              |
 | `macos-binaries.json` / `macos-binaries.nix` | 官方 macOS 二进制的版本、下载地址、校验值及安装方式    |
 | `home/ide/`                                  | VS Code、Antigravity 的共享设置与插件清单              |
 | `sing-box.nix` / `home/.config/sing-box/`    | 代理配置渲染、校验与发布，详见 [SFM 指南](sing-box.md) |
+
+`software.json` / `software.nix` 维护 shared、home、work 的软件清单及安装来源；
+`scripts/software-inventory.mjs` 使用同一清单检测安装状态。`inventory: false` 只隐藏基础工具的
+表格行，不影响安装声明。分组选择与用法见 README。
 
 大多数 dotfiles 通过 `~/.dotfiles` 链接到仓库，修改后应用可能立即读到变化；
 新增文件映射、安装软件和系统设置需要 rebuild。
@@ -22,7 +26,8 @@ Claude 的 `home/.claude/settings.json` 只在本机配置不存在时复制，�
 - 常规命令行工具由 Nix / Home Manager 管理；Claude Code、Antigravity CLI 来自 `llm-agents.nix`。
 - `pnpm`、`uv`、`bws`、Herdr、Kimi Code、Pi 和 sing-box 使用官方 Apple Silicon 二进制，
   版本及 SHA-256 记录在 `macos-binaries.json`，Nix 负责校验、解包和链接。
-- 桌面应用及 Codex CLI 由 Homebrew cask 管理；im-select 来自 `daipeihust/tap`。
+- 桌面应用及 Codex CLI 由 Homebrew cask 管理；im-select、mo、Atlassian CLI 和 NordPass CLI 使用上游 tap。
+  Python、OpenJDK、Gradle 及工作机的 AWS、SAM、Temporal 使用 Homebrew formula。
   tap 的源码由 `flake.lock` 锁定，实际安装和升级还会受 Homebrew API、应用自动更新影响。
 
 应用当前配置：
@@ -85,13 +90,13 @@ Pi 的扩展清单在 `home/.pi/agent/settings.json`，不属于 IDE 同步步�
 
 ```bash
 bash tests/run.sh
-nix build --dry-run --no-link .#darwinConfigurations.mac.system
+nix build --dry-run --no-link .#darwinConfigurations.home.system .#darwinConfigurations.work.system
 ```
 
 需要实际验证 Nix 构建时执行：
 
 ```bash
-nix build --no-link .#darwinConfigurations.mac.system
+nix build --no-link .#darwinConfigurations.home.system .#darwinConfigurations.work.system
 ```
 
 这些 Nix 命令不会激活系统，也不会执行 Homebrew 应用安装。
