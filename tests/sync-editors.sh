@@ -21,6 +21,9 @@ printf '\n' >> "$EDITOR_TEST_LOG"
 case "$1" in
   --list-extensions)
     if [ "${EDITOR_TEST_LIST_FAIL:-}" = "$editor" ]; then exit 24; fi
+    if [ "${EDITOR_TEST_LIST_DIAGNOSTIC:-}" = "$editor" ]; then
+      echo '[createInstance] extensionManagementService depends on antigravityAnalytics which is NOT registered.' >&2
+    fi
     cat "$EDITOR_TEST_STATE/$editor"
     ;;
   --install-extension)
@@ -34,22 +37,8 @@ case "$1" in
   *) exit 26 ;;
 esac
 CLI
-# Simulate an Electron launcher that crashes, while its CLI works under Node.
-agy_app="$fixture/Antigravity IDE.app/Contents/Resources/app"
-mkdir -p "$agy_app/bin" "$agy_app/out"
-cp "$fixture/bin/code" "$agy_app/out/cli.js"
-cat >"$agy_app/bin/antigravity-ide" <<'CLI'
-#!/usr/bin/env bash
-echo 'Electron launcher must not be used' >&2
-exit 134
-CLI
-ln -s "$agy_app/bin/antigravity-ide" "$fixture/bin/antigravity-ide"
-cat >"$fixture/bin/node" <<'CLI'
-#!/usr/bin/env bash
-set -euo pipefail
-test -z "${ELECTRON_RUN_AS_NODE:-}"
-exec bash "$@"
-CLI
+# Exercise the official launcher path rather than substituting system Node.
+cp "$fixture/bin/code" "$fixture/bin/antigravity-ide"
 ln -s "$jq_cli" "$fixture/bin/jq"
 chmod +x "$fixture/bin/"*
 export EDITOR_TEST_LOG="$fixture/calls"
@@ -113,6 +102,15 @@ if grep -Fq 'code --install-extension ' "$EDITOR_TEST_LOG"; then
   exit 1
 fi
 grep -Fxq 'antigravity-ide --list-extensions' "$EDITOR_TEST_LOG"
+
+# Harmless stderr warnings must not contaminate the installed-extension list.
+: >"$EDITOR_TEST_LOG"
+EDITOR_TEST_LIST_DIAGNOSTIC=antigravity-ide bash "$fixture/repo/scripts/sync-editors.sh" >"$fixture/diagnostic.log" 2>&1
+grep -q 'antigravityAnalytics' "$fixture/diagnostic.log"
+if grep -Fq 'antigravity-ide --install-extension ' "$EDITOR_TEST_LOG"; then
+  echo 'sync reinstalled extensions after a harmless stderr warning' >&2
+  exit 1
+fi
 
 # Invalid recommendations must fail before changing settings or installing plugins.
 printf '{"recommendations": "oxc.oxc-vscode"}\n' >"$fixture/repo/home/ide/extensions.json"
