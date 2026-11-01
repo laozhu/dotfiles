@@ -16,31 +16,12 @@ for cli in "$code_cli" "$agy_cli"; do
   fi
 done
 
-# Antigravity's Electron runtime can abort in its ESM loader, even when listing
-# extensions. Run the same bundled CLI with the Node installed by Home Manager.
-agy_resolved="$agy_cli"
-while [ -L "$agy_resolved" ]; do
-  agy_link="$(readlink "$agy_resolved")"
-  case "$agy_link" in
-    /*) agy_resolved="$agy_link" ;;
-    *) agy_resolved="$(dirname "$agy_resolved")/$agy_link" ;;
-  esac
-done
-agy_node_cli="$(dirname "$agy_resolved")/../out/cli.js"
-if [ ! -f "$agy_node_cli" ]; then
-  printf 'Antigravity CLI entry point not found: %s\n' "$agy_node_cli" >&2
-  exit 1
-fi
-node_cli="$(command -v node)"
-
+# Use each editor's bundled runtime. Running Antigravity under the system Node
+# can hang during VSIX extraction (Node 26), even after a successful download.
 run_cli() {
   local cli="$1"
   shift
-  if [ "$cli" = "$agy_cli" ]; then
-    env -u ELECTRON_RUN_AS_NODE "$node_cli" "$agy_node_cli" "$@"
-  else
-    "$cli" "$@"
-  fi
+  "$cli" "$@"
 }
 
 read_recommendations() {
@@ -81,6 +62,13 @@ install_extensions() {
   local cli="$1" extensions="$2" extension installed
   if ! installed="$(run_cli "$cli" --list-extensions)"; then
     printf 'Failed to list installed extensions with %s\n' "$cli" >&2
+    status=1
+    return
+  fi
+  # Only stdout contains extension IDs; Antigravity may emit harmless analytics
+  # warnings on stderr. Reject unexpected stdout without mixing the streams.
+  if [ -n "$installed" ] && printf '%s\n' "$installed" | grep -Evq '^[[:alnum:]_-]+\.[[:alnum:]_.-]+$'; then
+    printf 'Invalid extension list from %s:\n%s\n' "$cli" "$installed" >&2
     status=1
     return
   fi
