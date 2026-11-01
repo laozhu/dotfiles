@@ -37,6 +37,10 @@ bash scripts/init-pi-settings.sh "$HOME/.pi/agent/settings.json" home/.pi/agent/
 并开启触摸板“轻点以点按”。这些设置由首次 bootstrap 和后续 rebuild 应用。
 
 GitHub 多账号的目录切换、SSH key 和首次登录步骤见 [GitHub 目录身份](github-identities.md)。
+本仓库为 `Developer/paid-inc`、`Developer/laozhu` 和 `Developer/beebat-dev` 部署父目录 `.envrc`。
+工作目录使用默认 gh 配置并可加载本机 `~/.config/paid-inc/secrets.env`；个人目录使用 `gh-laozhu`。
+direnv 同步设置账号 actor，并从对应 gh 登录读取 `GITHUB_TOKEN`。Zsh 启动时也从当前 gh
+配置读取 token，读取过程忽略继承的 token，凭据不写入模板或日志。
 
 ## 工具来源与更新
 

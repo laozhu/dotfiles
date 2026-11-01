@@ -113,6 +113,8 @@ in
 
     initContent = ''
       bindkey '^f' autosuggest-accept
+      # Resolve stored credentials without reusing a token inherited from another shell.
+      export GITHUB_TOKEN="$(env -u GH_TOKEN -u GITHUB_TOKEN gh auth token)"
       # Apply after macOS path_helper and Home Manager's Nix profile setup.
       export PATH="/opt/homebrew/opt/python/libexec/bin:/opt/homebrew/opt/openjdk/bin:/opt/homebrew/bin:$PATH"
     '';
@@ -162,6 +164,8 @@ in
       config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/git/laozhu.inc";
     ".config/direnv/direnvrc".source =
       config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/direnv/direnvrc";
+    "Developer/paid-inc/.envrc".source =
+      config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/direnv/github.envrc";
     "Developer/laozhu/.envrc".source =
       config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/direnv/github.envrc";
     "Developer/beebat-dev/.envrc".source =

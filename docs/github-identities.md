@@ -92,28 +92,45 @@ eval "$(direnv hook zsh)"
 
 ```bash
 case "$PWD/" in
+  "$HOME/Developer/work/"*)
+    export GH_CONFIG_DIR="$HOME/.config/gh"
+    export GITHUB_ACTOR="<WORK_LOGIN>"
+    source_env_if_exists "$HOME/.config/work/secrets.env"
+    ;;
   "$HOME/Developer/personal/"* | "$HOME/Developer/community/"*)
     export GH_CONFIG_DIR="$HOME/.config/gh-personal"
+    export GITHUB_ACTOR="<PERSONAL_LOGIN>"
     ;;
+  *) return ;;
 esac
+
+export GITHUB_TOKEN="$(env -u GH_TOKEN -u GITHUB_TOKEN gh auth token)"
 ```
 
-在两个父目录分别创建内容为 `:` 的 `.envrc`，触发目录环境加载，然后允许它们：
+在三个父目录分别创建内容为 `:` 的 `.envrc`，触发目录环境加载，然后允许它们：
 
 ```bash
 direnv allow ~/Developer/personal/.envrc
 direnv allow ~/Developer/community/.envrc
+direnv allow ~/Developer/work/.envrc
 ```
 
 进入对应目录时自动加载个人账号配置，离开时恢复之前的环境。
 子项目新增自己的 `.envrc` 时仍需审查并单独允许。未加载 Shell hook 的脚本，
 先进入目标目录，再执行 `direnv exec . gh ...`。
 
-这里只为 gh 设置环境变量，不导出 `GIT_SSH_COMMAND`；Git 自行按仓库目录选择 key，
+`GITHUB_ACTOR` 和 `GITHUB_TOKEN` 供需要这些环境变量的工具使用；actor 本身不决定 gh 的认证身份。
+读取 token 时先在子进程中清除继承的 token，再从所选配置目录读取已有登录，
+不会打印或持久化 token。工作目录可额外加载本机 secrets 文件；它不应包含在仓库中，
+其中的 `GITHUB_TOKEN` 会被随后读取的 gh 登录覆盖。离开目录时，direnv 恢复进入前的环境。
+
+这里不导出 `GIT_SSH_COMMAND`；Git 自行按仓库目录选择 key，
 避免在个人目录执行 `git -C /其他仓库 ...` 时，环境变量覆盖目标仓库的 SSH 配置。
 
 `GH_TOKEN`、`GITHUB_TOKEN` 会优先于存储的登录凭据，其中 `GH_TOKEN` 优先级更高。
-已有交互式登录通常不需要设置它们；全局固定 token 可能使目录账号选择失效。
+这份配置只在读取已存登录时清除继承的 token，不会清除父 Shell 的 `GH_TOKEN`；
+若显式设置了 `GH_TOKEN`，后续 gh 调用仍优先使用它，可能使目录账号选择失效。
+未登录对应配置目录时，`gh auth token` 会报错，应先完成前面的登录步骤。
 
 ## 5. 自动签名并显示 Verified
 
