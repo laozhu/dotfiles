@@ -18,3 +18,19 @@ nix config show --json | jq -e '
   ."require-sigs".value == true and
   (."max-jobs".value | tostring) == "3"
 ' >/dev/null
+
+# With the cache installed globally, do not resend restricted client settings.
+fixture="$(mktemp -d)"
+trap 'rm -rf "$fixture"' EXIT
+nix config show --json >"$fixture/config.json"
+cat >"$fixture/nix" <<'CLI'
+#!/usr/bin/env bash
+set -euo pipefail
+test -z "${NIX_CONFIG+x}"
+cat "$NIX_CACHE_TEST_CONFIG"
+CLI
+chmod +x "$fixture/nix"
+export NIX_CACHE_TEST_CONFIG="$fixture/config.json"
+export NIX_CONFIG='max-jobs = 3'
+PATH="$fixture:$PATH" source "$repo_dir/scripts/nix-cache-env.sh"
+test "$NIX_CONFIG" = 'max-jobs = 3'

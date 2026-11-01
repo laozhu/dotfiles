@@ -99,6 +99,22 @@ G HUB 的详细日志由厂商安装器直接输出，目前没有进度条或�
 并将配置传给 sudo 下的 Nix 构建；CI 通过 Nix 安装 action 读取同一文件。
 它补充 Nix 默认缓存，保留已有 `NIX_CONFIG`，不修改 Determinate 管理的 daemon 配置，不关闭签名校验。
 
+普通用户构建若出现 `ignoring untrusted substituter` 或 `trusted-public-keys` 受限警告，
+说明客户端提供的配置未被 daemon 接受。Determinate 安装后，在仓库根目录执行一次：
+
+```bash
+sudo install -m 644 nix-caches.conf /etc/nix/nix.dotfiles-caches.conf
+if ! grep -Fxq '!include nix.dotfiles-caches.conf' /etc/nix/nix.custom.conf; then
+  printf '\n!include nix.dotfiles-caches.conf\n' | sudo tee -a /etc/nix/nix.custom.conf >/dev/null
+fi
+sudo launchctl kickstart -k system/systems.determinate.nix-daemon
+```
+
+这保留已有系统配置，由 `nix.custom.conf` 加载缓存和签名公钥，不修改 Determinate
+自动生成的 `nix.conf`，也不增加 `trusted-users`。系统配置已包含缓存和公钥时，
+`scripts/nix-cache-env.sh` 不再重复传递受限的客户端设置。修改 `nix-caches.conf` 后需重新执行上述步骤。
+重启 daemon 前应等待正在运行的 Nix 构建结束。
+
 该缓存用于获取 `sops-install-secrets`，命中时可避免首次安装编译这段 Go 程序。
 缓存可用性会随版本变化；缓存缺失不等于软件没有预编译版本，先检查代理、下载和上游缓存。
 新增缓存前，先验证可访问性及签名公钥的上游来源；AI CLI 继续使用已经声明的官方二进制。
