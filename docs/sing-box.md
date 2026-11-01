@@ -87,6 +87,9 @@ SH
 | Antigravity、Claude                                                                                  | `🇸🇬 singapore`，对应 DNS 也走新加坡                   |
 | 远程规则集下载                                                                                       | 经 `rule-set-download` HTTP client 固定走 `🇺🇸 us-hy2` |
 
+custom-proxy 的近期直连测试和策略说明见 [2026-11-01 网络测评](proxy-audit-2026-11-01.md)。
+直连可达不代表大陆 IP 下的服务可用；这批服务继续保留显式代理策略。
+
 `🚀 proxy` 默认选择 `⚡ auto`，也可手动指定地区或节点。
 三个自动组每 3 分钟探测，容差 50 ms；HY2 在候选中优先排列，探测后按延迟选择。
 自动选择变化保留既有连接，手动切换全局 selector 会中断既有连接。
