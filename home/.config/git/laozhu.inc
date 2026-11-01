@@ -1,5 +1,6 @@
 [user]
   email = laozhu.me@gmail.com
+  signingKey = ~/.ssh/id_ed25519_laozhu
 [core]
   sshCommand = ssh -i ~/.ssh/id_ed25519_laozhu -o IdentitiesOnly=yes
 [credential "https://github.com"]
