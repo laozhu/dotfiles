@@ -8,7 +8,7 @@ export HOME="$fixture/home"
 export XDG_CONFIG_HOME="$HOME/.config"
 export GIT_CONFIG_NOSYSTEM=1
 export GIT_CONFIG_GLOBAL="$HOME/.gitconfig"
-unset GH_CONFIG_DIR GIT_SSH_COMMAND DIRENV_DIFF DIRENV_DIR DIRENV_FILE DIRENV_WATCHES
+unset GH_CONFIG_DIR GITHUB_ACTOR GH_TOKEN GITHUB_TOKEN GIT_SSH_COMMAND DIRENV_DIFF DIRENV_DIR DIRENV_FILE DIRENV_WATCHES
 mkdir -p "$HOME/.config/git" "$HOME/.config/direnv" "$HOME/Developer" "$HOME/.ssh"
 for key in id_ed25519 id_ed25519_laozhu; do
   ssh-keygen -q -t ed25519 -N '' -f "$HOME/.ssh/$key"
@@ -16,13 +16,13 @@ done
 cp "$repo_dir/home/.gitconfig" "$HOME/.gitconfig"
 cp "$repo_dir/home/.config/git/laozhu.inc" "$HOME/.config/git/laozhu.inc"
 cp "$repo_dir/home/.config/direnv/direnvrc" "$HOME/.config/direnv/direnvrc"
-for owner in laozhu beebat-dev; do
+for owner in paid-inc laozhu beebat-dev; do
   mkdir -p "$HOME/Developer/$owner"
   cp "$repo_dir/home/.config/direnv/github.envrc" "$HOME/Developer/$owner/.envrc"
   direnv allow "$HOME/Developer/$owner/.envrc"
 done
 
-for owner in laozhu beebat-dev ritchie-paid laozhu-other beebat-dev-other; do
+for owner in paid-inc laozhu beebat-dev ritchie-paid laozhu-other beebat-dev-other; do
   directory="$HOME/Developer/$owner/nested/repo"
   mkdir -p "$directory"
   git -C "$directory" init -q
@@ -60,7 +60,7 @@ exit 1
 SSH
 chmod +x "$fixture/bin/ssh"
 export GIT_IDENTITY_TEST_LOG="$fixture/ssh.log"
-for owner in laozhu beebat-dev ritchie-paid; do
+for owner in paid-inc laozhu beebat-dev ritchie-paid; do
   : >"$GIT_IDENTITY_TEST_LOG"
   if PATH="$fixture/bin:$PATH" git clone git@github.com:example/repo.git \
     "$HOME/Developer/$owner/cloned" >/dev/null 2>&1; then
@@ -74,17 +74,56 @@ for owner in laozhu beebat-dev ritchie-paid; do
   grep -Fq -- "-i $HOME/.ssh/$key -o IdentitiesOnly=yes" "$GIT_IDENTITY_TEST_LOG"
 done
 
-# Both a parent .envrc and an independently approved child .envrc select laozhu.
-for owner in laozhu beebat-dev; do
+# Keep account selection tests offline and reject inherited token overrides.
+cat >"$fixture/bin/gh" <<'GH'
+#!/usr/bin/env bash
+set -euo pipefail
+test "$*" = 'auth token'
+test -z "${GH_TOKEN+x}"
+test -z "${GITHUB_TOKEN+x}"
+case "$GH_CONFIG_DIR" in
+  "$HOME/.config/gh-laozhu") printf 'fixture-personal-token\n' ;;
+  "$HOME/.config/gh") printf 'fixture-work-token\n' ;;
+  *) exit 1 ;;
+esac
+GH
+chmod +x "$fixture/bin/gh"
+export PATH="$fixture/bin:$PATH"
+mkdir -p "$HOME/.config/paid-inc"
+printf 'export WORK_SECRET_LOADED=1\nexport GITHUB_TOKEN=fixture-secret-file-token\n' >"$HOME/.config/paid-inc/secrets.env"
+export GH_TOKEN=fixture-inherited-override
+export GITHUB_TOKEN=fixture-parent-token
+
+# Parent and independently approved child .envrc files select the same account.
+for owner in paid-inc laozhu beebat-dev; do
   directory="$HOME/Developer/$owner/nested/repo"
+  case "$owner" in
+    paid-inc)
+      expected_config="$HOME/.config/gh"
+      expected_actor=ritchie-paid
+      expected_token=fixture-work-token
+      ;;
+    *)
+      expected_config="$HOME/.config/gh-laozhu"
+      expected_actor=laozhu
+      expected_token=fixture-personal-token
+      ;;
+  esac
+  export EXPECTED_CONFIG="$expected_config" EXPECTED_ACTOR="$expected_actor" EXPECTED_TOKEN="$expected_token"
   (
     cd "$directory"
     eval "$(direnv export bash)"
-    test "$GH_CONFIG_DIR" = "$HOME/.config/gh-laozhu"
+    test "$GH_CONFIG_DIR" = "$EXPECTED_CONFIG"
+    test "$GITHUB_ACTOR" = "$EXPECTED_ACTOR"
+    test "$GITHUB_TOKEN" = "$EXPECTED_TOKEN"
+    if [ "$owner" = paid-inc ]; then test "$WORK_SECRET_LOADED" = 1; fi
     test -z "${GIT_SSH_COMMAND+x}"
     cd "$HOME"
     eval "$(direnv export bash)"
     test -z "${GH_CONFIG_DIR+x}"
+    test -z "${GITHUB_ACTOR+x}"
+    test -z "${WORK_SECRET_LOADED+x}"
+    test "$GITHUB_TOKEN" = fixture-parent-token
     test -z "${GIT_SSH_COMMAND+x}"
   )
   printf 'export PROJECT_FLAG=1\n' >"$directory/.envrc"
@@ -92,7 +131,9 @@ for owner in laozhu beebat-dev; do
   (
     cd "$directory"
     direnv exec . bash -c '
-    test "$GH_CONFIG_DIR" = "$HOME/.config/gh-laozhu"
+    test "$GH_CONFIG_DIR" = "$EXPECTED_CONFIG"
+    test "$GITHUB_ACTOR" = "$EXPECTED_ACTOR"
+    test "$GITHUB_TOKEN" = "$EXPECTED_TOKEN"
     test "$PROJECT_FLAG" = 1
     test -z "${GIT_SSH_COMMAND+x}"
   '

@@ -1,6 +1,16 @@
 # Also runs for nested projects with their own .envrc; no source_up is required.
 case "$PWD/" in
+  "$HOME/Developer/paid-inc/"*)
+    export GH_CONFIG_DIR="$HOME/.config/gh"
+    export GITHUB_ACTOR=ritchie-paid
+    source_env_if_exists "$HOME/.config/paid-inc/secrets.env"
+    ;;
   "$HOME/Developer/laozhu/"* | "$HOME/Developer/beebat-dev/"*)
     export GH_CONFIG_DIR="$HOME/.config/gh-laozhu"
+    export GITHUB_ACTOR=laozhu
     ;;
+  *) return ;;
 esac
+
+# Read the selected account's stored login, ignoring inherited token overrides.
+export GITHUB_TOKEN="$(env -u GH_TOKEN -u GITHUB_TOKEN gh auth token)"
