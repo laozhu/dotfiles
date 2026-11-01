@@ -7,6 +7,7 @@ tests=(
   format.sh
   profile.sh
   git-identities.sh
+  wezterm.sh
   nix-cache-env.sh
   software-inventory.sh
   software-profiles.sh
