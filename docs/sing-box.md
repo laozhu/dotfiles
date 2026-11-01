@@ -142,6 +142,8 @@ curl --proxy http://127.0.0.1:7777 --connect-timeout 15 --max-time 30   -I https
   脚本检查文件权限、仓库 recipient 匹配和解密能力，不会自动登录 Bitwarden 取回密钥。
 
 完整配置、密钥和运行日志可能包含凭据，不要提交到 Git 或公开粘贴。
+在仓库目录使用 `sing-box tools fetch` 检查出站时，可能生成根目录 `cache.db`；
+该运行缓存已加入 Git 忽略规则，不作为配置提交。
 [2026-10-16 性能审计](sing-box-performance.md) 保留为历史记录，不能证明当前节点或服务端状态；
 本仓库不部署、升级或回退服务端程序。
 
