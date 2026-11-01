@@ -89,10 +89,13 @@ for owner in laozhu beebat-dev; do
   )
   printf 'export PROJECT_FLAG=1\n' >"$directory/.envrc"
   direnv allow "$directory/.envrc"
-  (cd "$directory"; direnv exec . bash -c '
+  (
+    cd "$directory"
+    direnv exec . bash -c '
     test "$GH_CONFIG_DIR" = "$HOME/.config/gh-laozhu"
     test "$PROJECT_FLAG" = 1
     test -z "${GIT_SSH_COMMAND+x}"
-  ')
+  '
+  )
 done
 printf '%s\n' 'Git and GitHub CLI directory identity tests passed.'
