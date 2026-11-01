@@ -40,7 +40,7 @@ jobs:
         run: |
           nix shell --inputs-from . \
             nixpkgs#bash nixpkgs#age nixpkgs#sops nixpkgs#jq \
-            nixpkgs#nodejs_26 nixpkgs#ripgrep \
+            nixpkgs#nodejs_26 nixpkgs#ripgrep nixpkgs#direnv \
             .#darwinConfigurations.mac.pkgs.sing-box \
             --command bash tests/run.sh
       - name: Build both profiles without activation
