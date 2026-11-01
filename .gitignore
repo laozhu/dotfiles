@@ -1,6 +1,9 @@
 # macOS
 .DS_Store
 
+# sing-box runtime cache from local checks
+/cache.db
+
 # herdr runtime artifacts (regenerated at runtime; never commit)
 home/.config/herdr/*.log
 home/.config/herdr/release-notes.json
