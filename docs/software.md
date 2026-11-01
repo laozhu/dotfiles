@@ -15,6 +15,7 @@ Homebrew Python 是明确替换系统版本的工具，因此保留。RabbitPro 
 | ------------------------------------ | --------- | ---------------------- | -------------------- |
 | ChatGPT                              | GUI       | -                      | Homebrew Cask        |
 | Claude                               | GUI       | -                      | Homebrew Cask        |
+| DeepSeek Harness                     | GUI       | -                      | Homebrew Cask        |
 | Google Gemini                        | GUI       | -                      | Homebrew Cask        |
 | Google Chrome                        | GUI       | -                      | Homebrew Cask        |
 | Antigravity IDE                      | GUI + CLI | `antigravity-ide`      | Homebrew Cask        |
@@ -63,6 +64,7 @@ Homebrew Python 是明确替换系统版本的工具，因此保留。RabbitPro 
 | Kimi Code                            | CLI       | `kimi`                 | Nix                  |
 | Pi                                   | CLI       | `pi`                   | Nix                  |
 | Hack Nerd Font                       | Font      | -                      | Nix                  |
+| DeepSeek Harness CLI                 | CLI       | `dsh`                  | Nix / llm-agents.nix |
 | Claude Code                          | CLI       | `claude`               | Nix / llm-agents.nix |
 | Antigravity CLI                      | CLI       | `agy`                  | Nix / llm-agents.nix |
 | Git LFS                              | CLI       | `git-lfs`              | Nix / Home Manager   |

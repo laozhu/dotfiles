@@ -142,6 +142,27 @@ bash -c 'source scripts/nix-cache-env.sh; nix build --no-link .#darwinConfigurat
 不能对整套配置设置 `max-jobs = 0`：配置生成、包装和官方二进制解包也需要执行少量本地构建。
 格式化工具使用该限制是因为它们本身应直接从缓存获取。
 
+## DeepSeek Harness
+
+GUI 和 CLI 都属于 shared，home/work 两套配置均安装：
+
+- 桌面应用由 Homebrew cask `deepseek-harness` 安装，使用官方 Apple Silicon 下载。
+- `dsh` CLI 由已锁定的 `llm-agents.nix` 提供，不另外全局安装 npm CLI。
+- CLI 的浏览器界面用 `dsh web` 启动；桌面应用在应用程序目录启动。
+- 同时安装时，保留 Nix 提供的 `dsh`，不必再用桌面应用的 Manage dsh Command 注册同名启动器。
+
+首次构建 CLI 会获取 npm 依赖。实测当前网络直连 npm tarball 超时，显式代理可达，
+因此 `registry.npmjs.org` 加入 custom-proxy；更新 SFM 配置后需重新导入，详见 [SFM 指南](sing-box.md)。
+登录、API key、会话和用户 profile 保留在本机，不提交到模板中。
+移除桌面 cask 前需备份 `~/.dsh`：该 cask 的 zap 清理包含这个目录，可能影响 CLI 数据。
+
+TUI 暂不自动安装。隔离验证中，社区 `@deepseek-harness-tui/dsh-tui@0.18.0` 在
+当前 CLI `0.2.1-rc.5` 下安装成功，但加载时报缺少 `@deepseek-ai/dsh-code-runtime-worker-thread`
+和 `@deepseek-ai/dsh-agent-presets`。后续选定兼容版本后，按
+[插件项目说明](https://github.com/ccch1mneyyy/dsh-TUI/blob/main/docs/getting-started.en.md)
+使用 `dsh plugin --profile dsh-tui add ...` 安装，再用 `dsh --profile dsh-tui` 启动；
+不覆盖宿主版本检查，也不把可写 profile 变成受管软链接。
+
 ## IDE 配置与插件
 
 bootstrap 和 rebuild 均在系统应用安装成功后，以当前用户执行 `scripts/sync-editors.sh`：

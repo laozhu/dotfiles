@@ -39,8 +39,8 @@ for profile in home work; do
       ($paths | index("/opt/homebrew/bin")) < $local and
       ($paths | index("/opt/homebrew/bin")) < $cargo) and
     (["python", "openjdk", "gradle", "k1low/tap/mo"] - .brews | length == 0) and
-    (["bitwarden", "wechat", "wechatwebdevtools", "orbstack", "imageoptim", "keka"] - .casks | length == 0) and
-    (["rustc", "cargo", "tig", "yq-go", "caddy", "ffmpeg"] - .packages | length == 0) and
+    (["bitwarden", "wechat", "wechatwebdevtools", "orbstack", "imageoptim", "keka", "deepseek-harness"] - .casks | length == 0) and
+    (["rustc", "cargo", "tig", "yq-go", "caddy", "ffmpeg", "dsh"] - .packages | length == 0) and
     (.casks | index("magnet") == null) and
     (if $profile == "home" then
       (["steam", "uu-booster", "logitech-g-hub", "tencent-meeting"] - .casks | length == 0) and

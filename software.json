@@ -36,6 +36,15 @@
     "apps": ["Google Chrome.app"]
   },
   {
+    "id": "deepseek-harness",
+    "name": "DeepSeek Harness",
+    "group": "shared",
+    "type": "GUI",
+    "manager": "Homebrew Cask",
+    "package": "deepseek-harness",
+    "apps": ["DeepSeek Harness.app"]
+  },
+  {
     "id": "antigravity-ide",
     "name": "Antigravity IDE",
     "group": "shared",
@@ -630,6 +639,15 @@
     "manager": "Nix",
     "package": "nerd-fonts.hack",
     "apps": ["~/Library/Fonts/HomeManager/truetype/NerdFonts/Hack/HackNerdFont-Regular.ttf"]
+  },
+  {
+    "id": "dsh",
+    "name": "DeepSeek Harness CLI",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "llm-agents.nix",
+    "package": "dsh",
+    "commands": ["dsh"]
   },
   {
     "id": "claude-code",

@@ -339,6 +339,7 @@
               "githubusercontent.com",
               "githubassets.com",
               "cache.nixos.org",
+              "registry.npmjs.org",
               "cloudfront.net",
               "slack-edge.com",
               "slack-imgs.com",
