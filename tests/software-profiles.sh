@@ -10,6 +10,7 @@ for profile in home work; do
       packages = map (x: x.pname or x.name) home.home.packages;
       lfs = home.programs.git.lfs.enable;
       direnv = home.programs.direnv.enable;
+      dshPlugins = home.home.activation.dshPlugins.data;
       javaHome = home.home.sessionVariables.JAVA_HOME;
       paths = home.home.sessionPath;
       profileBin = "${home.home.profileDirectory}/bin";
@@ -23,6 +24,7 @@ for profile in home work; do
     }
   ' | jq -e --arg profile "$profile" '
     .cleanup == "zap" and .lfs and .direnv and
+    (.dshPlugins | contains("sync-dsh-plugin.sh") and contains("tui") and contains("@deepseek-harness-tui/dsh-tui") and contains("0.18.0")) and
     ([.serviceNames[] | select(test("sing[-_.]?box"; "i"))] | length == 0) and
     (.brews | index("sing-box") == null) and
     .javaHome == "/opt/homebrew/opt/openjdk/libexec/openjdk.jdk/Contents/Home" and

@@ -27,6 +27,26 @@ in
 
   home.packages = software.packages pkgs llmPkgs;
 
+  # Shared by bootstrap and rebuild; profiles and credentials remain writable/local.
+  home.activation.dshPlugins = lib.hm.dag.entryAfter [ "linkGeneration" ] (
+    lib.concatMapStringsSep "\n" (plugin: ''
+      run env PATH="${
+        lib.makeBinPath [
+          pkgs.nodejs_26
+          pkgs.pnpm
+          pkgs.jq
+          llmPkgs.dsh
+        ]
+      }:$PATH" \
+        ${pkgs.bash}/bin/bash ${./scripts/sync-dsh-plugin.sh} \
+        ${lib.escapeShellArgs [
+          plugin.profile
+          plugin.package
+          plugin.version
+        ]}
+    '') software.dshPlugins
+  );
+
   # Homebrew Python and Java must precede Apple's CLT Python and launcher stubs.
   home.sessionPath = [
     "/opt/homebrew/opt/python/libexec/bin"
@@ -137,6 +157,7 @@ in
 
     # Public identity configuration only; private keys and gh OAuth stay local.
     ".gitconfig".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.gitconfig";
+    ".ssh/config".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.ssh/config";
     ".config/git/laozhu.inc".source =
       config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/git/laozhu.inc";
     ".config/direnv/direnvrc".source =

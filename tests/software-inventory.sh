@@ -52,6 +52,17 @@ try {
   fs.mkdirSync(path.join(apps, 'RabbitPro.app'));
   assert.equal(inspectSoftware(rabbit, options).status, '已安装');
   const work = JSON.parse(run(['--profile', 'work', '--json']).stdout);
+  for (const profileRows of [rows, work]) {
+    const tui = profileRows.find(r => r.id === 'dsh-tui');
+    assert.equal(tui.group, 'shared');
+    assert.equal(tui.manager, 'DSH plugin');
+    assert.equal(inspectSoftware(tui, options).status, '未安装');
+    const manifest = path.join(temp, tui.apps[0].slice(2));
+    fs.mkdirSync(path.dirname(manifest), { recursive: true });
+    fs.writeFileSync(manifest, '{}');
+    assert.equal(inspectSoftware(tui, options).status, '已安装');
+    fs.rmSync(manifest);
+  }
   assert.ok(work.some(r => r.id === 'nordpass/tap/np')); assert.ok(!work.some(r => r.group === 'home'));
   assert.equal(run(['--profile', 'bad']).status, 2);
   assert.equal(run(['--group', 'shared']).stdout.includes('| 名称 |'), true);

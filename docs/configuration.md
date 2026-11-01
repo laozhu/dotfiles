@@ -149,6 +149,9 @@ GUI 和 CLI 都属于 shared，home/work 两套配置均安装：
 - 桌面应用由 Homebrew cask `deepseek-harness` 安装，使用官方 Apple Silicon 下载。
 - `dsh` CLI 由已锁定的 `llm-agents.nix` 提供，不另外全局安装 npm CLI。
 - CLI 的浏览器界面用 `dsh web` 启动；桌面应用在应用程序目录启动。
+- 社区 TUI `@deepseek-harness-tui/dsh-tui` 的版本和 `tui` profile 声明在 `software.json`。
+  Home Manager 在 bootstrap 和 rebuild 的系统激活阶段，以当前用户安装插件，之后用 `dsh tui` 启动。
+  相同版本及 bundle 已安装时跳过下载；插件版本变化或安装文件缺失时重新安装。
 - 同时安装时，保留 Nix 提供的 `dsh`，不必再用桌面应用的 Manage dsh Command 注册同名启动器。
 
 首次构建 CLI 会获取 npm 依赖。实测当前网络直连 npm tarball 超时，显式代理可达，
@@ -156,12 +159,14 @@ GUI 和 CLI 都属于 shared，home/work 两套配置均安装：
 登录、API key、会话和用户 profile 保留在本机，不提交到模板中。
 移除桌面 cask 前需备份 `~/.dsh`：该 cask 的 zap 清理包含这个目录，可能影响 CLI 数据。
 
-TUI 暂不自动安装。隔离验证中，社区 `@deepseek-harness-tui/dsh-tui@0.18.0` 在
-当前 CLI `0.2.1-rc.5` 下安装成功，但加载时报缺少 `@deepseek-ai/dsh-code-runtime-worker-thread`
-和 `@deepseek-ai/dsh-agent-presets`。后续选定兼容版本后，按
+TUI `0.18.0` 已在当前 CLI `0.2.1-rc.5` 下重新验证，交互界面和账号模型请求均成功。
+首次启动按向导选择账号和模型；各 profile 的默认模型选择独立，不自动复制桌面版设置。
+插件安装使用官方 `dsh plugin --profile tui add ...`，不会重置本机 profile patch、凭据或会话，
+也不把可写 profile 变成受管软链接。首次安装需要网络和正常连接的 SFM；安装失败会使激活报错，
+修复网络后再次运行 bootstrap/rebuild 即可重试。
+更新 TUI 时修改 `software.json` 中的固定版本，并按
 [插件项目说明](https://github.com/ccch1mneyyy/dsh-TUI/blob/main/docs/getting-started.en.md)
-使用 `dsh plugin --profile dsh-tui add ...` 安装，再用 `dsh --profile dsh-tui` 启动；
-不覆盖宿主版本检查，也不把可写 profile 变成受管软链接。
+验证与宿主 CLI 的兼容性，不覆盖宿主版本检查。
 
 ## IDE 配置与插件
 

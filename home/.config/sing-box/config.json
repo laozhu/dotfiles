@@ -296,6 +296,10 @@
       {
         "rule_set": "gfwlist",
         "outbound": "🚀 proxy"
+      },
+      {
+        "port": [22, 54322],
+        "outbound": "🚀 proxy"
       }
     ],
     "rule_set": [
@@ -343,7 +347,8 @@
               "cloudfront.net",
               "slack-edge.com",
               "slack-imgs.com",
-              "s3.ap-southeast-2.amazonaws.com",
+              "amazonaws.com",
+              "aws.amazon.com",
               "hcaptcha.com",
               "challenges.cloudflare.com",
               "turnstile.com",

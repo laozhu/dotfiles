@@ -76,6 +76,7 @@ in
     dock = {
       show-recents = false; # 隐藏 Dock 右侧的最近使用
       mru-spaces = false; # 🛑 核心痛点：关闭“根据最近使用情况自动重新排列空间”
+      showAppExposeGestureEnabled = true; # 三指下滑显示当前应用的所有窗口
     };
 
     finder = {
@@ -85,6 +86,7 @@ in
 
     trackpad = {
       Clicking = true; # 轻点以点按
+      TrackpadThreeFingerVertSwipeGesture = 2; # 启用三指垂直轻扫
     };
   };
 
