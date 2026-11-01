@@ -10,7 +10,7 @@ trap cleanup_bootstrap_tests EXIT
 
 bootstrap_fixture="$bootstrap_test_root/bootstrap.sh"
 bootstrap_fixture_bin="$bootstrap_test_root/bin"
-bootstrap_fixture_home="$bootstrap_test_root/home"
+bootstrap_fixture_home="$bootstrap_test_root/user-home"
 bootstrap_fixture_real="$(cd "$bootstrap_test_root" && pwd -P)"
 bootstrap_home_repo="$bootstrap_test_root/home-repo"
 bootstrap_log="$bootstrap_test_root/operations.log"
@@ -25,6 +25,9 @@ cp "$repo_dir/bootstrap.sh" "$bootstrap_fixture"
 cp "$repo_dir/scripts/profile.sh" "$bootstrap_test_root/scripts/profile.sh"
 cp "$repo_dir/scripts/nix-cache-env.sh" "$bootstrap_test_root/scripts/nix-cache-env.sh"
 cp "$repo_dir/nix-caches.conf" "$bootstrap_test_root/nix-caches.conf"
+cp "$repo_dir/scripts/init-pi-settings.sh" "$bootstrap_test_root/scripts/init-pi-settings.sh"
+mkdir -p "$bootstrap_test_root/home/.pi/agent"
+cp "$repo_dir/home/.pi/agent/settings.json" "$bootstrap_test_root/home/.pi/agent/settings.json"
 mkdir -p "$bootstrap_fixture_home/.config/dotfiles"
 printf 'home\n' >"$bootstrap_fixture_home/.config/dotfiles/profile"
 printf '%s\n' '  user = "fixture-user";' >"$bootstrap_test_root/flake.nix"
@@ -134,6 +137,11 @@ done
 HOME="$bootstrap_fixture_home" PATH="$bootstrap_test_path" \
   bash "$bootstrap_fixture" <<<'' >"$bootstrap_test_root/keep-name-output" 2>&1
 grep -Fq 'Rich 的 MacBook Pro' "$bootstrap_test_root/keep-name-output"
+pi_settings="$bootstrap_fixture_home/.pi/agent/settings.json"
+test -f "$pi_settings" && test ! -L "$pi_settings"
+cmp "$pi_settings" "$bootstrap_test_root/home/.pi/agent/settings.json"
+printf '{"defaultModel":"local","deviceId":"local"}\n' >"$pi_settings"
+cp "$pi_settings" "$bootstrap_test_root/local-pi.json"
 test "$(cat "$bootstrap_fixture_home/.config/dotfiles/hostname")" = 'Rich 的 MacBook Pro'
 if grep -q '^sudo scutil ' "$bootstrap_log"; then
   echo 'bootstrap rewrote machine names after an empty reply' >&2
@@ -164,12 +172,13 @@ printf '%s\n' \
 cmp "$bootstrap_test_root/expected-naming" "$bootstrap_test_root/naming-operations"
 test "$(grep -c '^sudo scutil ' "$bootstrap_log")" = 3
 
-# Rerunning bootstrap must not prompt or overwrite the machine name.
+# Rerunning bootstrap must preserve local settings and the machine name.
 : >"$bootstrap_log"
 HOME="$bootstrap_fixture_home" PATH="$bootstrap_test_path" \
   bash "$bootstrap_fixture" </dev/null >/dev/null
 test "$(readlink "$bootstrap_fixture_home/.dotfiles")" = \
   "$bootstrap_fixture_real"
+cmp "$pi_settings" "$bootstrap_test_root/local-pi.json"
 
 expected_bootstrap="$bootstrap_test_root/expected-operations"
 printf '%s\n' \

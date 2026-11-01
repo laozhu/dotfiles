@@ -158,8 +158,6 @@ in
       config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.pi/agent/themes/rose-pine-moon.json";
     ".pi/agent/extensions/terminal-status-title.js".source =
       config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.pi/agent/extensions/terminal-status-title.js";
-    ".pi/agent/settings.json".source =
-      config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.pi/agent/settings.json";
 
     # AI Agents 配置文件注入
     ".claude/CLAUDE.md".source = claudeContext;

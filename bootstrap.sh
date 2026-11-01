@@ -113,6 +113,10 @@ echo "==> Step 5: validate the SOPS age identity"
 "$NIX_BIN" shell nixpkgs#age nixpkgs#sops --command \
   "$DIR/scripts/check-sops-age-key.sh"
 
+echo "==> Initialize local Pi settings (first run only)"
+bash "$DIR/scripts/init-pi-settings.sh" \
+  "$HOME/.pi/agent/settings.json" "$DIR/home/.pi/agent/settings.json"
+
 echo "==> Step 6: first darwin-rebuild switch (pinned to nix-darwin-26.05)"
 # 共享配置安装固定的官方 macOS CLI 二进制；Codex 使用 Homebrew cask。
 # darwin-rebuild doesn't exist yet on a fresh machine, so run it straight
