@@ -11,66 +11,67 @@ Homebrew Python 是明确替换系统版本的工具，因此保留。RabbitPro 
 
 两台 Mac 共用。
 
-| 软件                                 | 类型      | 命令                   | 安装方式             |
-| ------------------------------------ | --------- | ---------------------- | -------------------- |
-| ChatGPT                              | GUI       | -                      | Homebrew Cask        |
-| Claude                               | GUI       | -                      | Homebrew Cask        |
-| DeepSeek Harness                     | GUI       | -                      | Homebrew Cask        |
-| Google Gemini                        | GUI       | -                      | Homebrew Cask        |
-| Google Chrome                        | GUI       | -                      | Homebrew Cask        |
-| Antigravity IDE                      | GUI + CLI | `antigravity-ide`      | Homebrew Cask        |
-| VS Code                              | GUI + CLI | `code`                 | Homebrew Cask        |
-| WezTerm                              | GUI + CLI | `wezterm`              | Homebrew Cask        |
-| SFM                                  | GUI       | -                      | Homebrew Cask        |
-| 豆包输入法                           | GUI       | -                      | Homebrew Cask        |
-| ImageOptim                           | GUI       | -                      | Homebrew Cask        |
-| Keka                                 | GUI       | -                      | Homebrew Cask        |
-| Bitwarden                            | GUI       | -                      | Homebrew Cask        |
-| 微信                                 | GUI       | -                      | Homebrew Cask        |
-| 微信开发者工具                       | GUI + CLI | `cli`                  | Homebrew Cask        |
-| OrbStack / Docker / Compose / buildx | GUI + CLI | `orb` / `docker`       | Homebrew Cask        |
-| Orca                                 | GUI + CLI | `orca`                 | Homebrew Cask        |
-| Codex CLI                            | CLI       | `codex`                | Homebrew Cask        |
-| ngrok                                | CLI       | `ngrok`                | Homebrew Cask        |
-| Python 3 / pip3                      | CLI       | `python3` / `pip3`     | Homebrew Formula     |
-| OpenJDK                              | CLI       | `java` / `javac`       | Homebrew Formula     |
-| Gradle                               | CLI       | `gradle`               | Homebrew Formula     |
-| im-select                            | CLI       | `im-select`            | Homebrew Formula     |
-| mo                                   | CLI       | `mo`                   | Homebrew Formula     |
-| ripgrep                              | CLI       | `rg`                   | Nix                  |
-| fd                                   | CLI       | `fd`                   | Nix                  |
-| fzf                                  | CLI       | `fzf`                  | Nix                  |
-| jq                                   | CLI       | `jq`                   | Nix                  |
-| yq (Mike Farah)                      | CLI       | `yq`                   | Nix                  |
-| Lazygit                              | CLI       | `lazygit`              | Nix                  |
-| tig                                  | CLI       | `tig`                  | Nix                  |
-| Neovim                               | CLI       | `nvim`                 | Nix                  |
-| GitHub CLI                           | CLI       | `gh`                   | Nix                  |
-| age                                  | CLI       | `age`                  | Nix                  |
-| Bitwarden CLI                        | CLI       | `bw`                   | Nix                  |
-| SOPS                                 | CLI       | `sops`                 | Nix                  |
-| sing-box                             | CLI       | `sing-box`             | Nix                  |
-| wget                                 | CLI       | `wget`                 | Nix                  |
-| Node.js / npm / npx                  | CLI       | `node` / `npm` / `npx` | Nix                  |
-| pnpm / pnpx                          | CLI       | `pnpm` / `pnpx`        | Nix                  |
-| Bun                                  | CLI       | `bun`                  | Nix                  |
-| uv / uvx                             | CLI       | `uv` / `uvx`           | Nix                  |
-| Bitwarden Secrets Manager            | CLI       | `bws`                  | Nix                  |
-| Rust                                 | CLI       | `rustc`                | Nix                  |
-| Cargo                                | CLI       | `cargo`                | Nix                  |
-| Caddy                                | CLI       | `caddy`                | Nix                  |
-| FFmpeg / ffprobe                     | CLI       | `ffmpeg` / `ffprobe`   | Nix                  |
-| Herdr                                | CLI       | `herdr`                | Nix                  |
-| Kimi Code                            | CLI       | `kimi`                 | Nix                  |
-| Pi                                   | CLI       | `pi`                   | Nix                  |
-| Hack Nerd Font                       | Font      | -                      | Nix                  |
-| DeepSeek Harness CLI                 | CLI       | `dsh`                  | Nix / llm-agents.nix |
-| Claude Code                          | CLI       | `claude`               | Nix / llm-agents.nix |
-| Antigravity CLI                      | CLI       | `agy`                  | Nix / llm-agents.nix |
-| Git LFS                              | CLI       | `git-lfs`              | Nix / Home Manager   |
-| direnv                               | CLI       | `direnv`               | Nix / Home Manager   |
-| Starship                             | CLI       | `starship`             | Nix / Home Manager   |
-| Kotlin                               | CLI       | -                      | 项目 Gradle 插件     |
+| 软件                                 | 类型      | 命令                   | 安装方式                  |
+| ------------------------------------ | --------- | ---------------------- | ------------------------- |
+| ChatGPT                              | GUI       | -                      | Homebrew Cask             |
+| Claude                               | GUI       | -                      | Homebrew Cask             |
+| DeepSeek Harness                     | GUI       | -                      | Homebrew Cask             |
+| Google Gemini                        | GUI       | -                      | Homebrew Cask             |
+| Google Chrome                        | GUI       | -                      | Homebrew Cask             |
+| Antigravity IDE                      | GUI + CLI | `antigravity-ide`      | Homebrew Cask             |
+| VS Code                              | GUI + CLI | `code`                 | Homebrew Cask             |
+| WezTerm                              | GUI + CLI | `wezterm`              | Homebrew Cask             |
+| SFM                                  | GUI       | -                      | Homebrew Cask             |
+| 豆包输入法                           | GUI       | -                      | Homebrew Cask             |
+| ImageOptim                           | GUI       | -                      | Homebrew Cask             |
+| Keka                                 | GUI       | -                      | Homebrew Cask             |
+| Bitwarden                            | GUI       | -                      | Homebrew Cask             |
+| 微信                                 | GUI       | -                      | Homebrew Cask             |
+| 微信开发者工具                       | GUI + CLI | `cli`                  | Homebrew Cask             |
+| OrbStack / Docker / Compose / buildx | GUI + CLI | `orb` / `docker`       | Homebrew Cask             |
+| Orca                                 | GUI + CLI | `orca`                 | Homebrew Cask             |
+| Codex CLI                            | CLI       | `codex`                | Homebrew Cask             |
+| ngrok                                | CLI       | `ngrok`                | Homebrew Cask             |
+| Python 3 / pip3                      | CLI       | `python3` / `pip3`     | Homebrew Formula          |
+| OpenJDK                              | CLI       | `java` / `javac`       | Homebrew Formula          |
+| Gradle                               | CLI       | `gradle`               | Homebrew Formula          |
+| im-select                            | CLI       | `im-select`            | Homebrew Formula          |
+| mo                                   | CLI       | `mo`                   | Homebrew Formula          |
+| ripgrep                              | CLI       | `rg`                   | Nix                       |
+| fd                                   | CLI       | `fd`                   | Nix                       |
+| fzf                                  | CLI       | `fzf`                  | Nix                       |
+| jq                                   | CLI       | `jq`                   | Nix                       |
+| yq (Mike Farah)                      | CLI       | `yq`                   | Nix                       |
+| Lazygit                              | CLI       | `lazygit`              | Nix                       |
+| tig                                  | CLI       | `tig`                  | Nix                       |
+| Neovim                               | CLI       | `nvim`                 | Nix                       |
+| GitHub CLI                           | CLI       | `gh`                   | Nix                       |
+| age                                  | CLI       | `age`                  | Nix                       |
+| Bitwarden CLI                        | CLI       | `bw`                   | Nix                       |
+| SOPS                                 | CLI       | `sops`                 | Nix                       |
+| sing-box                             | CLI       | `sing-box`             | Nix                       |
+| wget                                 | CLI       | `wget`                 | Nix                       |
+| Node.js / npm / npx                  | CLI       | `node` / `npm` / `npx` | Nix                       |
+| pnpm / pnpx                          | CLI       | `pnpm` / `pnpx`        | Nix                       |
+| Bun                                  | CLI       | `bun`                  | Nix                       |
+| uv / uvx                             | CLI       | `uv` / `uvx`           | Nix                       |
+| Bitwarden Secrets Manager            | CLI       | `bws`                  | Nix                       |
+| Rust                                 | CLI       | `rustc`                | Nix                       |
+| Cargo                                | CLI       | `cargo`                | Nix                       |
+| Caddy                                | CLI       | `caddy`                | Nix                       |
+| FFmpeg / ffprobe                     | CLI       | `ffmpeg` / `ffprobe`   | Nix                       |
+| Herdr                                | CLI       | `herdr`                | Nix                       |
+| Kimi Code                            | CLI       | `kimi`                 | Nix                       |
+| Pi                                   | CLI       | `pi`                   | Nix                       |
+| Hack Nerd Font                       | Font      | -                      | Nix                       |
+| DeepSeek Harness CLI                 | CLI       | `dsh`                  | Nix / llm-agents.nix      |
+| DeepSeek Harness TUI                 | TUI       | `dsh tui`              | DSH plugin / Home Manager |
+| Claude Code                          | CLI       | `claude`               | Nix / llm-agents.nix      |
+| Antigravity CLI                      | CLI       | `agy`                  | Nix / llm-agents.nix      |
+| Git LFS                              | CLI       | `git-lfs`              | Nix / Home Manager        |
+| direnv                               | CLI       | `direnv`               | Nix / Home Manager        |
+| Starship                             | CLI       | `starship`             | Nix / Home Manager        |
+| Kotlin                               | CLI       | -                      | 项目 Gradle 插件          |
 
 ## Home only
 

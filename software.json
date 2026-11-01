@@ -650,6 +650,18 @@
     "commands": ["dsh"]
   },
   {
+    "id": "dsh-tui",
+    "name": "DeepSeek Harness TUI",
+    "group": "shared",
+    "type": "TUI",
+    "manager": "DSH plugin",
+    "package": "@deepseek-harness-tui/dsh-tui",
+    "version": "0.18.0",
+    "profile": "tui",
+    "apps": ["~/.dsh/profiles/tui/node_modules/@deepseek-harness-tui/dsh-tui/package.json"],
+    "note": "dsh tui；账号和模型选择保留在本机"
+  },
+  {
     "id": "claude-code",
     "name": "Claude Code",
     "group": "shared",

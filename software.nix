@@ -16,6 +16,7 @@ assert builtins.elem profile [
 {
   brews = packagesFor "Homebrew";
   casks = packagesFor "Homebrew Cask";
+  dshPlugins = builtins.filter (item: item.manager == "DSH plugin") selected;
   packages =
     pkgs: agents:
     map (name: lib.attrByPath (lib.splitString "." name) (throw "Unknown package ${name}") pkgs) (
