@@ -62,6 +62,10 @@
       url = "github:atlassian/homebrew-acli";
       flake = false;
     };
+    temporal-tap = {
+      url = "github:temporalio/homebrew-brew";
+      flake = false;
+    };
     nordpass-tap = {
       # This server uses dumb HTTP Git and cannot serve shallow clones.
       url = "git+https://downloads.npass.app/cli/homebrew-tap.git?shallow=0";
@@ -124,6 +128,7 @@
             }
             // nixpkgs.lib.optionalAttrs (profile == "work") {
               "atlassian/homebrew-acli" = inputs.atlassian-tap;
+              "temporalio/homebrew-brew" = inputs.temporal-tap;
               "nordpass/homebrew-tap" = nordpassTap;
             };
             mutableTaps = false;

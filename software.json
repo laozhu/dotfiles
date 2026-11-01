@@ -357,6 +357,15 @@
     "commands": ["temporal"]
   },
   {
+    "id": "temporalio/brew/tcld",
+    "name": "Temporal Cloud CLI",
+    "group": "work",
+    "type": "CLI",
+    "manager": "Homebrew",
+    "package": "temporalio/brew/tcld",
+    "commands": ["tcld"]
+  },
+  {
     "id": "ripgrep",
     "name": "ripgrep",
     "group": "shared",
