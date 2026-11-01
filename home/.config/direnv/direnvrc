@@ -1,0 +1,6 @@
+# Also runs for nested projects with their own .envrc; no source_up is required.
+case "$PWD/" in
+  "$HOME/Developer/laozhu/"* | "$HOME/Developer/beebat-dev/"*)
+    export GH_CONFIG_DIR="$HOME/.config/gh-laozhu"
+    ;;
+esac

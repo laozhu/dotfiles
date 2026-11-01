@@ -59,7 +59,6 @@ in
     settings = {
       core.editor = "nvim";
       init.defaultBranch = "main";
-      user.email = "laozhu.me@gmail.com";
       user.name = "Ritchie Zhu";
       push.autoSetupRemote = true;
       fetch.prune = true;
@@ -135,6 +134,17 @@ in
     ".gradle/gradle.properties".text = ''
       org.gradle.caching=true
     '';
+
+    # Public identity configuration only; private keys and gh OAuth stay local.
+    ".gitconfig".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.gitconfig";
+    ".config/git/laozhu.inc".source =
+      config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/git/laozhu.inc";
+    ".config/direnv/direnvrc".source =
+      config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/direnv/direnvrc";
+    "Developer/laozhu/.envrc".source =
+      config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/direnv/github.envrc";
+    "Developer/beebat-dev/.envrc".source =
+      config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/direnv/github.envrc";
 
     # 基础应用配置
     ".config/wezterm".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/wezterm";
