@@ -14,7 +14,6 @@ managed_files="$({
 for managed_path in \
   .pi/agent/themes/rose-pine-moon.json \
   .pi/agent/extensions/terminal-status-title.js \
-  .pi/agent/settings.json \
   .pi/agent/AGENTS.md \
   .claude/CLAUDE.md \
   .claude/AGENTS.md \
@@ -52,6 +51,7 @@ grep -Fxq '@AGENTS.md' "$repo_dir/home/CLAUDE.md"
 
 for local_path in \
   .pi/agent \
+  .pi/agent/settings.json \
   .pi/agent/auth.json \
   .pi/agent/npm \
   .pi/agent/themes \
@@ -71,7 +71,11 @@ jq -e '
   (.packages | type == "array" and all(.[]; type == "string" and
     test("@[0-9]+\\.[0-9]+\\.[0-9]+$"))) and
   (has("models") | not) and
-  (has("npmCommand") | not)
+  (has("npmCommand") | not) and
+  (has("deviceId") | not) and
+  (has("lastChangelogVersion") | not) and
+  (has("defaultProvider") | not) and
+  (has("defaultModel") | not)
 ' "$pi_settings" >/dev/null
 jq -e '.colors | type == "object"' \
   "$repo_dir/home/.pi/agent/themes/rose-pine-moon.json" >/dev/null

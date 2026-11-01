@@ -147,6 +147,13 @@ printf '%s\n' \
   "editor sync" \
   >"$expected_rebuild"
 assert_rebuild_operations "$expected_rebuild"
+# Rebuild must not create, overwrite or relink Pi runtime settings.
+test ! -e "$rebuild_fixture_home/.pi/agent/settings.json"
+mkdir -p "$rebuild_fixture_home/.pi/agent"
+printf '{"defaultModel":"local","deviceId":"local"}\n' >"$rebuild_fixture_home/.pi/agent/settings.json"
+cp "$rebuild_fixture_home/.pi/agent/settings.json" "$rebuild_test_root/local-pi.json"
+assert_rebuild_operations "$expected_rebuild"
+cmp "$rebuild_fixture_home/.pi/agent/settings.json" "$rebuild_test_root/local-pi.json"
 
 expected_update_rebuild="$rebuild_test_root/expected-update-rebuild"
 printf '%s\n' \

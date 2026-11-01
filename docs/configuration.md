@@ -20,6 +20,18 @@
 大多数 dotfiles 通过 `~/.dotfiles` 链接到仓库，修改后应用可能立即读到变化；
 新增文件映射、安装软件和系统设置需要 rebuild。
 Claude 的 `home/.claude/settings.json` 只在本机配置不存在时复制，后续修改模板不会覆盖本机文件。
+Pi 的 `home/.pi/agent/settings.json` 也是模板，但只由 bootstrap 在本机配置不存在时复制，
+rebuild 和 Home Manager activation 均不创建或覆盖 Pi settings。已有普通文件始终保留；
+bootstrap 遇到旧版软链接时会先将其完整内容转换成普通文件，再执行系统切换。
+模板不包含设备标识、已读版本或默认 provider/model。更新模板里的主题或扩展版本后，
+需要显式合并到本机配置。
+若从旧版软链接配置升级，第一次 rebuild 前先运行一次迁移，避免旧链接随上一代配置被清理：
+
+```bash
+bash scripts/init-pi-settings.sh "$HOME/.pi/agent/settings.json" home/.pi/agent/settings.json
+```
+
+该命令将可读的旧链接转换为普通文件，保留完整内容；已有普通文件不变。
 
 `configuration.nix` 在 home/work 两组中均将 AirDrop 设为对所有人可见，
 并开启触摸板“轻点以点按”。这些设置由首次 bootstrap 和后续 rebuild 应用。
