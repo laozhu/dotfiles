@@ -204,6 +204,7 @@ CI 分别执行 `format:check` 和 `test`；本地运行测试使用 `bash tests
 
 - [软件安装列表](docs/software.md)：shared、home only、work only 分组、安装方式与本机状态检查。
 - [配置维护](docs/configuration.md)：配置文件分工、依赖更新、IDE 同步与验证。
+- [多 GitHub 账号自动切换](docs/github-identities.md)：按目录选择 Git、SSH、GitHub CLI 身份及提交签名。
 - [sing-box 与 SFM](docs/sing-box.md)：配置发布、导入、分流与故障恢复。
 
 官方文档与上游说明：
