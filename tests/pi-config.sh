@@ -102,6 +102,9 @@ const context = {
   ui: { setTitle: (title) => titles.push(title) },
 };
 
+// Test the normal-terminal branch independently of the launching terminal.
+// The Orca branch below sets its own explicit environment.
+delete process.env.ORCA_PANE_KEY;
 extensionModule.default(pi);
 assert.deepEqual(
   [...handlers.keys()],
