@@ -70,7 +70,7 @@ for domain in slack-edge.com emoji.slack-edge.com a.slack-edge.com \
   s3.ap-southeast-2.amazonaws.com updates.ghub.logitechg.com \
   github.com api.github.com npass.app downloads.npass.app logi.com download01.logi.com \
   hcaptcha.com js.hcaptcha.com challenges.cloudflare.com turnstile.com \
-  stripe.com js.stripe.com monoova.com api.monoova.com ; do
+  stripe.com js.stripe.com monoova.com api.monoova.com registry.npmjs.org; do
   result="$(sing-box rule-set match "$proxy_fixture" "$domain" 2>&1)"
   if [ -z "$result" ]; then
     echo "Proxy rule did not match $domain" >&2
@@ -78,6 +78,7 @@ for domain in slack-edge.com emoji.slack-edge.com a.slack-edge.com \
   fi
 done
 for domain in cache.thalheim.io open-vsx.org openvsx.eclipsecontent.org \
+  registry.npmjs.org.example.invalid notregistry.npmjs.org \
   slack-edge.com.example.invalid notslack-edge.com \
   slack-imgs.com.example.invalid notslack-imgs.com \
   cloudfront.net.example.invalid notcloudfront.net \
