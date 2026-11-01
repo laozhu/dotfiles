@@ -144,3 +144,40 @@ curl --proxy http://127.0.0.1:7777 --connect-timeout 15 --max-time 30   -I https
 完整配置、密钥和运行日志可能包含凭据，不要提交到 Git 或公开粘贴。
 [2026-10-16 性能审计](sing-box-performance.md) 保留为历史记录，不能证明当前节点或服务端状态；
 本仓库不部署、升级或回退服务端程序。
+
+## 远端节点维护
+
+`ssh aws-sg` 和 `ssh racknerd` 的地址、端口以 `home/.ssh/config` 为准。
+两台节点的 VLESS Reality 由 `x-ui.service`（3x-ui + Xray）运行，HY2 由独立的
+`hysteria-server.service` 运行；未发现 sing-box 服务不代表 HY2 未运行。
+
+更换实例 IP 时，同步更新 SSH 配置和 `secrets/sing-box.yaml` 中对应区域的 `server-ip`。
+客户端仍通过 `server-hostname` 和 hosts DNS 映射连接；HY2 证书域名通常不因公网 IP 变化而改变。
+如需更换 Reality SNI，先在服务端验证候选目标的证书、TLS 1.3、HTTP/2 和实际握手，
+再修改 3x-ui 数据库中的握手目标与允许的 SNI，重启 x-ui，并同步客户端加密字段。
+不要直接修改 3x-ui 生成的 `/usr/local/x-ui/bin/config.json`；面板重启会重新生成它。
+客户端按前面的流程重新发布、导入 SFM。更换 SNI 不能保证避免网络封锁。
+
+2026-11-02 排查记录：旧新加坡 IP 不可用时，怀疑 Reality 借用的 Apple SNI 与
+AWS 地址的网络归属不匹配，但未证实这是 IP 被封禁的原因。处理时更换实例公网 IP，
+同步 SSH、客户端 hosts 映射及域名 DNS，并将服务端与客户端 Reality SNI 改为 `www.grab.com`。
+该目标从新加坡实例实测解析到同属 Amazon AS16509 的新加坡地址，TLS 1.3、HTTP/2
+和实际 Reality 请求均通过。后续优先验证目标的实际网络归属及握手兼容性，
+不凭网站品牌或地理位置选 SNI；这类调整不能保证避免再次封锁。
+
+SSH 的 TCP 建连成功不足以证明 SSH 可登录。排查时同时检查 Lightsail 防火墙、
+实例 UFW 和 sshd 监听；三者必须允许同一端口。重建实例后，通过 Lightsail 浏览器终端
+核实主机公钥指纹，再更新本机信任记录，不关闭主机密钥校验。
+
+两台 HY2 使用 root 的 acme.sh cron 自动续期，并在续期后安装证书、重启 HY2：
+
+| 节点     | HY2 证书文件                 | 验证方式                                        |
+| -------- | ---------------------------- | ----------------------------------------------- |
+| 新加坡   | `/etc/hysteria/sg-proxy.crt` | Cloudflare DNS                                  |
+| RackNerd | `/etc/ssl/hysteria/cert.crt` | standalone HTTP，需确保 TCP 80 可达且无监听冲突 |
+
+检查有效期使用 `sudo openssl x509 -in <证书路径> -noout -dates`；
+同时核对 root 的 cron、`/root/.acme.sh/` 中的域名配置、安装路径和重载命令。
+非强制续期返回“未到时间，跳过”只能验证调度配置，不能证明将来的 DNS API 或 CA 验证一定成功。
+acme.sh 配置可能保存 DNS 凭据，不输出完整配置或调试日志。清理失效用户任务前，
+先确认 root 的有效任务并备份原 crontab。
