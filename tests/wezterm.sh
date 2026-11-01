@@ -11,6 +11,9 @@ package.preload.wezterm = function()
     on = function(event, handler) handlers[event] = handler end,
   }
 end
+-- Match WezTerm's module search path in the standalone Lua test runtime.
+local config_dir = assert(arg[1]:match("^(.*)/[^/]+$"))
+package.path = config_dir .. "/?.lua;" .. package.path
 local config = dofile(arg[1])
 assert(config.window_frame == nil, "Keep native rounded corners without clipped custom borders")
 assert(config.window_decorations:find("MACOS_FORCE_ENABLE_SHADOW", 1, true))
