@@ -18,7 +18,7 @@ try {
   mkdirSync(agent);
   mkdirSync(bin);
   writeFileSync(join(agent, 'settings.json'), JSON.stringify({
-    packages: ['npm:pi-web-access@0.29.0'],
+    packages: ['npm:pi-web-access@0.46.0'],
   }));
   // A missing extension must not trigger installation just to display help.
   writeFileSync(join(bin, 'npm'), '#!/bin/sh\nprintf "%s %s\\n" "$PI_OFFLINE" "$*" >> "$PI_HELP_NPM_LOG"\nif [ "$1" = root ]; then printf "%s/global\\n" "$PI_CODING_AGENT_DIR"; exit 0; fi\nexit 71\n', { mode: 0o755 });
@@ -36,7 +36,7 @@ try {
     assert.doesNotMatch(commands, /\binstall\b/, `${flag} attempted to install an extension`);
   }
   writeFileSync(log, '');
-  const install = spawnSync(binary, ['install', 'npm:pi-web-access@0.29.0'], {
+  const install = spawnSync(binary, ['install', 'npm:pi-web-access@0.46.0'], {
     cwd: root,
     env: { ...process.env, PI_OFFLINE: '0', PI_CODING_AGENT_DIR: agent,
       PI_HELP_NPM_LOG: log, PATH: `${bin}:${process.env.PATH}` },

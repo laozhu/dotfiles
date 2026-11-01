@@ -11,5 +11,5 @@
   "steeringMode": "all",
   "followUpMode": "all",
   "collapseChangelog": true,
-  "packages": ["npm:pi-web-access@0.29.0", "npm:@ryan_nookpi/pi-extension-codex-fast-mode@0.2.7"]
+  "packages": ["npm:pi-web-access@0.46.0", "npm:@ryan_nookpi/pi-extension-codex-fast-mode@0.2.7"]
 }
