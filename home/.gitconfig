@@ -1,0 +1,13 @@
+# Default account outside the two personal development trees.
+[user]
+  name = Ritchie Zhu
+  email = 204663844+ritchie-paid@users.noreply.github.com
+[core]
+  sshCommand = ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes
+[credential "https://github.com"]
+  helper =
+  helper = !env GH_CONFIG_DIR="$HOME/.config/gh" gh auth git-credential
+[includeIf "gitdir:~/Developer/laozhu/"]
+  path = ~/.config/git/laozhu.inc
+[includeIf "gitdir:~/Developer/beebat-dev/"]
+  path = ~/.config/git/laozhu.inc
