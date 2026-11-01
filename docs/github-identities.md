@@ -66,3 +66,34 @@ gh api user --jq .login
 
 新密钥上传后可用 `ssh -T -i ~/.ssh/id_ed25519_laozhu -o IdentitiesOnly=yes git@github.com`
 验证服务端识别为 laozhu。GitHub 的成功欢迎信息通常伴随退出码 1，这是该测试命令的正常行为。
+
+## 提交签名与 Verified
+
+两个账号都启用 `gpg.format = ssh` 和 `commit.gpgSign = true`，普通 `git commit`
+会自动签名。默认使用 `~/.ssh/id_ed25519`，两个 laozhu 目录使用
+`~/.ssh/id_ed25519_laozhu`，与 SSH 登录的 key 保持一致。
+
+GitHub 的 Authentication key 和 Signing key 是两种独立登记用途。
+同一个公钥需要额外登记为 Signing key；首次配置分别在对应账号上下文执行：
+
+```bash
+# laozhu
+cd ~/Developer/laozhu
+direnv exec . gh auth refresh --hostname github.com --scopes admin:ssh_signing_key
+direnv exec . gh api user --jq .login
+direnv exec . gh ssh-key add ~/.ssh/id_ed25519_laozhu.pub --type signing --title "laozhu macOS commit signing"
+
+# ritchie-paid
+cd ~
+gh auth refresh --hostname github.com --scopes admin:ssh_signing_key
+gh api user --jq .login
+gh ssh-key add ~/.ssh/id_ed25519.pub --type signing --title "ritchie-paid macOS commit signing"
+```
+
+每次上传前确认 `gh api user` 输出的账号正确。提交者邮箱须属于该账号，
+并满足 GitHub 的邮箱验证要求。新签名提交推送后由 GitHub 验证并显示 Verified；
+配置不会为已有的无签名提交补签，也不会重写历史。
+
+本地签名是否有效可用临时 allowed signers 文件验证；GitHub 的 Verified 不依赖本机的
+allowed signers 文件。规则或仓库 local config 可以覆盖自动签名默认值。
+官方步骤见 [GitHub SSH 签名配置](https://docs.github.com/en/authentication/managing-commit-signature-verification/telling-git-about-your-signing-key)。

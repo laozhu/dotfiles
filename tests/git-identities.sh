@@ -9,7 +9,10 @@ export XDG_CONFIG_HOME="$HOME/.config"
 export GIT_CONFIG_NOSYSTEM=1
 export GIT_CONFIG_GLOBAL="$HOME/.gitconfig"
 unset GH_CONFIG_DIR GIT_SSH_COMMAND DIRENV_DIFF DIRENV_DIR DIRENV_FILE DIRENV_WATCHES
-mkdir -p "$HOME/.config/git" "$HOME/.config/direnv" "$HOME/Developer"
+mkdir -p "$HOME/.config/git" "$HOME/.config/direnv" "$HOME/Developer" "$HOME/.ssh"
+for key in id_ed25519 id_ed25519_laozhu; do
+  ssh-keygen -q -t ed25519 -N '' -f "$HOME/.ssh/$key"
+done
 cp "$repo_dir/home/.gitconfig" "$HOME/.gitconfig"
 cp "$repo_dir/home/.config/git/laozhu.inc" "$HOME/.config/git/laozhu.inc"
 cp "$repo_dir/home/.config/direnv/direnvrc" "$HOME/.config/direnv/direnvrc"
@@ -38,6 +41,12 @@ for owner in laozhu beebat-dev ritchie-paid laozhu-other beebat-dev-other; do
   test "$(git -C "$directory" config user.email)" = "$email"
   test "$(git -C "$directory" config user.name)" = 'Ritchie Zhu'
   test "$(git -C "$directory" config core.sshCommand)" = "ssh -i ~/.ssh/$key -o IdentitiesOnly=yes"
+  test "$(git -C "$directory" config gpg.format)" = ssh
+  test "$(git -C "$directory" config --bool commit.gpgsign)" = true
+  test "$(git -C "$directory" config user.signingkey)" = "~/.ssh/$key"
+  git -C "$directory" commit --allow-empty -qm 'Verify automatic SSH signing'
+  printf '%s namespaces="git" %s\n' "$email" "$(cat "$HOME/.ssh/$key.pub")" >"$fixture/allowed_signers"
+  git -C "$directory" -c gpg.ssh.allowedSignersFile="$fixture/allowed_signers" verify-commit HEAD
   helper="$(git -C "$directory" config --get-all credential.https://github.com.helper | tail -1)"
   [[ "$helper" == *"$gh_config"* ]]
 done

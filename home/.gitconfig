@@ -2,6 +2,11 @@
 [user]
   name = Ritchie Zhu
   email = 204663844+ritchie-paid@users.noreply.github.com
+  signingKey = ~/.ssh/id_ed25519
+[gpg]
+  format = ssh
+[commit]
+  gpgSign = true
 [core]
   sshCommand = ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes
 [credential "https://github.com"]
