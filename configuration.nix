@@ -123,6 +123,7 @@ in
     ]
     ++ lib.optionals (profile == "work") [
       "atlassian/acli"
+      "temporalio/brew"
       "nordpass/tap"
     ];
     brews = software.brews;

@@ -300,7 +300,8 @@
         "nixpkgs": "nixpkgs",
         "nordpass-tap": "nordpass-tap",
         "orca-tap": "orca-tap",
-        "sops-nix": "sops-nix"
+        "sops-nix": "sops-nix",
+        "temporal-tap": "temporal-tap"
       }
     },
     "sops-nix": {
@@ -335,6 +336,22 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "temporal-tap": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792704564,
+        "narHash": "sha256-L28YipIdKiKHhwrljWbP9/HIc/Ele57FYY1I8a1l1V0=",
+        "owner": "temporalio",
+        "repo": "homebrew-brew",
+        "rev": "0e6da211ec3059c338c779ef3cafb73e2a03748e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "temporalio",
+        "repo": "homebrew-brew",
         "type": "github"
       }
     },

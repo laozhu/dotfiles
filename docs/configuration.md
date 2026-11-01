@@ -44,7 +44,8 @@ GitHub 多账号的目录切换、SSH key 和首次登录步骤见 [GitHub 目�
 - `pnpm`、`uv`、`bws`、Herdr、Kimi Code、Pi 和 sing-box 使用官方 Apple Silicon 二进制，
   版本及 SHA-256 记录在 `macos-binaries.json`，Nix 负责校验、解包和链接。
 - 桌面应用及 Codex CLI 由 Homebrew cask 管理；im-select、mo、Atlassian CLI 和 NordPass CLI 使用上游 tap。
-  Python、OpenJDK、Gradle 及工作机的 AWS、SAM、Temporal 使用 Homebrew formula。
+  Python、OpenJDK、Gradle 及工作机的 AWS、SAM、Temporal 和 Temporal Cloud CLI（`tcld`）使用 Homebrew formula。
+  `tcld` 来自官方 `temporalio/brew` tap。
   Brew 与 tap 源码由 `flake.lock` 锁定，核心配方从锁定的 tap 读取，不从 API 加载核心配方。
   应用自动更新、在线安装器和未固定的下载地址仍可能影响实际安装结果。
 
@@ -60,7 +61,7 @@ GitHub 多账号的目录切换、SSH key 和首次登录步骤见 [GitHub 目�
 ./rebuild.sh --update
 ```
 
-`--update` 按本机分组更新 `flake.lock`：home 更新共享依赖，跳过 work 专用的 NordPass、Atlassian tap；
+`--update` 按本机分组更新 `flake.lock`：home 更新共享依赖，跳过 work 专用的 NordPass、Atlassian、Temporal tap；
 work 更新全部依赖。随后通过 GitHub CLI 查询对应版本的官方发布包并更新
 `macos-binaries.json`，随后校验并应用配置。首次使用 `gh` 时先运行 `gh auth login`。
 普通 rebuild 和 bootstrap 使用已有二进制记录，不查询这些发布包的 GitHub API。

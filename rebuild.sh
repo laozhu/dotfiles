@@ -41,7 +41,7 @@ if [ "$update_inputs" = true ]; then
   update_targets=()
   while IFS= read -r input_name; do
     case "$PROFILE:$input_name" in
-      home:atlassian-tap | home:nordpass-tap) continue ;;
+      home:atlassian-tap | home:nordpass-tap | home:temporal-tap) continue ;;
     esac
     update_targets+=("$input_name")
   done <<<"$input_names"

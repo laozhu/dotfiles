@@ -47,10 +47,10 @@ for profile in home work; do
     (if $profile == "home" then
       (["steam", "uu-booster", "logitech-g-hub", "tencent-meeting"] - .casks | length == 0) and
       ([.casks[] | select(. == "slack" or . == "nordpass" or . == "granola" or . == "loom" or . == "slack-cli")] | length == 0) and
-      ([.brews[] | select(. == "awscli" or . == "aws-sam-cli" or . == "temporal" or . == "nordpass/tap/np" or . == "atlassian/acli/acli")] | length == 0)
+      ([.brews[] | select(. == "awscli" or . == "aws-sam-cli" or . == "temporal" or . == "temporalio/brew/tcld" or . == "nordpass/tap/np" or . == "atlassian/acli/acli")] | length == 0)
     else
       (["slack", "nordpass", "granola", "loom", "slack-cli"] - .casks | length == 0) and
-      (["awscli", "aws-sam-cli", "temporal", "nordpass/tap/np", "atlassian/acli/acli"] - .brews | length == 0) and
+      (["awscli", "aws-sam-cli", "temporal", "temporalio/brew/tcld", "nordpass/tap/np", "atlassian/acli/acli"] - .brews | length == 0) and
       ([.casks[] | select(. == "steam" or . == "uu-booster" or . == "logitech-g-hub" or . == "tencent-meeting")] | length == 0)
     end)
   ' >/dev/null
