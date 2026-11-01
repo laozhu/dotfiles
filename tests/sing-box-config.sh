@@ -59,25 +59,27 @@ jq -e '
 config_test_root="$(mktemp -d)"
 trap 'rm -rf "$config_test_root"' EXIT
 
-# Binary caches, vendor installers and NordPass must use proxy DNS and routing.
+# Keep explicit proxy routing for service availability, including region policies.
 proxy_fixture="$config_test_root/custom-proxy.json"
 jq '{version: 3, rules: first(.route.rule_set[] |
   select(.tag == "custom-proxy")).rules}' "$config" >"$proxy_fixture"
 for domain in slack-edge.com emoji.slack-edge.com a.slack-edge.com \
   slack-imgs.com files.slack-imgs.com \
-  open-vsx.org openvsx.eclipsecontent.org \
   cloudfront.net dr2v7l5emb758.cloudfront.net other.cloudfront.net \
-  cache.thalheim.io npass.app downloads.npass.app updates.ghub.logitechg.com download01.logi.com; do
+  githubusercontent.com githubassets.com cache.nixos.org auth0.com \
+  s3.ap-southeast-2.amazonaws.com updates.ghub.logitechg.com \
+  github.com api.github.com npass.app downloads.npass.app logi.com download01.logi.com \
+  hcaptcha.com js.hcaptcha.com challenges.cloudflare.com turnstile.com \
+  stripe.com js.stripe.com monoova.com api.monoova.com ; do
   result="$(sing-box rule-set match "$proxy_fixture" "$domain" 2>&1)"
   if [ -z "$result" ]; then
     echo "Proxy rule did not match $domain" >&2
     exit 1
   fi
 done
-for domain in slack-edge.com.example.invalid notslack-edge.com \
+for domain in cache.thalheim.io open-vsx.org openvsx.eclipsecontent.org \
+  slack-edge.com.example.invalid notslack-edge.com \
   slack-imgs.com.example.invalid notslack-imgs.com \
-  open-vsx.org.example.invalid notopen-vsx.org \
-  openvsx.eclipsecontent.org.example.invalid notopenvsx.eclipsecontent.org \
   cloudfront.net.example.invalid notcloudfront.net \
   cache.thalheim.io.example.invalid notcache.thalheim.io \
   downloads.npass.app.example.invalid updates.ghub.logitechg.com.example.invalid \
