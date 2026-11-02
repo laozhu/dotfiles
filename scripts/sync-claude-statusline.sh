@@ -15,9 +15,9 @@ trap 'rm -f "$temporary"' EXIT
 jq --arg command "$command" '.statusLine = {type: "command", command: $command, padding: 0}' "$source_file" >"$temporary"
 chmod 0600 "$temporary"
 if [ -f "$settings" ] && cmp -s "$settings" "$temporary"; then exit 0; fi
+# Keep one rolling backup; every ccline upgrade changes the command path.
 if [ -e "$settings" ]; then
-  backup="$(mktemp "$settings.backup.XXXXXX")"
-  cp -pL "$settings" "$backup"
-  chmod 0600 "$backup"
+  cp -pL "$settings" "$settings.backup"
+  chmod 0600 "$settings.backup"
 fi
 mv -f "$temporary" "$settings"

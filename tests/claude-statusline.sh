@@ -11,9 +11,14 @@ printf '{"permissions":{"allow":["Read"]},"statusLine":{"command":"old"},"theme"
 cp "$settings" "$fixture/before.json"
 bash "$script" "$settings" "$repo_dir/home/.claude/settings.json" /test/bin/ccline
 jq -e '.theme == "local" and .permissions.allow == ["Read"] and .statusLine.command == "/test/bin/ccline"' "$settings" >/dev/null
-cmp "$fixture/before.json" "$settings".backup.*
+cmp "$fixture/before.json" "$settings.backup"
 bash "$script" "$settings" "$repo_dir/home/.claude/settings.json" /test/bin/ccline
-test "$(find "$fixture/claude" -name '*.backup.*' | wc -l | tr -d ' ')" = 1
+cmp "$fixture/before.json" "$settings.backup"
+# A later command change replaces the single backup instead of adding another.
+cp "$settings" "$fixture/second.json"
+bash "$script" "$settings" "$repo_dir/home/.claude/settings.json" /test/bin/ccline-next
+cmp "$fixture/second.json" "$settings.backup"
+test "$(find "$fixture/claude" -name '*.backup*' | wc -l | tr -d ' ')" = 1
 printf 'invalid\n' >"$settings"
 if bash "$script" "$settings" "$repo_dir/home/.claude/settings.json" /test/bin/ccline 2>/dev/null; then exit 1; fi
 test "$(cat "$settings")" = invalid

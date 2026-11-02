@@ -28,6 +28,7 @@ in
   home.packages = software.packages pkgs llmPkgs;
 
   # Shared by bootstrap and rebuild; profiles and credentials remain writable/local.
+  # Installs need the network, so a failure warns instead of aborting the whole switch.
   home.activation.dshPlugins = lib.hm.dag.entryAfter [ "linkGeneration" ] (
     lib.concatMapStringsSep "\n" (plugin: ''
       run env PATH="${
@@ -43,7 +44,8 @@ in
           plugin.profile
           plugin.package
           plugin.version
-        ]}
+        ]} \
+        || warnEcho "DSH plugin ${plugin.package}@${plugin.version} was not installed; rerun rebuild once the network works."
     '') software.dshPlugins
   );
 
@@ -114,7 +116,11 @@ in
     initContent = ''
       bindkey '^f' autosuggest-accept
       # Resolve stored credentials without reusing a token inherited from another shell.
-      export GITHUB_TOKEN="$(env -u GH_TOKEN -u GITHUB_TOKEN gh auth token)"
+      # Skip the export before `gh auth login` instead of exporting an empty token.
+      if github_token="$(env -u GH_TOKEN -u GITHUB_TOKEN gh auth token 2>/dev/null)" && [ -n "$github_token" ]; then
+        export GITHUB_TOKEN="$github_token"
+      fi
+      unset github_token
       # Apply after macOS path_helper and Home Manager's Nix profile setup.
       export PATH="/opt/homebrew/opt/python/libexec/bin:/opt/homebrew/opt/openjdk/bin:/opt/homebrew/bin:$PATH"
     '';
@@ -144,11 +150,21 @@ in
   };
 
   # Shared activation makes bootstrap and rebuild preserve local Claude settings.
+  # Invalid local JSON is left untouched and only skips the statusLine update.
   home.activation.claudeSettings = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
     run env PATH="${lib.makeBinPath [ pkgs.jq ]}:$PATH" \
       ${pkgs.bash}/bin/bash ${./scripts/sync-claude-statusline.sh} \
       "$HOME/.claude/settings.json" ${./home/.claude/settings.json} \
-      "${pkgs.ccometixline}/bin/ccline"
+      "${pkgs.ccometixline}/bin/ccline" \
+      || warnEcho "Claude statusLine not updated; fix ~/.claude/settings.json and rerun rebuild."
+  '';
+
+  # Convert a Pi settings link left by older generations before linkGeneration removes it.
+  home.activation.piSettingsMigration = lib.hm.dag.entryBetween [ "linkGeneration" ] [ "writeBoundary" ] ''
+    if [ -L "$HOME/.pi/agent/settings.json" ]; then
+      run ${pkgs.bash}/bin/bash ${./scripts/init-pi-settings.sh} \
+        "$HOME/.pi/agent/settings.json" ${./home/.pi/agent/settings.json}
+    fi
   '';
 
   # 统一文件映射 (使用软链接便于实时修改)

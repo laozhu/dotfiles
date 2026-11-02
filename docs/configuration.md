@@ -18,25 +18,20 @@
 表格行，不影响安装声明。分组选择与用法见 README。
 
 大多数 dotfiles 通过 `~/.dotfiles` 链接到仓库，修改后应用可能立即读到变化；
-新增文件映射、安装软件和系统设置需要 rebuild。
+新增文件映射、安装软件和系统设置需要 rebuild。目标位置已有未受管的普通文件时，
+Home Manager 会将其改名为 `*.hm-backup` 后再建立链接；同名备份已存在时仍会报错，需要手动处理。
 Claude 的 `home/.claude/settings.json` 在本机配置不存在时用作模板。bootstrap 和 rebuild 的
 Home Manager activation 会将 `statusLine` 合并为 CCometixLine，保留其他本机字段；
-有变化时先在原文件旁生成权限为 0600 的 `settings.json.backup.*`。
+有变化时先将原文件覆盖备份为旁边权限为 0600 的 `settings.json.backup`（只保留一份）。
+本机文件不是合法 JSON 时保持原样，激活只打印警告并跳过 statusLine 更新。
 `home/.claude/ccline/config.toml` 管理两行状态栏：目录、分支、PR、增删行数；模型、上下文百分比、5 小时 / 7 天额度及重置倒计时，
 有后台任务时追加运行中的子代理和工具。样式为无背景色的 plain，配色跟随终端主题，通过软链接部署。
 修改样式可直接编辑该文件；配置器 `ccline` 保存也会写入这个仓库文件。
 Pi 的 `home/.pi/agent/settings.json` 也是模板，但只由 bootstrap 在本机配置不存在时复制，
 rebuild 和 Home Manager activation 均不创建或覆盖 Pi settings。已有普通文件始终保留；
-bootstrap 遇到旧版软链接时会先将其完整内容转换成普通文件，再执行系统切换。
+遇到旧版软链接时，bootstrap 和 rebuild 都会在清理旧链接前将其完整内容转换成普通文件。
 模板不包含设备标识、已读版本或默认 provider/model。更新模板里的主题或扩展版本后，
-需要显式合并到本机配置。
-若从旧版软链接配置升级，第一次 rebuild 前先运行一次迁移，避免旧链接随上一代配置被清理：
-
-```bash
-bash scripts/init-pi-settings.sh "$HOME/.pi/agent/settings.json" home/.pi/agent/settings.json
-```
-
-该命令将可读的旧链接转换为普通文件，保留完整内容；已有普通文件不变。
+不会自动同步到已有机器，需要手动合并到本机 `~/.pi/agent/settings.json`。
 
 `configuration.nix` 在 home/work 两组中均将 AirDrop 设为对所有人可见，
 并开启触摸板“轻点以点按”。这些设置由首次 bootstrap 和后续 rebuild 应用。
@@ -173,7 +168,7 @@ GUI 和 CLI 都属于 shared，home/work 两套配置均安装：
 TUI `0.18.0` 已在当前 CLI `0.2.1-rc.5` 下重新验证，交互界面和账号模型请求均成功。
 首次启动按向导选择账号和模型；各 profile 的默认模型选择独立，不自动复制桌面版设置。
 插件安装使用官方 `dsh plugin --profile tui add ...`，不会重置本机 profile patch、凭据或会话，
-也不把可写 profile 变成受管软链接。首次安装需要网络和正常连接的 SFM；安装失败会使激活报错，
+也不把可写 profile 变成受管软链接。首次安装需要网络和正常连接的 SFM；安装失败只打印警告，不中断系统切换，
 修复网络后再次运行 bootstrap/rebuild 即可重试。
 更新 TUI 时修改 `software.json` 中的固定版本，并按
 [插件项目说明](https://github.com/ccch1mneyyy/dsh-TUI/blob/main/docs/getting-started.en.md)
@@ -204,7 +199,8 @@ bash scripts/sync-editors.sh
 ```
 
 两个 IDE 及 Node、jq 必须已安装，插件下载需要网络；不处理命名 Profile。
-Pi 的扩展清单在 `home/.pi/agent/settings.json`，不属于 IDE 同步步骤。
+Pi 的扩展清单模板在 `home/.pi/agent/settings.json`，不属于 IDE 同步步骤；
+修改模板不会更新已有机器，需要手动合并到本机配置。
 `pi --help` / `pi -h` 禁止启动联网，正常启动和显式安装扩展仍使用原有网络行为。
 
 ## 验证修改
