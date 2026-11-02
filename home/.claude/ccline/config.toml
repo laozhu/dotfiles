@@ -20,7 +20,7 @@ left = [
 left = [
   { metric = "model", color = "magenta", compact = "{family}", priority = 5 },
   { metric = "context", widget = "text", format = "{pct}%", priority = 5 },
-  { metric = "quota.5h", widget = "text", icon = "󰔟", format = "5h {pct}%[ · {left}]", compact = "5h {pct}%", minimal = "{pct}%", priority = 5 },
+  { metric = "quota.5h", widget = "text", icon = "󰅐", format = "5h {pct}%[ · {left}]", compact = "5h {pct}%", minimal = "{pct}%", priority = 5 },
   { metric = "quota.7d", widget = "text", icon = "󰃭", format = "7d {pct}%[ · {left}]", compact = "7d {pct}%", minimal = "{pct}%", priority = 4 },
   { metric = "activity.agents", priority = 3 },
   { metric = "activity.tools", priority = 3 },
