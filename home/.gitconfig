@@ -11,7 +11,7 @@
   sshCommand = ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes
 [credential "https://github.com"]
   helper =
-  helper = !env GH_CONFIG_DIR="$HOME/.config/gh" gh auth git-credential
+  helper = !env -u GH_TOKEN -u GITHUB_TOKEN GH_CONFIG_DIR="$HOME/.config/gh" gh auth git-credential
 [includeIf "gitdir:~/Developer/laozhu/"]
   path = ~/.config/git/laozhu.inc
 [includeIf "gitdir:~/Developer/beebat-dev/"]

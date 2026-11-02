@@ -49,6 +49,8 @@ for owner in paid-inc laozhu beebat-dev ritchie-paid laozhu-other beebat-dev-oth
   git -C "$directory" -c gpg.ssh.allowedSignersFile="$fixture/allowed_signers" verify-commit HEAD
   helper="$(git -C "$directory" config --get-all credential.https://github.com.helper | tail -1)"
   [[ "$helper" == *"$gh_config"* ]]
+  # gh prefers inherited tokens over GH_CONFIG_DIR, so the helper must drop them.
+  [[ "$helper" == *"env -u GH_TOKEN -u GITHUB_TOKEN "* ]]
 done
 
 # Real clone setup must select the destination's key before contacting SSH.
@@ -79,6 +81,7 @@ cat >"$fixture/bin/gh" <<'GH'
 #!/usr/bin/env bash
 set -euo pipefail
 test "$*" = 'auth token'
+if [ -n "${GH_FIXTURE_LOGGED_OUT:-}" ]; then exit 1; fi
 test -z "${GH_TOKEN+x}"
 test -z "${GITHUB_TOKEN+x}"
 case "$GH_CONFIG_DIR" in
@@ -139,4 +142,12 @@ for owner in paid-inc laozhu beebat-dev; do
   '
   )
 done
+
+# A logged-out account keeps the secrets.env token instead of exporting an empty one.
+(
+  cd "$HOME/Developer/paid-inc/nested/repo"
+  export GH_FIXTURE_LOGGED_OUT=1
+  eval "$(direnv export bash 2>/dev/null)"
+  test "$GITHUB_TOKEN" = fixture-secret-file-token
+)
 printf '%s\n' 'Git and GitHub CLI directory identity tests passed.'

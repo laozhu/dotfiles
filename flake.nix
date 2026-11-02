@@ -105,6 +105,8 @@
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
+          # Move pre-existing unmanaged files (such as ~/.gitconfig) aside instead of failing.
+          home-manager.backupFileExtension = "hm-backup";
           # 传递 inputs 给 home.nix，便于直接引用 inputs.llm-agents
           home-manager.extraSpecialArgs = { inherit user inputs profile; };
           home-manager.users.${user} = import ./home.nix;

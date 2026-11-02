@@ -13,4 +13,8 @@ case "$PWD/" in
 esac
 
 # Read the selected account's stored login, ignoring inherited token overrides.
-export GITHUB_TOKEN="$(env -u GH_TOKEN -u GITHUB_TOKEN gh auth token)"
+# Keep any existing token (such as secrets.env) when that account is not logged in.
+if github_token="$(env -u GH_TOKEN -u GITHUB_TOKEN gh auth token)" && [ -n "$github_token" ]; then
+  export GITHUB_TOKEN="$github_token"
+fi
+unset github_token
