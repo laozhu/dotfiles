@@ -32,6 +32,7 @@ in
       in
       {
         inherit (binaries)
+          ccometixline
           pnpm
           uv
           sing-box

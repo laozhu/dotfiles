@@ -22,10 +22,19 @@ versions="$(DOTFILES_BINARY_FLAKE="path:$repo_dir" nix eval --json --impure --ex
   }
 ')"
 
+# CCometixLine is not in the pinned package sets; resolve its stable release here.
+ccline_release="$(gh api repos/Haleclipse/CCometixLine/releases/latest)"
+ccline_version="$(jq -er 'select(.draft == false and .prerelease == false) | .tag_name | select(test("^v[0-9]+\\.[0-9]+\\.[0-9]+$")) | ltrimstr("v")' <<<"$ccline_release")"
+versions="$(jq --arg version "$ccline_version" '. + {ccometixline: $version}' <<<"$versions")"
 result='{}'
-for name in pnpm uv sing-box bws herdr kimi-code pi; do
+for name in pnpm uv sing-box bws herdr kimi-code pi ccometixline; do
   version="$(jq -er --arg name "$name" '.[$name]' <<<"$versions")"
   case "$name" in
+    ccometixline)
+      repo=Haleclipse/CCometixLine
+      tag="v$version"
+      asset=ccline-macos-arm64.tar.gz
+      ;;
     pnpm)
       repo=pnpm/pnpm
       tag="v$version"

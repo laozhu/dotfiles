@@ -19,7 +19,11 @@
 
 大多数 dotfiles 通过 `~/.dotfiles` 链接到仓库，修改后应用可能立即读到变化；
 新增文件映射、安装软件和系统设置需要 rebuild。
-Claude 的 `home/.claude/settings.json` 只在本机配置不存在时复制，后续修改模板不会覆盖本机文件。
+Claude 的 `home/.claude/settings.json` 在本机配置不存在时用作模板。bootstrap 和 rebuild 的
+Home Manager activation 会将 `statusLine` 合并为 CCometixLine，保留其他本机字段；
+有变化时先在原文件旁生成权限为 0600 的 `settings.json.backup.*`。
+`home/.claude/ccline/config.toml` 管理 Gruvbox Dark Powerline 样式及 5 小时 / 7 天额度百分比、重置倒计时，通过软链接部署。
+修改样式可直接编辑该文件；配置器 `ccline` 保存也会写入这个仓库文件。
 Pi 的 `home/.pi/agent/settings.json` 也是模板，但只由 bootstrap 在本机配置不存在时复制，
 rebuild 和 Home Manager activation 均不创建或覆盖 Pi settings。已有普通文件始终保留；
 bootstrap 遇到旧版软链接时会先将其完整内容转换成普通文件，再执行系统切换。
@@ -45,7 +49,7 @@ direnv 同步设置账号 actor，并从对应 gh 登录读取 `GITHUB_TOKEN`。
 ## 工具来源与更新
 
 - 常规命令行工具由 Nix / Home Manager 管理；Claude Code、Antigravity CLI 来自 `llm-agents.nix`。
-- `pnpm`、`uv`、`bws`、Herdr、Kimi Code、Pi 和 sing-box 使用官方 Apple Silicon 二进制，
+- `pnpm`、`uv`、`bws`、Herdr、Kimi Code、Pi、CCometixLine 和 sing-box 使用官方 Apple Silicon 二进制，
   版本及 SHA-256 记录在 `macos-binaries.json`，Nix 负责校验、解包和链接。
 - 桌面应用及 Codex CLI 由 Homebrew cask 管理；im-select、mo、Atlassian CLI 和 NordPass CLI 使用上游 tap。
   Python、OpenJDK、Gradle 及工作机的 AWS、SAM、Temporal 和 Temporal Cloud CLI（`tcld`）使用 Homebrew formula。
@@ -68,6 +72,7 @@ direnv 同步设置账号 actor，并从对应 gh 登录读取 `GITHUB_TOKEN`。
 `--update` 按本机分组更新 `flake.lock`：home 更新共享依赖，跳过 work 专用的 NordPass、Atlassian、Temporal tap；
 work 更新全部依赖。随后通过 GitHub CLI 查询对应版本的官方发布包并更新
 `macos-binaries.json`，随后校验并应用配置。首次使用 `gh` 时先运行 `gh auth login`。
+CCometixLine 不在锁定的包集合中，`--update` 查询其最新稳定发布并固定版本和校验值。
 普通 rebuild 和 bootstrap 使用已有二进制记录，不查询这些发布包的 GitHub API。
 缺少发布包或有效 SHA-256 时更新停止，不回退源码编译。
 
