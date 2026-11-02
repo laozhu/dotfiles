@@ -1,0 +1,13 @@
+# Managed Codex TUI keys, merged into the local ~/.codex/config.toml by activation.
+# Codex renders one footer row; the order mirrors the Claude Code ccline layout:
+# where I am (project, branch), then the session (model, context) and the limits.
+[tui]
+status_line = [
+  "project-name",
+  "git-branch",
+  "model-with-reasoning",
+  "context-used",
+  "five-hour-limit",
+  "weekly-limit",
+]
+status_line_use_colors = true
