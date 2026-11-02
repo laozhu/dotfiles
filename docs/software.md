@@ -90,19 +90,21 @@ Homebrew Python 是明确替换系统版本的工具，因此保留。RabbitPro 
 
 仅工作电脑安装，Bitdefender 为人工项。
 
-| 软件          | 类型          | 命令       | 安装方式                 |
-| ------------- | ------------- | ---------- | ------------------------ |
-| Slack         | GUI           | -          | Homebrew Cask            |
-| NordPass      | GUI           | -          | Homebrew Cask            |
-| Granola       | GUI           | -          | Homebrew Cask            |
-| Loom          | GUI           | -          | Homebrew Cask            |
-| Slack CLI     | CLI           | `slack`    | Homebrew Cask            |
-| Atlassian CLI | CLI           | `acli`     | Homebrew Formula         |
-| NordPass CLI  | CLI           | `np`       | Homebrew Formula         |
-| AWS CLI       | CLI           | `aws`      | Homebrew Formula         |
-| AWS SAM CLI   | CLI           | `sam`      | Homebrew Formula         |
-| Temporal CLI  | CLI           | `temporal` | Homebrew Formula         |
-| Bitdefender   | GUI / Service | -          | 公司安装包 / MDM（人工） |
+| 软件               | 类型          | 命令       | 安装方式                 |
+| ------------------ | ------------- | ---------- | ------------------------ |
+| Slack              | GUI           | -          | Homebrew Cask            |
+| NordPass           | GUI           | -          | Homebrew Cask            |
+| Granola            | GUI           | -          | Homebrew Cask            |
+| Loom               | GUI           | -          | Homebrew Cask            |
+| Slack CLI          | CLI           | `slack`    | Homebrew Cask            |
+| Atlassian CLI      | CLI           | `acli`     | Homebrew Formula         |
+| NordPass CLI       | CLI           | `np`       | Homebrew Formula         |
+| AWS CLI            | CLI           | `aws`      | Homebrew Formula         |
+| AWS SAM CLI        | CLI           | `sam`      | Homebrew Formula         |
+| Temporal CLI       | CLI           | `temporal` | Homebrew Formula         |
+| Temporal Cloud CLI | CLI           | `tcld`     | Homebrew Formula         |
+| qpdf               | CLI           | `qpdf`     | Nix                      |
+| Bitdefender        | GUI / Service | -          | 公司安装包 / MDM（人工） |
 
 ## 安装说明
 

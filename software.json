@@ -650,6 +650,15 @@
     "apps": ["~/Library/Fonts/HomeManager/truetype/NerdFonts/Hack/HackNerdFont-Regular.ttf"]
   },
   {
+    "id": "qpdf",
+    "name": "qpdf",
+    "group": "work",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "qpdf",
+    "commands": ["qpdf"]
+  },
+  {
     "id": "dsh",
     "name": "DeepSeek Harness CLI",
     "group": "shared",
