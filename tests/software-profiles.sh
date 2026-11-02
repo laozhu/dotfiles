@@ -12,6 +12,7 @@ for profile in home work; do
       direnv = home.programs.direnv.enable;
       dshPlugins = home.home.activation.dshPlugins.data;
       javaHome = home.home.sessionVariables.JAVA_HOME;
+      javaRegistration = c.system.activationScripts.postActivation.text;
       paths = home.home.sessionPath;
       profileBin = "${home.home.profileDirectory}/bin";
       pythonPreference = home.programs.uv.settings.python-preference or null;
@@ -27,7 +28,7 @@ for profile in home work; do
     (.dshPlugins | contains("sync-dsh-plugin.sh") and contains("tui") and contains("@deepseek-harness-tui/dsh-tui") and contains("0.18.0")) and
     ([.serviceNames[] | select(test("sing[-_.]?box"; "i"))] | length == 0) and
     (.brews | index("sing-box") == null) and
-    .javaHome == "/opt/homebrew/opt/openjdk/libexec/openjdk.jdk/Contents/Home" and
+    (.javaRegistration | contains("/opt/homebrew/opt/openjdk/libexec/openjdk.jdk")) and
     (.paths | index("/opt/homebrew/opt/python/libexec/bin") != null) and
     .pythonPreference == "system" and
     (.gradleProperties | contains("org.gradle.caching=true")) and
@@ -47,11 +48,19 @@ for profile in home work; do
     (if $profile == "home" then
       (["steam", "uu-booster", "logitech-g-hub", "tencent-meeting"] - .casks | length == 0) and
       ([.casks[] | select(. == "slack" or . == "nordpass" or . == "granola" or . == "loom" or . == "slack-cli")] | length == 0) and
-      ([.brews[] | select(. == "awscli" or . == "aws-sam-cli" or . == "temporal" or . == "temporalio/brew/tcld" or . == "nordpass/tap/np" or . == "atlassian/acli/acli")] | length == 0) and
-      (.packages | index("qpdf") == null)
+      ([.brews[] | select(. == "awscli" or . == "aws-sam-cli" or . == "temporal" or . == "temporalio/brew/tcld" or . == "openjdk@21" or . == "nordpass/tap/np" or . == "atlassian/acli/acli")] | length == 0) and
+      (.packages | index("qpdf") == null) and
+      (.brews | index("openjdk@21") == null) and
+      .javaHome == "/opt/homebrew/opt/openjdk/libexec/openjdk.jdk/Contents/Home" and
+      (.paths | index("/opt/homebrew/opt/openjdk/bin") != null) and
+      (.javaRegistration | contains("rm -f /Library/Java/JavaVirtualMachines/homebrew-openjdk-21.jdk"))
     else
       (["slack", "nordpass", "granola", "loom", "slack-cli"] - .casks | length == 0) and
-      (["awscli", "aws-sam-cli", "temporal", "temporalio/brew/tcld", "nordpass/tap/np", "atlassian/acli/acli"] - .brews | length == 0) and
+      (["awscli", "aws-sam-cli", "temporal", "temporalio/brew/tcld", "openjdk@21", "nordpass/tap/np", "atlassian/acli/acli"] - .brews | length == 0) and
+      .javaHome == "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home" and
+      (.paths | index("/opt/homebrew/opt/openjdk@21/bin") != null) and
+      (.paths | index("/opt/homebrew/opt/openjdk/bin") == null) and
+      (.javaRegistration | contains("/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk")) and
       (["qpdf"] - .packages | length == 0) and
       ([.casks[] | select(. == "steam" or . == "uu-booster" or . == "logitech-g-hub" or . == "tencent-meeting")] | length == 0)
     end)

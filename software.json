@@ -366,6 +366,15 @@
     "commands": ["tcld"]
   },
   {
+    "id": "openjdk@21",
+    "name": "OpenJDK 21",
+    "group": "work",
+    "type": "CLI",
+    "manager": "Homebrew",
+    "package": "openjdk@21",
+    "commands": ["/opt/homebrew/opt/openjdk@21/bin/java", "/opt/homebrew/opt/openjdk@21/bin/javac"]
+  },
+  {
     "id": "ripgrep",
     "name": "ripgrep",
     "group": "shared",

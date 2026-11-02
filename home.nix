@@ -11,6 +11,8 @@
 let
   software = import ./software.nix { inherit lib profile; };
   dotfiles = "${config.home.homeDirectory}/.dotfiles";
+  # Work tooling requires JDK 21; the latest OpenJDK stays installed for Gradle and home.
+  javaPrefix = "/opt/homebrew/opt/${if profile == "work" then "openjdk@21" else "openjdk"}";
 
   # 用于 AI 智能体的统一全局上下文规则
   sharedAgentContext = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/AGENTS.md";
@@ -52,14 +54,14 @@ in
   # Homebrew Python and Java must precede Apple's CLT Python and launcher stubs.
   home.sessionPath = [
     "/opt/homebrew/opt/python/libexec/bin"
-    "/opt/homebrew/opt/openjdk/bin"
+    "${javaPrefix}/bin"
     "/opt/homebrew/bin"
     "${config.home.profileDirectory}/bin"
     "/run/current-system/sw/bin"
     "$HOME/.local/bin"
     "$HOME/.cargo/bin"
   ];
-  home.sessionVariables.JAVA_HOME = "/opt/homebrew/opt/openjdk/libexec/openjdk.jdk/Contents/Home";
+  home.sessionVariables.JAVA_HOME = "${javaPrefix}/libexec/openjdk.jdk/Contents/Home";
   programs.uv = {
     enable = true;
     package = null; # The pinned binary is already declared in software.json.
@@ -122,7 +124,7 @@ in
       fi
       unset github_token
       # Apply after macOS path_helper and Home Manager's Nix profile setup.
-      export PATH="/opt/homebrew/opt/python/libexec/bin:/opt/homebrew/opt/openjdk/bin:/opt/homebrew/bin:$PATH"
+      export PATH="/opt/homebrew/opt/python/libexec/bin:${javaPrefix}/bin:/opt/homebrew/bin:$PATH"
     '';
 
     shellAliases = {
