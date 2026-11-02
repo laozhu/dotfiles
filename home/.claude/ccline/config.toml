@@ -1,13 +1,27 @@
-preset = "powerline"
-palette = "gruvbox"
-skin = "powerline"
+# Team subscription: no per-token billing, so no cost widgets.
+# Line 1 = work location (dir, branch, PR, churn); line 2 = session state and what can
+# run out (model, context, 5h/7d limits). Low priority drops first when narrow.
+# Plain skin + terminal palette: no background fills, colors follow the terminal theme.
+preset = "plain"
+palette = "terminal"
+skin = "plain"
 glyphs = "nerd"
-
-[[line]]
-left = ["model", "dir", "git", { metric = "context", widget = "text" }]
+separator = "  "
 
 [[line]]
 left = [
-  { metric = "quota.5h", widget = "bar", bar = "eighths", cells = 8, format = "5h {pct}% used[ · reset {left}]", compact = "5h {pct}%[ · {left}]", minimal = "5h {pct}%[ · {left}]", priority = 5 },
-  { metric = "quota.7d", widget = "bar", bar = "eighths", cells = 8, format = "7d {pct}% used[ · reset {left}]", compact = "7d {pct}%[ · {left}]", minimal = "7d {pct}%[ · {left}]", priority = 5 },
+  { metric = "dir", color = "blue", priority = 5 },
+  { metric = "git", priority = 5 },
+  { metric = "pr", priority = 3 },
+  { metric = "lines", priority = 2 },
+]
+
+[[line]]
+left = [
+  { metric = "model", color = "magenta", compact = "{family}", priority = 5 },
+  { metric = "context", widget = "text", format = "{pct}%", priority = 5 },
+  { metric = "quota.5h", widget = "text", icon = "󰔟", format = "5h {pct}%[ · {left}]", compact = "5h {pct}%", minimal = "{pct}%", priority = 5 },
+  { metric = "quota.7d", widget = "text", icon = "󰃭", format = "7d {pct}%[ · {left}]", compact = "7d {pct}%", minimal = "{pct}%", priority = 4 },
+  { metric = "activity.agents", priority = 3 },
+  { metric = "activity.tools", priority = 3 },
 ]

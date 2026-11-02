@@ -22,7 +22,8 @@
 Claude 的 `home/.claude/settings.json` 在本机配置不存在时用作模板。bootstrap 和 rebuild 的
 Home Manager activation 会将 `statusLine` 合并为 CCometixLine，保留其他本机字段；
 有变化时先在原文件旁生成权限为 0600 的 `settings.json.backup.*`。
-`home/.claude/ccline/config.toml` 管理 Gruvbox Dark Powerline 样式及 5 小时 / 7 天额度百分比、重置倒计时，通过软链接部署。
+`home/.claude/ccline/config.toml` 管理两行状态栏：目录、分支、PR、增删行数；模型、上下文百分比、5 小时 / 7 天额度及重置倒计时，
+有后台任务时追加运行中的子代理和工具。样式为无背景色的 plain，配色跟随终端主题，通过软链接部署。
 修改样式可直接编辑该文件；配置器 `ccline` 保存也会写入这个仓库文件。
 Pi 的 `home/.pi/agent/settings.json` 也是模板，但只由 bootstrap 在本机配置不存在时复制，
 rebuild 和 Home Manager activation 均不创建或覆盖 Pi settings。已有普通文件始终保留；
