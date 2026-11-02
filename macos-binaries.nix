@@ -97,5 +97,6 @@ in
   bws = package "bws" "bws" "zip";
   herdr = package "herdr" "herdr" "raw";
   kimi-code = package "kimi-code" "kimi" "tar";
+  ccometixline = package "ccometixline" "ccline" "tar";
   pi = package "pi" "pi" "tar";
 }

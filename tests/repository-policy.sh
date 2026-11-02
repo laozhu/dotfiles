@@ -13,7 +13,7 @@ nix eval --json "$repo_dir#darwinConfigurations.mac.pkgs" --apply '
   pkgs: map (name: {
     inherit name;
     binaryRelease = pkgs.${name}.binaryRelease or false;
-  }) [ "pnpm" "bws" "herdr" "kimi-code" "pi" "sing-box" "uv" ]
+  }) [ "ccometixline" "pnpm" "bws" "herdr" "kimi-code" "pi" "sing-box" "uv" ]
 ' | jq -e 'all(.binaryRelease == true)' >/dev/null
 # Codex must use the official macOS release cask, never a Rust source build.
 nix eval --json "$repo_dir#darwinConfigurations.mac.config" --apply '

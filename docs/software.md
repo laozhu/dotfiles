@@ -66,6 +66,7 @@ Homebrew Python 是明确替换系统版本的工具，因此保留。RabbitPro 
 | Hack Nerd Font                       | Font      | -                      | Nix                       |
 | DeepSeek Harness CLI                 | CLI       | `dsh`                  | Nix / llm-agents.nix      |
 | DeepSeek Harness TUI                 | TUI       | `dsh tui`              | DSH plugin / Home Manager |
+| CCometixLine                         | CLI       | `ccline`               | Nix / 官方 macOS 二进制   |
 | Claude Code                          | CLI       | `claude`               | Nix / llm-agents.nix      |
 | Antigravity CLI                      | CLI       | `agy`                  | Nix / llm-agents.nix      |
 | Git LFS                              | CLI       | `git-lfs`              | Nix / Home Manager        |

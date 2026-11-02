@@ -1,0 +1,13 @@
+preset = "powerline"
+palette = "gruvbox"
+skin = "powerline"
+glyphs = "nerd"
+
+[[line]]
+left = ["model", "dir", "git", { metric = "context", widget = "text" }]
+
+[[line]]
+left = [
+  { metric = "quota.5h", widget = "bar", bar = "eighths", cells = 8, format = "5h {pct}% used[ · reset {left}]", compact = "5h {pct}%[ · {left}]", minimal = "5h {pct}%[ · {left}]", priority = 5 },
+  { metric = "quota.7d", widget = "bar", bar = "eighths", cells = 8, format = "7d {pct}% used[ · reset {left}]", compact = "7d {pct}%[ · {left}]", minimal = "7d {pct}%[ · {left}]", priority = 5 },
+]

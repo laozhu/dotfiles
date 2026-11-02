@@ -4,6 +4,11 @@
     "url": "https://github.com/bitwarden/sdk-sm/releases/download/bws-v2.1.0/bws-aarch64-apple-darwin-2.1.0.zip",
     "version": "2.1.0"
   },
+  "ccometixline": {
+    "sha256": "2e42e3bc5c0a3e5fb10ec9bfade9398511443c75738acb94d545df530e4cc76d",
+    "url": "https://github.com/Haleclipse/CCometixLine/releases/download/v2.0.1/ccline-macos-arm64.tar.gz",
+    "version": "2.0.1"
+  },
   "herdr": {
     "sha256": "fb77c2232a05a8035421382c894392f4174e4e38a18e48af3dd0290157c3a7e2",
     "url": "https://github.com/herdrdev/herdr/releases/download/v0.9.5/herdr-macos-aarch64",

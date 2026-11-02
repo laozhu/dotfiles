@@ -143,12 +143,12 @@ in
     };
   };
 
-  # Claude 与 Orca 会修改用户配置，只在首次部署时复制通用模板。
+  # Shared activation makes bootstrap and rebuild preserve local Claude settings.
   home.activation.claudeSettings = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    if [ ! -e "$HOME/.claude/settings.json" ] && [ ! -L "$HOME/.claude/settings.json" ]; then
-      run mkdir -p "$HOME/.claude"
-      run install -m 0600 ${./home/.claude/settings.json} "$HOME/.claude/settings.json"
-    fi
+    run env PATH="${lib.makeBinPath [ pkgs.jq ]}:$PATH" \
+      ${pkgs.bash}/bin/bash ${./scripts/sync-claude-statusline.sh} \
+      "$HOME/.claude/settings.json" ${./home/.claude/settings.json} \
+      "${pkgs.ccometixline}/bin/ccline"
   '';
 
   # 统一文件映射 (使用软链接便于实时修改)
@@ -183,6 +183,9 @@ in
       config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.pi/agent/themes/rose-pine-moon.json";
     ".pi/agent/extensions/terminal-status-title.js".source =
       config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.pi/agent/extensions/terminal-status-title.js";
+
+    ".claude/ccline/config.toml".source =
+      config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.claude/ccline/config.toml";
 
     # AI Agents 配置文件注入
     ".claude/CLAUDE.md".source = claudeContext;

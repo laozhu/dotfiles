@@ -22,6 +22,7 @@ tests=(
   update-macos-binaries.sh
   repository-policy.sh
   non-shallow-git.sh
+  claude-statusline.sh
   pi-settings.sh
   pi-config.sh
   pi-help.sh

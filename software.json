@@ -671,6 +671,15 @@
     "note": "dsh tui；账号和模型选择保留在本机"
   },
   {
+    "id": "ccometixline",
+    "name": "CCometixLine",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "ccometixline",
+    "commands": ["ccline"]
+  },
+  {
     "id": "claude-code",
     "name": "Claude Code",
     "group": "shared",

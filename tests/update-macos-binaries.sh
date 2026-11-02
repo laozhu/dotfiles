@@ -14,6 +14,10 @@ SH
 cat >"$fixture/bin/gh" <<'SH'
 #!/usr/bin/env bash
 if [ "${BINARY_TEST_API_FAILURE:-0}" = 1 ] && [[ "$2" == *SagerNet* ]]; then exit 29; fi
+if [[ "$2" == *CCometixLine/releases/latest ]]; then
+  jq '{tag_name: ("v" + .ccometixline.version), draft: false, prerelease: false}' "$BINARY_TEST_FIXTURE/expected.json"
+  exit
+fi
 jq --arg endpoint "$2" --arg missing "${BINARY_TEST_MISSING_ASSET:-0}" \
    --arg bad_hash "${BINARY_TEST_BAD_HASH:-0}" '
   to_entries | map(select(.value.url | contains("/" + ($endpoint | split("/")[1:3] | join("/")) + "/"))) | .[0].value |
