@@ -42,11 +42,13 @@ in
         ]
       }:$PATH" \
         ${pkgs.bash}/bin/bash ${./scripts/sync-dsh-plugin.sh} \
-        ${lib.escapeShellArgs [
-          plugin.profile
-          plugin.package
-          plugin.version
-        ]} \
+        ${
+          lib.escapeShellArgs [
+            plugin.profile
+            plugin.package
+            plugin.version
+          ]
+        } \
         || warnEcho "DSH plugin ${plugin.package}@${plugin.version} was not installed; rerun rebuild once the network works."
     '') software.dshPlugins
   );
@@ -170,12 +172,14 @@ in
   '';
 
   # Convert a Pi settings link left by older generations before linkGeneration removes it.
-  home.activation.piSettingsMigration = lib.hm.dag.entryBetween [ "linkGeneration" ] [ "writeBoundary" ] ''
-    if [ -L "$HOME/.pi/agent/settings.json" ]; then
-      run ${pkgs.bash}/bin/bash ${./scripts/init-pi-settings.sh} \
-        "$HOME/.pi/agent/settings.json" ${./home/.pi/agent/settings.json}
-    fi
-  '';
+  home.activation.piSettingsMigration =
+    lib.hm.dag.entryBetween [ "linkGeneration" ] [ "writeBoundary" ]
+      ''
+        if [ -L "$HOME/.pi/agent/settings.json" ]; then
+          run ${pkgs.bash}/bin/bash ${./scripts/init-pi-settings.sh} \
+            "$HOME/.pi/agent/settings.json" ${./home/.pi/agent/settings.json}
+        fi
+      '';
 
   # 统一文件映射 (使用软链接便于实时修改)
   home.file = {
