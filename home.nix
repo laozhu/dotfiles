@@ -159,6 +159,14 @@ in
       || warnEcho "Claude statusLine not updated; fix ~/.claude/settings.json and rerun rebuild."
   '';
 
+  # Merge the managed Codex footer status line; Codex keeps writing the rest of the file.
+  home.activation.codexStatusLine = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    run env PATH="${lib.makeBinPath [ pkgs.yq-go ]}:$PATH" \
+      ${pkgs.bash}/bin/bash ${./scripts/sync-codex-statusline.sh} \
+      "$HOME/.codex/config.toml" ${./home/.codex/tui.toml} \
+      || warnEcho "Codex status line not updated; fix ~/.codex/config.toml and rerun rebuild."
+  '';
+
   # Convert a Pi settings link left by older generations before linkGeneration removes it.
   home.activation.piSettingsMigration = lib.hm.dag.entryBetween [ "linkGeneration" ] [ "writeBoundary" ] ''
     if [ -L "$HOME/.pi/agent/settings.json" ]; then

@@ -27,6 +27,11 @@ Home Manager activation 会将 `statusLine` 合并为 CCometixLine，保留其�
 `home/.claude/ccline/config.toml` 管理两行状态栏：目录、分支、PR、增删行数；模型、上下文百分比、5 小时 / 7 天额度及重置倒计时，
 有后台任务时追加运行中的子代理和工具。样式为无背景色的 plain，配色跟随终端主题，通过软链接部署。
 修改样式可直接编辑该文件；配置器 `ccline` 保存也会写入这个仓库文件。
+Codex CLI 的底部状态栏只有一行，由 `home/.codex/tui.toml` 管理，按 Claude 状态栏的顺序显示
+项目、分支、模型与推理强度、上下文占用、5 小时 / 7 天额度。bootstrap 和 rebuild 只将其中的
+`[tui]` 键合并进本机 `~/.codex/config.toml`，保留 Codex 写入的其他字段，有变化时覆盖备份为
+`config.toml.backup`；本机文件无法解析时保持原样，只打印警告。在 Codex 里用 `/statusline`
+调整后，需要同步改回该文件，否则下次 rebuild 会覆盖。
 Pi 的 `home/.pi/agent/settings.json` 也是模板，但只由 bootstrap 在本机配置不存在时复制，
 rebuild 和 Home Manager activation 均不创建或覆盖 Pi settings。已有普通文件始终保留；
 遇到旧版软链接时，bootstrap 和 rebuild 都会在清理旧链接前将其完整内容转换成普通文件。
