@@ -103,6 +103,7 @@ Homebrew Python 是明确替换系统版本的工具，因此保留。RabbitPro 
 | AWS SAM CLI        | CLI           | `sam`      | Homebrew Formula         |
 | Temporal CLI       | CLI           | `temporal` | Homebrew Formula         |
 | Temporal Cloud CLI | CLI           | `tcld`     | Homebrew Formula         |
+| OpenJDK 21         | CLI           | `java`     | Homebrew Formula         |
 | qpdf               | CLI           | `qpdf`     | Nix                      |
 | Bitdefender        | GUI / Service | -          | 公司安装包 / MDM（人工） |
 
@@ -113,7 +114,8 @@ Homebrew Python 是明确替换系统版本的工具，因此保留。RabbitPro 
 - **OrbStack**：提供 Docker、Compose 和 buildx，不重复安装 Docker Desktop、Podman 或另一套 Compose。
   首次启动时按提示完成初始化。
 - **Python / Java**：Python 3 使用 Homebrew 版本并优先于系统 Python；OpenJDK 使用 Homebrew
-  默认版本，Gradle 使用对应的 `JAVA_HOME`。Kotlin 由项目 Gradle 插件管理，不安装全局 `kotlinc`。
+  默认版本，Gradle 使用对应的 `JAVA_HOME`。工作电脑额外安装 OpenJDK 21，并将其作为
+  `java` 和 `JAVA_HOME` 的默认版本；两个 JDK 都注册到 `/usr/libexec/java_home`。Kotlin 由项目 Gradle 插件管理，不安装全局 `kotlinc`。
 - **官方二进制**：pnpm、uv、bws、sing-box、Herdr、Kimi Code 和 Pi 由 Nix 管理固定版本的
   官方 macOS 二进制；版本和校验值见 [macos-binaries.json](../macos-binaries.json)。
 - **Logitech G HUB**：Homebrew 调用在线安装器，仍需联网下载软件主体。安装记录存在不代表应用安装成功；

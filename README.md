@@ -126,12 +126,12 @@
 
 - `shared`：两台 Mac 共用的应用和开发工具，包括 OrbStack、Python、OpenJDK、Gradle。
 - `home`：Steam、UU 加速器、Logitech G HUB、腾讯会议，以及人工安装的 RabbitPro。
-- `work`：Slack、NordPass / np、Granola、Loom、Atlassian / Slack CLI、AWS / SAM、Temporal。
+- `work`：Slack、NordPass / np、Granola、Loom、Atlassian / Slack CLI、AWS / SAM、Temporal、OpenJDK 21。
 
 Kotlin 由各项目的 Gradle 插件管理，不安装全局编译器。Bitdefender 列为 work 的人工项，
 需使用公司的安装包或 MDM；RabbitPro 列为 home 的人工项。这两个软件只检测安装状态，不由 bootstrap/rebuild 安装。
 Homebrew Python 优先于系统 Python，
-OpenJDK 使用 Homebrew 默认版本，Gradle 使用对应的 `JAVA_HOME`。
+OpenJDK 使用 Homebrew 默认版本，Gradle 使用对应的 `JAVA_HOME`；work 默认使用 OpenJDK 21。
 
 查看本机标记及安装状态（需要 Node.js，bootstrap 会安装）：
 

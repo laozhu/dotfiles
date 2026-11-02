@@ -140,9 +140,19 @@ in
     ''
   );
 
-  # Register the JDK with /usr/libexec/java_home as recommended by Homebrew.
+  # Register the JDKs with /usr/libexec/java_home as recommended by Homebrew.
   system.activationScripts.postActivation.text = ''
     mkdir -p /Library/Java/JavaVirtualMachines
     ln -sfn /opt/homebrew/opt/openjdk/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/homebrew-openjdk.jdk
-  '';
+  ''
+  + (
+    if profile == "work" then
+      ''
+        ln -sfn /opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/homebrew-openjdk-21.jdk
+      ''
+    else
+      ''
+        rm -f /Library/Java/JavaVirtualMachines/homebrew-openjdk-21.jdk
+      ''
+  );
 }

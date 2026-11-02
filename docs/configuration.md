@@ -53,7 +53,7 @@ direnv 同步设置账号 actor，并从对应 gh 登录读取 `GITHUB_TOKEN`。
 - `pnpm`、`uv`、`bws`、Herdr、Kimi Code、Pi、CCometixLine 和 sing-box 使用官方 Apple Silicon 二进制，
   版本及 SHA-256 记录在 `macos-binaries.json`，Nix 负责校验、解包和链接。
 - 桌面应用及 Codex CLI 由 Homebrew cask 管理；im-select、mo、Atlassian CLI 和 NordPass CLI 使用上游 tap。
-  Python、OpenJDK、Gradle 及工作机的 AWS、SAM、Temporal 和 Temporal Cloud CLI（`tcld`）使用 Homebrew formula。
+  Python、OpenJDK、Gradle 及工作机的 AWS、SAM、Temporal、Temporal Cloud CLI（`tcld`）和 OpenJDK 21 使用 Homebrew formula。
   `tcld` 来自官方 `temporalio/brew` tap。
   Brew 与 tap 源码由 `flake.lock` 锁定，核心配方从锁定的 tap 读取，不从 API 加载核心配方。
   应用自动更新、在线安装器和未固定的下载地址仍可能影响实际安装结果。
