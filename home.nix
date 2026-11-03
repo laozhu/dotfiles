@@ -22,10 +22,9 @@ let
         login = "laozhu";
         configDir = "gh-laozhu";
       };
-  githubEnvironment = ''
+  githubSelection = ''
     export GH_CONFIG_DIR="$HOME/.config/${githubAccount.configDir}"
     export GITHUB_ACTOR=${githubAccount.login}
-    unset GH_TOKEN GITHUB_TOKEN
   ''
   + lib.optionalString (profile == "work") ''
     case "$PWD/" in
@@ -35,7 +34,30 @@ let
         ;;
     esac
   '';
+  githubEnvironment = githubSelection + ''
+    unset GH_TOKEN GITHUB_TOKEN
+  '';
   githubToken = builtins.readFile ./scripts/github-token.sh;
+  # Zsh selects at startup for non-interactive snapshots (such as agent shells). On work,
+  # it reselects after every cd so a shell opened in a personal tree does not keep that
+  # account elsewhere; the token is reread only when the account changes.
+  githubZsh = ''
+    _dotfiles_github_account() {
+      local previous_config="$GH_CONFIG_DIR"
+      ${githubSelection}
+      if [ "''${1:-}" = changed ] && [ "$GH_CONFIG_DIR" = "$previous_config" ]; then
+        return 0
+      fi
+      unset GH_TOKEN GITHUB_TOKEN
+      ${githubToken}
+    }
+    _dotfiles_github_account
+  ''
+  + lib.optionalString (profile == "work") ''
+    _dotfiles_github_account_chpwd() { _dotfiles_github_account changed; }
+    autoload -Uz add-zsh-hook
+    add-zsh-hook chpwd _dotfiles_github_account_chpwd
+  '';
   # Work tooling requires JDK 21; the latest OpenJDK stays installed for Gradle and home.
   javaPrefix = "/opt/homebrew/opt/${if profile == "work" then "openjdk@21" else "openjdk"}";
 
@@ -146,8 +168,7 @@ in
 
     initContent = ''
       bindkey '^f' autosuggest-accept
-      ${githubEnvironment}
-      ${githubToken}
+      ${githubZsh}
       # Apply after macOS path_helper and Home Manager's Nix profile setup.
       export PATH="/opt/homebrew/opt/python/libexec/bin:${javaPrefix}/bin:/opt/homebrew/bin:$PATH"
     '';

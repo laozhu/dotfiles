@@ -100,6 +100,7 @@ cat >"$fixture/bin/gh" <<'GH'
 set -euo pipefail
 test -z "${GH_TOKEN+x}"
 test -z "${GITHUB_TOKEN+x}"
+if [ -n "${GH_FIXTURE_LOG:-}" ]; then printf '%s\n' "$*" >>"$GH_FIXTURE_LOG"; fi
 case "$GH_CONFIG_DIR" in
   "$HOME/.config/gh-laozhu") actor=laozhu; token=fixture-personal-token ;;
   "$HOME/.config/gh") actor=ritchie-paid; token=fixture-work-token ;;
@@ -202,6 +203,32 @@ for profile in home work; do
       fi
     )
   done
+  # Work Zsh reselects after cd: a shell opened in a personal tree must not keep that
+  # account elsewhere, and cd within one account must not reread the token.
+  if [ "$profile" = work ]; then
+    (
+      mkdir -p "$HOME/Developer/laozhu/a" "$HOME/Developer/beebat-dev/b" "$HOME/elsewhere"
+      cd "$HOME/Developer/laozhu/a"
+      export GH_FIXTURE_LOG="$fixture/gh-calls"
+      : >"$GH_FIXTURE_LOG"
+      TERM=dumb zsh -f -e -c '
+        source "$HOME/.zshrc"
+        test "$GITHUB_ACTOR" = laozhu
+        test "$GITHUB_TOKEN" = fixture-personal-token
+        cd "$HOME/Developer/beebat-dev/b"
+        test "$GITHUB_ACTOR" = laozhu
+        test "$(wc -l <"$GH_FIXTURE_LOG" | tr -d " ")" = 1
+        cd "$HOME/elsewhere"
+        test "$GH_CONFIG_DIR" = "$HOME/.config/gh"
+        test "$GITHUB_ACTOR" = ritchie-paid
+        test "$GITHUB_TOKEN" = fixture-work-token
+        cd "$HOME/Developer/laozhu/a"
+        test "$GH_CONFIG_DIR" = "$HOME/.config/gh-laozhu"
+        test "$GITHUB_TOKEN" = fixture-personal-token
+        test "$(wc -l <"$GH_FIXTURE_LOG" | tr -d " ")" = 3
+      '
+    )
+  fi
 
   export GH_CONFIG_DIR="$default_config" GITHUB_ACTOR="$default_actor" GITHUB_TOKEN="$default_token"
   unset GH_TOKEN

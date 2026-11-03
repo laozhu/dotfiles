@@ -92,6 +92,8 @@ GitHub CLI 尝试把凭据保存在系统凭据存储中，例如 macOS 钥匙�
 Zsh 启动时选择对应 profile 和当前目录的身份，设置 `GH_CONFIG_DIR`、
 `GITHUB_ACTOR`，并从所选 gh 登录读取 `GITHUB_TOKEN`。
 work 在两个个人目录中启动嵌套 Shell 时，也立即使用个人身份。
+work 的 Zsh 每次 `cd` 后重新选择，在个人目录打开的终端离开后会切回工作账号；
+账号未变化时不重新读取 token。
 `GITHUB_ACTOR` 供其他工具使用，本身不决定 gh 的认证身份。
 
 Home Manager 为三个 `~/Developer/` 父目录部署触发用 `.envrc`，
