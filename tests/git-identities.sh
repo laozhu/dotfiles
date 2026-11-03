@@ -13,6 +13,10 @@ for profile in home work; do
   jq -er '.git | select(type == "string" and length > 0)' "$fixture/$profile.json" >"$fixture/$profile.gitconfig"
   jq -er '.direnv | select(type == "string" and length > 0)' "$fixture/$profile.json" >"$fixture/$profile.direnvrc"
   jq -r '.zsh' "$fixture/$profile.json" >"$fixture/$profile.zshrc"
+  # Evaluation does not realise the plugins the generated Zsh startup sources;
+  # building .zshrc fetches them on CI runners that have not built the system yet.
+  nix build --no-link \
+    "$repo_dir#darwinConfigurations.$profile.config.home-manager.users.rich.home.file.\"./.zshrc\".source"
 done
 
 export GIT_CONFIG_NOSYSTEM=1
