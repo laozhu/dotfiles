@@ -11,6 +11,31 @@
 let
   software = import ./software.nix { inherit lib profile; };
   dotfiles = "${config.home.homeDirectory}/.dotfiles";
+  githubAccount =
+    if profile == "work" then
+      {
+        login = "ritchie-paid";
+        configDir = "gh";
+      }
+    else
+      {
+        login = "laozhu";
+        configDir = "gh-laozhu";
+      };
+  githubEnvironment = ''
+    export GH_CONFIG_DIR="$HOME/.config/${githubAccount.configDir}"
+    export GITHUB_ACTOR=${githubAccount.login}
+    unset GH_TOKEN GITHUB_TOKEN
+  ''
+  + lib.optionalString (profile == "work") ''
+    case "$PWD/" in
+      "$HOME/Developer/laozhu/"* | "$HOME/Developer/beebat-dev/"*)
+        export GH_CONFIG_DIR="$HOME/.config/gh-laozhu"
+        export GITHUB_ACTOR=laozhu
+        ;;
+    esac
+  '';
+  githubToken = builtins.readFile ./scripts/github-token.sh;
   # Work tooling requires JDK 21; the latest OpenJDK stays installed for Gradle and home.
   javaPrefix = "/opt/homebrew/opt/${if profile == "work" then "openjdk@21" else "openjdk"}";
 
@@ -77,6 +102,8 @@ in
 
   fonts.fontconfig.enable = true;
   home.sessionVariables.EDITOR = "nvim";
+  home.sessionVariables.GH_CONFIG_DIR = "${config.home.homeDirectory}/.config/${githubAccount.configDir}";
+  home.sessionVariables.GITHUB_ACTOR = githubAccount.login;
 
   # 启用并完全接管 Git
   programs.git = {
@@ -119,12 +146,8 @@ in
 
     initContent = ''
       bindkey '^f' autosuggest-accept
-      # Resolve stored credentials without reusing a token inherited from another shell.
-      # Skip the export before `gh auth login` instead of exporting an empty token.
-      if github_token="$(env -u GH_TOKEN -u GITHUB_TOKEN gh auth token 2>/dev/null)" && [ -n "$github_token" ]; then
-        export GITHUB_TOKEN="$github_token"
-      fi
-      unset github_token
+      ${githubEnvironment}
+      ${githubToken}
       # Apply after macOS path_helper and Home Manager's Nix profile setup.
       export PATH="/opt/homebrew/opt/python/libexec/bin:${javaPrefix}/bin:/opt/homebrew/bin:$PATH"
     '';
@@ -188,12 +211,31 @@ in
     '';
 
     # Public identity configuration only; private keys and gh OAuth stay local.
-    ".gitconfig".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.gitconfig";
+    # Keep the legacy out-of-store sources intact until old generations are replaced.
+    ".gitconfig".text =
+      builtins.readFile ./home/.config/git/common.inc
+      + ''
+        [include]
+          path = ~/.config/git/${githubAccount.login}.inc
+      ''
+      + lib.optionalString (profile == "work") ''
+        [includeIf "gitdir:~/Developer/laozhu/"]
+          path = ~/.config/git/laozhu.inc
+        [includeIf "gitdir:~/Developer/beebat-dev/"]
+          path = ~/.config/git/laozhu.inc
+      '';
+    ".config/git/ritchie-paid.inc" = lib.mkIf (profile == "work") {
+      source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/git/ritchie-paid.inc";
+    };
     ".ssh/config".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.ssh/config";
     ".config/git/laozhu.inc".source =
       config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/git/laozhu.inc";
-    ".config/direnv/direnvrc".source =
-      config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/direnv/direnvrc";
+    ".config/direnv/direnvrc".text =
+      githubEnvironment
+      + lib.optionalString (profile == "work") (
+        builtins.readFile ./home/.config/direnv/work-secrets.envrc
+      )
+      + githubToken;
     "Developer/paid-inc/.envrc".source =
       config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/direnv/github.envrc";
     "Developer/laozhu/.envrc".source =

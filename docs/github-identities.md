@@ -1,187 +1,145 @@
-# 多 GitHub 账号按目录自动切换
+# GitHub 身份与机器 profile
 
-下面使用个人账号和工作账号作为占位，不包含真实用户名、邮箱、公钥或凭据。
-将示例值替换为本机信息；真实账号配置、私钥和 OAuth 凭据只保留在本机。
+Git、SSH、提交签名和 GitHub CLI 的默认身份由机器 profile 决定。
+`~/.config/dotfiles/profile` 仍是 bootstrap/rebuild 的唯一选择来源，不按目录或登录状态推断 profile。
 
-目标是：`~/Developer/personal/` 和 `~/Developer/community/` 下的项目使用个人账号，
-其他位置默认使用工作账号；Git、SSH、GitHub CLI 和提交签名分别选择对应身份。
+| 目录                      | work         | home   |
+| ------------------------- | ------------ | ------ |
+| 默认，包括 `~/GitHub/`    | ritchie-paid | laozhu |
+| `~/Developer/paid-inc/`   | ritchie-paid | laozhu |
+| `~/Developer/laozhu/`     | laozhu       | laozhu |
+| `~/Developer/beebat-dev/` | laozhu       | laozhu |
 
-## 1. 为账号准备独立 SSH key
+home 只需个人账号的密钥和 gh 登录，不需要准备工作账号。
+work 保留两个账号；目录名末尾的 `/` 保证规则不会匹配 `laozhu-other` 等相似名称。
 
-保留已有 key。只有对应文件不存在时才生成新 key，并按提示设置口令：
+## 配置归属与生效
+
+`home.nix` 按 profile 生成 `~/.gitconfig`、`~/.config/direnv/direnvrc` 和 Zsh 初始化代码。
+公共 Git 设置在 `home/.config/git/common.inc`，两个账号分别使用该目录下的身份片段。
+work 的 direnv secrets 加载规则在 `home/.config/direnv/work-secrets.envrc`。
+修改这些配置后运行 `./rebuild.sh` 并重新打开终端，不直接编辑生成文件。
+profile 同时影响软件安装及身份配置；不要为了临时切换账号修改机器 profile。
+旧入口 `home/.gitconfig` 和 `home/.config/direnv/direnvrc` 保留给尚未 rebuild 的机器，
+新配置不再引用它们，避免更新仓库后、rebuild 前立即改变旧软链接的行为。
+
+| 账号         | 提交邮箱                                          | SSH 与签名密钥             | gh 配置目录           |
+| ------------ | ------------------------------------------------- | -------------------------- | --------------------- |
+| ritchie-paid | `204663844+ritchie-paid@users.noreply.github.com` | `~/.ssh/id_ed25519`        | `~/.config/gh`        |
+| laozhu       | `laozhu.me@gmail.com`                             | `~/.ssh/id_ed25519_laozhu` | `~/.config/gh-laozhu` |
+
+提交作者名共用 `Ritchie Zhu`。私钥、OAuth 登录及本机 secrets 不纳入仓库，
+rebuild 不生成密钥、不迁移凭据，也不调用 `gh auth switch` 修改存储的活动账号。
+
+Git 原生按 Git 目录选择身份，不依赖 direnv 是否已允许。
+linked worktree 跟随其主仓库的 Git 目录。仓库 local config 和显式的
+`GIT_SSH_COMMAND` 仍可覆盖默认设置。
+HTTPS credential helper 会清除继承的 token，再使用所选账号的 gh 登录。
+
+## 准备 SSH key
+
+保留已有 key。仅在对应文件不存在时生成，并按提示设置口令：
 
 ```bash
-ssh-keygen -t ed25519 -C "personal GitHub" -f ~/.ssh/id_ed25519_personal
-ssh-keygen -t ed25519 -C "work GitHub" -f ~/.ssh/id_ed25519_work
+# home 和 work 都需要个人 key。
+ssh-keygen -t ed25519 -C "laozhu GitHub" -f ~/.ssh/id_ed25519_laozhu
+# 只有 work 需要工作 key。
+ssh-keygen -t ed25519 -C "ritchie-paid GitHub" -f ~/.ssh/id_ed25519
 ```
 
-把各自的 `.pub` 公钥添加到对应 GitHub 账号的 Settings → SSH and GPG keys，
+把各自的 `.pub` 公钥添加到对应账号的 GitHub Settings → SSH and GPG keys，
 用途选择 Authentication Key。无 `.pub` 后缀的文件是私钥，不上传或提交。
-`IdentitiesOnly=yes` 可避免 SSH 尝试其他已加载 key，意外登录错误账号。
+`IdentitiesOnly=yes` 限定 Git 使用所选 key。
 
-## 2. Git 按仓库目录选择身份
-
-将默认配置合并到本机 `~/.gitconfig`，不要覆盖其他现有选项：
-
-```gitconfig
-[user]
-  name = <WORK_NAME>
-  email = work@example.invalid
-  signingKey = ~/.ssh/id_ed25519_work
-[core]
-  sshCommand = ssh -i ~/.ssh/id_ed25519_work -o IdentitiesOnly=yes
-[credential "https://github.com"]
-  helper =
-  helper = "!env GH_CONFIG_DIR=\"$HOME/.config/gh\" gh auth git-credential"
-[includeIf "gitdir:~/Developer/personal/"]
-  path = ~/.config/git/personal.inc
-[includeIf "gitdir:~/Developer/community/"]
-  path = ~/.config/git/personal.inc
-```
-
-本机 `~/.config/git/personal.inc`：
-
-```gitconfig
-[user]
-  name = <PERSONAL_NAME>
-  email = personal@example.invalid
-  signingKey = ~/.ssh/id_ed25519_personal
-[core]
-  sshCommand = ssh -i ~/.ssh/id_ed25519_personal -o IdentitiesOnly=yes
-[credential "https://github.com"]
-  helper =
-  helper = "!env GH_CONFIG_DIR=\"$HOME/.config/gh-personal\" gh auth git-credential"
-```
-
-空 `helper` 清除之前继承的 helper，再指定对应账号的 GitHub CLI 凭据，
-避免 HTTPS push/pull 从系统钥匙串取到另一个账号的凭据。
-
-`gitdir:` 的末尾 `/` 匹配整个目录树，不会误匹配 `personal-other`。
-Git 根据实际 Git 目录选择身份，linked worktree 跟随其主仓库的 Git 目录。
-仓库 local config、显式的 `GIT_SSH_COMMAND` 等仍可覆盖这些默认值。
-
-## 3. GitHub CLI 为账号保留独立登录配置
-
-SSH key 用于 Git 传输认证，不能代替 GitHub CLI 的 API 登录。
-默认配置目录 `~/.config/gh` 留给工作账号，个人账号使用 `~/.config/gh-personal`。
-分别完成登录，并用 `gh api user` 确认账号：
+普通 `git commit` 自动以 SSH key 签名。同一公钥还需登记为 Signing Key，
+GitHub 才能验证提交签名；有口令的私钥可通过 ssh-agent 保存解锁状态。
+可在 GitHub Settings 中登记，或使用下方命令。先确认输出的账号，再上传公钥：
 
 ```bash
-GH_CONFIG_DIR="$HOME/.config/gh" gh auth login --hostname github.com --git-protocol ssh --web --skip-ssh-key
-GH_CONFIG_DIR="$HOME/.config/gh" gh api user --jq .login
-
-GH_CONFIG_DIR="$HOME/.config/gh-personal" gh auth login --hostname github.com --git-protocol ssh --web --skip-ssh-key
-GH_CONFIG_DIR="$HOME/.config/gh-personal" gh api user --jq .login
+env -u GH_TOKEN -u GITHUB_TOKEN GH_CONFIG_DIR="$HOME/.config/gh-laozhu" \
+  gh auth refresh --hostname github.com --scopes admin:ssh_signing_key
+env -u GH_TOKEN -u GITHUB_TOKEN GH_CONFIG_DIR="$HOME/.config/gh-laozhu" gh api user --jq .login
+env -u GH_TOKEN -u GITHUB_TOKEN GH_CONFIG_DIR="$HOME/.config/gh-laozhu" \
+  gh ssh-key add ~/.ssh/id_ed25519_laozhu.pub --type signing --title "macOS commit signing"
 ```
 
-GitHub CLI 默认尝试把凭据保存在系统凭据存储中，例如 macOS 钥匙串。
-不要把实际 gh 配置目录、OAuth token 或私钥加入 dotfiles。
+work 的工作账号改用 `~/.config/gh` 和 `~/.ssh/id_ed25519.pub`。
+提交邮箱需满足对应账号的邮箱验证要求。设置不会给旧提交补签；
+本地 `git verify-commit` 另需 allowed signers 文件，GitHub 验证不依赖该本地文件。
 
-不要在进出目录时调用 `gh auth switch`：它会修改该配置目录的全局活动账号，
-影响其他终端。使用不同的 `GH_CONFIG_DIR` 可让两个账号并行工作。
+## 登录 GitHub CLI
 
-## 4. direnv 自动选择 GitHub CLI 配置
-
-启用 direnv 的 Shell hook。Zsh 使用：
-
-```zsh
-eval "$(direnv hook zsh)"
-```
-
-在 `~/.config/direnv/direnvrc` 中合并以下片段，让项目自带独立 `.envrc` 时也能选择身份：
+SSH key 不能代替 gh 的 API 登录。home 只执行个人账号登录；work 额外登录工作账号。
+显式检查其他账号时清除当前 Shell 的 token，避免 token 优先级覆盖指定的配置目录：
 
 ```bash
-case "$PWD/" in
-  "$HOME/Developer/work/"*)
-    export GH_CONFIG_DIR="$HOME/.config/gh"
-    export GITHUB_ACTOR="<WORK_LOGIN>"
-    source_env_if_exists "$HOME/.config/work/secrets.env"
-    ;;
-  "$HOME/Developer/personal/"* | "$HOME/Developer/community/"*)
-    export GH_CONFIG_DIR="$HOME/.config/gh-personal"
-    export GITHUB_ACTOR="<PERSONAL_LOGIN>"
-    ;;
-  *) return ;;
-esac
+# 个人账号，预期输出 laozhu。
+env -u GH_TOKEN -u GITHUB_TOKEN GH_CONFIG_DIR="$HOME/.config/gh-laozhu" \
+  gh auth login --hostname github.com --git-protocol ssh --web --skip-ssh-key
+env -u GH_TOKEN -u GITHUB_TOKEN GH_CONFIG_DIR="$HOME/.config/gh-laozhu" gh api user --jq .login
 
-export GITHUB_TOKEN="$(env -u GH_TOKEN -u GITHUB_TOKEN gh auth token)"
+# 仅 work：工作账号，预期输出 ritchie-paid。
+env -u GH_TOKEN -u GITHUB_TOKEN GH_CONFIG_DIR="$HOME/.config/gh" \
+  gh auth login --hostname github.com --git-protocol ssh --web --skip-ssh-key
+env -u GH_TOKEN -u GITHUB_TOKEN GH_CONFIG_DIR="$HOME/.config/gh" gh api user --jq .login
 ```
 
-在三个父目录分别创建内容为 `:` 的 `.envrc`，触发目录环境加载，然后允许它们：
+GitHub CLI 尝试把凭据保存在系统凭据存储中，例如 macOS 钥匙串。
+已经登录的机器沿用现有配置目录，无需因本次配置变更重新登录。
+
+## Shell 与 direnv
+
+Zsh 启动时选择对应 profile 和当前目录的身份，设置 `GH_CONFIG_DIR`、
+`GITHUB_ACTOR`，并从所选 gh 登录读取 `GITHUB_TOKEN`。
+work 在两个个人目录中启动嵌套 Shell 时，也立即使用个人身份。
+`GITHUB_ACTOR` 供其他工具使用，本身不决定 gh 的认证身份。
+
+Home Manager 为三个 `~/Developer/` 父目录部署触发用 `.envrc`，
+Shell hook 已启用。首次使用需审查并允许相应文件：
 
 ```bash
-direnv allow ~/Developer/personal/.envrc
-direnv allow ~/Developer/community/.envrc
-direnv allow ~/Developer/work/.envrc
+direnv allow ~/Developer/paid-inc/.envrc
+direnv allow ~/Developer/laozhu/.envrc
+direnv allow ~/Developer/beebat-dev/.envrc
 ```
 
-进入对应目录时自动加载个人账号配置，离开时恢复之前的环境。
-子项目新增自己的 `.envrc` 时仍需审查并单独允许。未加载 Shell hook 的脚本，
-先进入目标目录，再执行 `direnv exec . gh ...`。
+进入目录时 direnv 应用相同的账号选择，离开时恢复进入前的环境。
+子项目独立 `.envrc` 也会选择身份，但仍需单独审查和允许。
+只有 work 在 `~/Developer/paid-inc/` 下自动加载本机
+`~/.config/paid-inc/secrets.env`；home 即使进入该目录也不加载工作 secrets。
 
-`GITHUB_ACTOR` 和 `GITHUB_TOKEN` 供需要这些环境变量的工具使用；actor 本身不决定 gh 的认证身份。
-读取 token 时先在子进程中清除继承的 token，再从所选配置目录读取已有登录，
-不会打印或持久化 token。工作目录可额外加载本机 secrets 文件；它不应包含在仓库中，
-其中的 `GITHUB_TOKEN` 会被随后读取的 gh 登录覆盖。离开目录时，direnv 恢复进入前的环境。
+`GH_TOKEN` 优先于 `GITHUB_TOKEN`，两者都优先于存储的登录凭据。
+自动选择身份时会清除继承的两个 token，再读取对应登录，避免另一个账号的 token 残留。
+work 的工作目录可使用 secrets 文件中的 `GITHUB_TOKEN` 作为 gh 未登录时的回退；
+home 没有这个回退。找不到可用 token 时会提示登录，不沿用继承的工作 token。
+读取过程不打印或持久化 token。
 
-这里不导出 `GIT_SSH_COMMAND`；Git 自行按仓库目录选择 key，
-避免在个人目录执行 `git -C /其他仓库 ...` 时，环境变量覆盖目标仓库的 SSH 配置。
-
-`GH_TOKEN`、`GITHUB_TOKEN` 会优先于存储的登录凭据，其中 `GH_TOKEN` 优先级更高。
-这份配置只在读取已存登录时清除继承的 token，不会清除父 Shell 的 `GH_TOKEN`；
-若显式设置了 `GH_TOKEN`，后续 gh 调用仍优先使用它，可能使目录账号选择失效。
-未登录对应配置目录时，`gh auth token` 会报错，应先完成前面的登录步骤。
-
-## 5. 自动签名并显示 Verified
-
-在 `~/.gitconfig` 中合并：
-
-```gitconfig
-[gpg]
-  format = ssh
-[commit]
-  gpgSign = true
-```
-
-`user.signingKey` 会随前面的 Git 条件配置选择。普通 `git commit` 自动使用相应私钥签名。
-若私钥有口令，可通过 ssh-agent 保存解锁状态；不要把口令写进配置或脚本。
-
-GitHub 的 Authentication Key 和 Signing Key 是两个独立用途，同一公钥需要分别登记。
-可以在 GitHub Settings 中再添加一次公钥，选择 Signing Key；也可以对两个账号分别执行：
-
-```bash
-# 以下命令示例对应个人账号；工作账号改用默认配置目录及工作 key。
-GH_CONFIG_DIR="$HOME/.config/gh-personal" gh auth refresh --hostname github.com --scopes admin:ssh_signing_key
-GH_CONFIG_DIR="$HOME/.config/gh-personal" gh api user --jq .login
-# 确认上一条输出的账号正确，再上传。
-GH_CONFIG_DIR="$HOME/.config/gh-personal" gh ssh-key add ~/.ssh/id_ed25519_personal.pub --type signing --title "macOS commit signing"
-```
-
-提交邮箱必须满足对应账号的邮箱验证要求。推送新的有效签名提交后，GitHub 才会显示 Verified。
-设置不会给旧提交自动补签；不要为补 badge 重写已共享的历史。
-本地 `git verify-commit` 另需配置 allowed signers 文件，GitHub 的验证不依赖该本地文件。
+单次命令显式提供的 token、项目 `.envrc` 后续设置的变量仍属于主动覆盖。
+已有终端不会自动刷新；GUI 应用未继承 Shell 环境时也不受这套 Shell 初始化控制。
+未加载 hook 的脚本可先进入已允许的目录，再执行 `direnv exec . gh ...`。
+不导出 `GIT_SSH_COMMAND`，避免 Shell 所在目录干扰 `git -C` 的目标仓库。
 
 ## 检查与排错
 
-在不同目录分别检查，避免只凭账号头像判断：
+在不同目录分别检查，不输出 token：
 
 ```bash
 git config --show-origin user.email
 git config --show-origin core.sshCommand
 git config --show-origin user.signingKey
 git config --bool commit.gpgSign
-direnv exec . gh api user --jq .login
+gh api user --jq .login
 ```
 
-没有 `.envrc` 的默认目录直接运行 `gh api user --jq .login`。
+有 `.envrc` 而未加载 hook 时，使用 `direnv exec . gh api user --jq .login`。
 SSH 认证可单独检查：
 
 ```bash
-ssh -T -i ~/.ssh/id_ed25519_personal -o IdentitiesOnly=yes git@github.com
+ssh -T -i ~/.ssh/id_ed25519_laozhu -o IdentitiesOnly=yes git@github.com
 ```
 
-GitHub 的成功欢迎信息通常伴随退出码 1。若 push 报 403，先核对 gh 的实际账号；
-若 commit 显示 Unverified，检查 Signing Key 登记、提交邮箱及是否真的生成了签名。
+GitHub 的成功欢迎信息通常伴随退出码 1。若 push 报 403，先核对实际账号；
+若提交显示 Unverified，检查 Signing Key、邮箱及提交是否包含签名。
 
 ## 官方参考
 
