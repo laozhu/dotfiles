@@ -503,16 +503,6 @@
     "inventory": false
   },
   {
-    "id": "gcc",
-    "name": "GCC",
-    "group": "shared",
-    "type": "CLI",
-    "manager": "Nix",
-    "package": "gcc",
-    "commands": ["gcc"],
-    "inventory": false
-  },
-  {
     "id": "unzip",
     "name": "unzip",
     "group": "shared",
@@ -587,22 +577,13 @@
     "commands": ["bws"]
   },
   {
-    "id": "rustc",
-    "name": "Rust",
+    "id": "rustup",
+    "name": "rustup",
     "group": "shared",
     "type": "CLI",
     "manager": "Nix",
-    "package": "rustc",
-    "commands": ["rustc"]
-  },
-  {
-    "id": "cargo",
-    "name": "Cargo",
-    "group": "shared",
-    "type": "CLI",
-    "manager": "Nix",
-    "package": "cargo",
-    "commands": ["cargo"]
+    "package": "rustup",
+    "commands": ["rustup"]
   },
   {
     "id": "caddy",

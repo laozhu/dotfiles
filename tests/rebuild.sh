@@ -97,6 +97,13 @@ printf ' %s' "$@" >>"$REBUILD_TEST_LOG"
 printf '\n' >>"$REBUILD_TEST_LOG"
 exit "${REBUILD_DARWIN_STATUS:-0}"
 SH
+cat >"$rebuild_fixture_bin/rustup" <<'SH'
+#!/usr/bin/env bash
+printf 'rustup' >>"$REBUILD_TEST_LOG"
+printf ' %s' "$@" >>"$REBUILD_TEST_LOG"
+printf '\n' >>"$REBUILD_TEST_LOG"
+exit "${REBUILD_RUSTUP_STATUS:-0}"
+SH
 cat >"$rebuild_sing_box/bin/sing-box" <<'SH'
 #!/usr/bin/env bash
 exit 0
@@ -108,7 +115,8 @@ chmod 0755 \
   "$rebuild_test_root/scripts/prefetch-uu-booster.sh" \
   "$rebuild_fixture_bin/nix" \
   "$rebuild_fixture_bin/git" \
-  "$rebuild_fixture_bin/sudo"
+  "$rebuild_fixture_bin/sudo" \
+  "$rebuild_fixture_bin/rustup"
 
 export REBUILD_TEST_LOG="$rebuild_log"
 export REBUILD_CASK_SOURCE="$rebuild_cask_source"
@@ -166,6 +174,7 @@ printf '%s\n' \
   "UU prefetch $rebuild_fixture_real $rebuild_cask_source/Casks/u/uu-booster.rb" \
   "sudo --preserve-env=NIX_CONFIG darwin-rebuild switch --flake $rebuild_fixture_real#home" \
   "editor sync" \
+  "rustup update" \
   >"$expected_update_rebuild"
 assert_rebuild_operations "$expected_update_rebuild" -u
 assert_rebuild_operations "$expected_update_rebuild" --update
@@ -196,6 +205,7 @@ assert_rebuild_failure REBUILD_CONFIG_STATUS 32 "$expected_update_rebuild" 5 -u
 assert_rebuild_failure REBUILD_UU_STATUS 34 "$expected_rebuild" 5
 assert_rebuild_failure REBUILD_DARWIN_STATUS 38 "$expected_rebuild" 6
 assert_rebuild_failure REBUILD_EDITOR_STATUS 39 "$expected_rebuild" 7
+assert_rebuild_failure REBUILD_RUSTUP_STATUS 40 "$expected_update_rebuild" 10 -u
 
 multiple_rebuild_output="$rebuild_test_root/multiple-output"
 : >"$rebuild_log"

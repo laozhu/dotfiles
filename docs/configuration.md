@@ -81,6 +81,7 @@ work 更新全部依赖。随后通过 GitHub CLI 查询对应版本的官方发
 CCometixLine 不在锁定的包集合中，`--update` 查询其最新稳定发布并固定版本和校验值。
 普通 rebuild 和 bootstrap 使用已有二进制记录，不查询这些发布包的 GitHub API。
 缺少发布包或有效 SHA-256 时更新停止，不回退源码编译。
+rustup 工具链不在 `flake.lock` 中，`--update` 在应用配置后运行 `rustup update`；普通 rebuild 不升级 Rust。
 
 更新失败可能已经改动 `flake.lock`；二进制记录只有全部验证成功后才写入。
 提交前检查两个文件，修复失败后再重试：
