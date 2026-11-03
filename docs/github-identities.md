@@ -23,10 +23,14 @@ profile 同时影响软件安装及身份配置；不要为了临时切换账号
 旧入口 `home/.gitconfig` 和 `home/.config/direnv/direnvrc` 保留给尚未 rebuild 的机器，
 新配置不再引用它们，避免更新仓库后、rebuild 前立即改变旧软链接的行为。
 
-| 账号         | 提交邮箱                                          | SSH 与签名密钥             | gh 配置目录           |
-| ------------ | ------------------------------------------------- | -------------------------- | --------------------- |
-| ritchie-paid | `204663844+ritchie-paid@users.noreply.github.com` | `~/.ssh/id_ed25519`        | `~/.config/gh`        |
-| laozhu       | `laozhu.me@gmail.com`                             | `~/.ssh/id_ed25519_laozhu` | `~/.config/gh-laozhu` |
+| profile | 账号         | 提交邮箱                                          | SSH 与签名密钥             | gh 配置目录           |
+| ------- | ------------ | ------------------------------------------------- | -------------------------- | --------------------- |
+| home    | laozhu       | `laozhu.me@gmail.com`                             | `~/.ssh/id_ed25519`        | `~/.config/gh-laozhu` |
+| work    | ritchie-paid | `204663844+ritchie-paid@users.noreply.github.com` | `~/.ssh/id_ed25519`        | `~/.config/gh`        |
+| work    | laozhu       | `laozhu.me@gmail.com`                             | `~/.ssh/id_ed25519_laozhu` | `~/.config/gh-laozhu` |
+
+home 的个人身份片段由 Nix 从共享模板生成，将 SSH 和签名密钥路径改为 `id_ed25519`；
+work 沿用模板中的 `id_ed25519_laozhu`。不复制、重命名或自动探测本机密钥。
 
 提交作者名共用 `Ritchie Zhu`。私钥、OAuth 登录及本机 secrets 不纳入仓库，
 rebuild 不生成密钥、不迁移凭据，也不调用 `gh auth switch` 修改存储的活动账号。
@@ -41,10 +45,11 @@ HTTPS credential helper 会清除继承的 token，再使用所选账号的 gh �
 保留已有 key。仅在对应文件不存在时生成，并按提示设置口令：
 
 ```bash
-# home 和 work 都需要个人 key。
-ssh-keygen -t ed25519 -C "laozhu GitHub" -f ~/.ssh/id_ed25519_laozhu
-# 只有 work 需要工作 key。
+# home：个人账号使用默认 key 文件名。
+ssh-keygen -t ed25519 -C "laozhu GitHub" -f ~/.ssh/id_ed25519
+# work：两个账号使用独立 key。
 ssh-keygen -t ed25519 -C "ritchie-paid GitHub" -f ~/.ssh/id_ed25519
+ssh-keygen -t ed25519 -C "laozhu GitHub" -f ~/.ssh/id_ed25519_laozhu
 ```
 
 把各自的 `.pub` 公钥添加到对应账号的 GitHub Settings → SSH and GPG keys，
@@ -53,17 +58,18 @@ ssh-keygen -t ed25519 -C "ritchie-paid GitHub" -f ~/.ssh/id_ed25519
 
 普通 `git commit` 自动以 SSH key 签名。同一公钥还需登记为 Signing Key，
 GitHub 才能验证提交签名；有口令的私钥可通过 ssh-agent 保存解锁状态。
-可在 GitHub Settings 中登记，或使用下方命令。先确认输出的账号，再上传公钥：
+可在 GitHub Settings 中登记，或使用下方 home 个人账号命令。先确认输出的账号，再上传公钥：
 
 ```bash
 env -u GH_TOKEN -u GITHUB_TOKEN GH_CONFIG_DIR="$HOME/.config/gh-laozhu" \
   gh auth refresh --hostname github.com --scopes admin:ssh_signing_key
 env -u GH_TOKEN -u GITHUB_TOKEN GH_CONFIG_DIR="$HOME/.config/gh-laozhu" gh api user --jq .login
 env -u GH_TOKEN -u GITHUB_TOKEN GH_CONFIG_DIR="$HOME/.config/gh-laozhu" \
-  gh ssh-key add ~/.ssh/id_ed25519_laozhu.pub --type signing --title "macOS commit signing"
+  gh ssh-key add ~/.ssh/id_ed25519.pub --type signing --title "macOS commit signing"
 ```
 
-work 的工作账号改用 `~/.config/gh` 和 `~/.ssh/id_ed25519.pub`。
+work 的个人账号改用 `~/.ssh/id_ed25519_laozhu.pub`；工作账号改用
+`~/.config/gh` 和 `~/.ssh/id_ed25519.pub`。
 提交邮箱需满足对应账号的邮箱验证要求。设置不会给旧提交补签；
 本地 `git verify-commit` 另需 allowed signers 文件，GitHub 验证不依赖该本地文件。
 
@@ -137,7 +143,8 @@ gh api user --jq .login
 SSH 认证可单独检查：
 
 ```bash
-ssh -T -i ~/.ssh/id_ed25519_laozhu -o IdentitiesOnly=yes git@github.com
+# home 个人账号；work 个人账号改用 id_ed25519_laozhu。
+ssh -T -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes git@github.com
 ```
 
 GitHub 的成功欢迎信息通常伴随退出码 1。若 push 报 403，先核对实际账号；

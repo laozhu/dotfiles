@@ -249,8 +249,18 @@ in
       source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/git/ritchie-paid.inc";
     };
     ".ssh/config".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.ssh/config";
-    ".config/git/laozhu.inc".source =
-      config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/git/laozhu.inc";
+    ".config/git/laozhu.inc" =
+      if profile == "home" then
+        {
+          # The single-account home machine keeps its personal key at the default path.
+          text = lib.replaceStrings [ "id_ed25519_laozhu" ] [ "id_ed25519" ] (
+            builtins.readFile ./home/.config/git/laozhu.inc
+          );
+        }
+      else
+        {
+          source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/git/laozhu.inc";
+        };
     ".config/direnv/direnvrc".text =
       githubEnvironment
       + lib.optionalString (profile == "work") (

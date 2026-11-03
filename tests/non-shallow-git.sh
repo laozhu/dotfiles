@@ -20,7 +20,7 @@ try {
   const content = `pinned source ${path.basename(temp)}\n`;
   fs.writeFileSync(path.join(source, 'README'), content);
   await exec('git', ['-C', source, 'add', 'README']);
-  await exec('git', ['-C', source, '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-m', 'Fixture']);
+  await exec('git', ['-C', source, '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', '-c', 'commit.gpgSign=false', 'commit', '-m', 'Fixture']);
   const { stdout: revision } = await exec('git', ['-C', source, 'rev-parse', 'HEAD']);
   await exec('git', ['clone', '--bare', source, remote]);
   await exec('git', ['-C', remote, 'update-server-info']);
