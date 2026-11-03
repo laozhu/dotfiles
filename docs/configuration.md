@@ -43,11 +43,14 @@ rebuild 和 Home Manager activation 均不创建或覆盖 Pi settings。已有�
 `configuration.nix` 在 home/work 两组中均将 AirDrop 设为对所有人可见，
 并开启触摸板“轻点以点按”。这些设置由首次 bootstrap 和后续 rebuild 应用。
 
-GitHub 多账号的目录切换、SSH key 和首次登录步骤见 [GitHub 目录身份](github-identities.md)。
-本仓库为 `Developer/paid-inc`、`Developer/laozhu` 和 `Developer/beebat-dev` 部署父目录 `.envrc`。
-工作目录使用默认 gh 配置并可加载本机 `~/.config/paid-inc/secrets.env`；个人目录使用 `gh-laozhu`。
-direnv 同步设置账号 actor，并从对应 gh 登录读取 `GITHUB_TOKEN`。Zsh 启动时也从当前 gh
-配置读取 token，读取过程忽略继承的 token，凭据不写入模板或日志。
+GitHub 身份由机器 profile 决定，详见 [GitHub 身份](github-identities.md)。
+home 全局使用 laozhu；work 默认使用 ritchie-paid，仅 `~/Developer/laozhu/` 和
+`~/Developer/beebat-dev/` 使用 laozhu。Git 的邮箱、签名和 SSH key、HTTPS credential
+helper，以及 Zsh/direnv 的 gh 账号选择保持一致。
+`~/.gitconfig` 和 `~/.config/direnv/direnvrc` 由 Nix 按 profile 生成，修改后需要 rebuild 并重新打开终端。
+本仓库为三个 `~/Developer/` 目录部署 `.envrc`，只有 work 的 `paid-inc` 目录自动加载
+本机 `~/.config/paid-inc/secrets.env`。自动选择账号时清除继承的 token，再读取所选 gh 登录；
+home 未登录个人账号时提示登录，不沿用工作 token。密钥和登录凭据仍只保存在本机。
 
 ## 工具来源与更新
 

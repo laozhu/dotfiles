@@ -116,6 +116,8 @@
    完成后重新打开终端。
 
    分组保存在本机的 `~/.config/dotfiles/profile`，不提交到仓库。
+   profile 同时决定软件清单和 GitHub 身份：home 全局使用 laozhu，work 保留工作账号默认值及个人目录例外，
+   详见 [GitHub 身份](docs/github-identities.md)。
    安装中断后，重新运行 `./bootstrap.sh` 会沿用已选分组；首次运行必须指定 `--profile`。
    已有分组时，指定另一个分组会停止。日常更新使用下方的 `rebuild.sh`，自动读取本机分组。
    代理配置后续变更时，按 [SFM 文档](docs/sing-box.md) 重新导入。
