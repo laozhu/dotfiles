@@ -154,7 +154,7 @@ in
   };
 
   # Shared activation makes bootstrap and rebuild preserve local Claude settings.
-  # Invalid local JSON is left untouched and only skips the statusLine update.
+  # Invalid local JSON is left untouched and only skips the status line updates.
   home.activation.claudeSettings = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
     run env PATH="${lib.makeBinPath [ pkgs.jq ]}:$PATH" \
       ${pkgs.bash}/bin/bash ${./scripts/sync-claude-statusline.sh} \

@@ -7,10 +7,12 @@ settings="$fixture/claude/settings.json"
 script="$repo_dir/scripts/sync-claude-statusline.sh"
 bash "$script" "$settings" "$repo_dir/home/.claude/settings.json" /test/bin/ccline
 jq -e '.statusLine.command == "/test/bin/ccline" and .autoMemoryEnabled == false' "$settings" >/dev/null
+jq -e '.subagentStatusLine == {type: "command", command: "/test/bin/ccline --subagent"}' "$settings" >/dev/null
 printf '{"permissions":{"allow":["Read"]},"statusLine":{"command":"old"},"theme":"local"}\n' >"$settings"
 cp "$settings" "$fixture/before.json"
 bash "$script" "$settings" "$repo_dir/home/.claude/settings.json" /test/bin/ccline
 jq -e '.theme == "local" and .permissions.allow == ["Read"] and .statusLine.command == "/test/bin/ccline"' "$settings" >/dev/null
+jq -e '.subagentStatusLine.command == "/test/bin/ccline --subagent"' "$settings" >/dev/null
 cmp "$fixture/before.json" "$settings.backup"
 bash "$script" "$settings" "$repo_dir/home/.claude/settings.json" /test/bin/ccline
 cmp "$fixture/before.json" "$settings.backup"
