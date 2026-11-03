@@ -221,10 +221,13 @@ for profile in home work; do
     (
       mkdir -p "$HOME/Developer/laozhu/a" "$HOME/Developer/beebat-dev/b" "$HOME/elsewhere"
       cd "$HOME/Developer/laozhu/a"
-      export GH_FIXTURE_LOG="$fixture/gh-calls"
+      export GH_FIXTURE_LOG="$fixture/gh-calls" GH_FIXTURE_BIN="$fixture/bin"
       : >"$GH_FIXTURE_LOG"
       TERM=dumb zsh -f -e -c '
         source "$HOME/.zshrc"
+        # .zshrc prepends Homebrew after selecting the account; CI runners ship a real
+        # gh there, so keep the mock first for the lookups triggered by cd.
+        PATH="$GH_FIXTURE_BIN:$PATH"
         test "$GITHUB_ACTOR" = laozhu
         test "$GITHUB_TOKEN" = fixture-personal-token
         cd "$HOME/Developer/beebat-dev/b"
