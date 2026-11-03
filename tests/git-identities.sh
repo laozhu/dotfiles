@@ -8,7 +8,7 @@ trap 'rm -rf "$fixture"' EXIT
 # Evaluate with the real HOME before setting up isolated account fixtures.
 for profile in home work; do
   nix eval --json "$repo_dir#darwinConfigurations.$profile.config.home-manager.users.rich" \
-    --apply 'c: { git = c.home.file.".gitconfig".text; direnv = c.home.file.".config/direnv/direnvrc".text; zsh = c.programs.zsh.initContent; fragments = builtins.filter (p: builtins.match ".config/git/.*[.]inc" p != null && c.home.file.${p}.enable) (builtins.attrNames c.home.file); }' \
+    --apply 'c: { git = c.home.file.".gitconfig".text; direnv = c.home.file.".config/direnv/direnvrc".text; zsh = c.programs.zsh.initContent; personal = c.home.file.".config/git/laozhu.inc".text; fragments = builtins.filter (p: builtins.match ".config/git/.*[.]inc" p != null && c.home.file.${p}.enable) (builtins.attrNames c.home.file); }' \
     >"$fixture/$profile.json"
   jq -er '.git | select(type == "string" and length > 0)' "$fixture/$profile.json" >"$fixture/$profile.gitconfig"
   jq -er '.direnv | select(type == "string" and length > 0)' "$fixture/$profile.json" >"$fixture/$profile.direnvrc"
@@ -31,13 +31,17 @@ for profile in home work; do
   export XDG_CONFIG_HOME="$HOME/.config"
   export GIT_CONFIG_GLOBAL="$HOME/.gitconfig"
   mkdir -p "$HOME/.config/git" "$HOME/.config/direnv" "$HOME/Developer" "$HOME/.ssh"
-  ssh-keygen -q -t ed25519 -N '' -f "$HOME/.ssh/id_ed25519_laozhu"
+  ssh-keygen -q -t ed25519 -N '' -f "$HOME/.ssh/id_ed25519"
   if [ "$profile" = work ]; then
-    ssh-keygen -q -t ed25519 -N '' -f "$HOME/.ssh/id_ed25519"
+    ssh-keygen -q -t ed25519 -N '' -f "$HOME/.ssh/id_ed25519_laozhu"
   fi
   cp "$fixture/$profile.gitconfig" "$HOME/.gitconfig"
   while IFS= read -r fragment; do
-    cp "$repo_dir/home/$fragment" "$HOME/$fragment"
+    if [ "$fragment" = .config/git/laozhu.inc ] && jq -e '.personal != null' "$fixture/$profile.json" >/dev/null; then
+      jq -r '.personal' "$fixture/$profile.json" >"$HOME/$fragment"
+    else
+      cp "$repo_dir/home/$fragment" "$HOME/$fragment"
+    fi
   done < <(jq -r '.fragments[]' "$fixture/$profile.json")
   for owner in paid-inc laozhu beebat-dev; do
     mkdir -p "$HOME/Developer/$owner"
@@ -52,7 +56,7 @@ for profile in home work; do
     case "$profile:$owner" in
       home:* | work:laozhu | work:beebat-dev)
         email=laozhu.me@gmail.com
-        key=id_ed25519_laozhu
+        if [ "$profile" = home ]; then key=id_ed25519; else key=id_ed25519_laozhu; fi
         gh_config=gh-laozhu
         ;;
       *)
@@ -67,7 +71,11 @@ for profile in home work; do
       exit 1
     fi
     test "$(git -C "$directory" config user.name)" = 'Ritchie Zhu'
-    test "$(git -C "$directory" config core.sshCommand)" = "ssh -i ~/.ssh/$key -o IdentitiesOnly=yes"
+    actual_ssh="$(git -C "$directory" config core.sshCommand)"
+    if [ "$actual_ssh" != "ssh -i ~/.ssh/$key -o IdentitiesOnly=yes" ]; then
+      printf '%s/%s: expected SSH key %s, got %s\n' "$profile" "$owner" "$key" "$actual_ssh" >&2
+      exit 1
+    fi
     test "$(git -C "$directory" config gpg.format)" = ssh
     test "$(git -C "$directory" config --bool commit.gpgsign)" = true
     test "$(git -C "$directory" config user.signingkey)" = "~/.ssh/$key"
