@@ -78,4 +78,9 @@ sudo --preserve-env=NIX_CONFIG darwin-rebuild switch --flake "$DIR#$PROFILE"
 # IDE 配置与插件属于当前用户，必须在系统应用安装完成后执行。
 bash "$DIR/scripts/sync-editors.sh"
 
+# rustup 工具链不在 flake.lock 中，随 --update 一起升级；激活已确保存在默认工具链。
+if [ "$update_inputs" = true ]; then
+  rustup update
+fi
+
 echo "==> Done. Open a new terminal to load updated PATH and shell settings."

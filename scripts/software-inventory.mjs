@@ -61,13 +61,9 @@ export function inspectSoftware(entry, options = {}) {
             !fs.realpathSync(candidate).startsWith("/nix/store/")
           )
             return false;
-          // macOS ships launcher stubs for Java and Rust, and a CLT Python.
-          if (["openjdk", "python", "rustc", "cargo"].includes(entry.id)) {
-            return (
-              fs.realpathSync(candidate).startsWith(`${brewPrefix}/`) ||
-              (["rustc", "cargo"].includes(entry.id) &&
-                fs.realpathSync(candidate).startsWith("/nix/store/"))
-            );
+          // macOS ships a launcher stub for Java and a CLT Python.
+          if (["openjdk", "python"].includes(entry.id)) {
+            return fs.realpathSync(candidate).startsWith(`${brewPrefix}/`);
           }
           return true;
         } catch {

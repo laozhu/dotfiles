@@ -40,7 +40,7 @@ try {
   const rows = JSON.parse(result.stdout);
   assert.ok(rows.some(r => r.id === 'steam')); assert.ok(rows.some(r => r.id === 'openjdk'));
   assert.ok(!rows.some(r => r.group === 'work'));
-  assert.ok(!rows.some(r => ['git', 'bash', 'zsh', 'gnumake', 'gcc', 'curl', 'unzip'].includes(r.id)), 'base tools must be hidden from the inventory');
+  assert.ok(!rows.some(r => ['git', 'bash', 'zsh', 'gnumake', 'curl', 'unzip'].includes(r.id)), 'base tools must be hidden from the inventory');
   assert.ok(rows.some(r => r.id === 'python'), 'explicit Homebrew replacements remain visible');
   assert.ok(!rows.some(r => /magnet|dart|tencent-video/i.test(r.id)));
   assert.equal(rows.find(r => r.id === 'tencent-meeting').group, 'home');

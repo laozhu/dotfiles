@@ -3,7 +3,9 @@
 安装清单以 [software.json](../software.json) 为准。每台 Mac 安装 shared 和对应的 home only 或 work only。
 本页列出配置要求，不记录随机器变化的安装状态。
 
-Git、Bash/Zsh、GNU Make、GCC、curl、unzip 等基础工具保留现有 Nix 配置，按约定不列入本表。
+Git、Bash/Zsh、GNU Make、curl、unzip 等基础工具保留现有 Nix 配置，按约定不列入本表。
+C/C++ 编译和链接使用 Xcode Command Line Tools 的系统 `cc`，不在全局 profile 安装 Nix GCC：
+它的 wrapper 只适合 Nix 构建环境，全局使用时 Rust 等工具链会链接失败。
 Homebrew Python 是明确替换系统版本的工具，因此保留。RabbitPro 和 Bitdefender 列为人工安装项，
 只检测安装状态，bootstrap/rebuild 不负责安装。
 
@@ -56,8 +58,7 @@ Homebrew Python 是明确替换系统版本的工具，因此保留。RabbitPro 
 | Bun                                  | CLI       | `bun`                  | Nix                       |
 | uv / uvx                             | CLI       | `uv` / `uvx`           | Nix                       |
 | Bitwarden Secrets Manager            | CLI       | `bws`                  | Nix                       |
-| Rust                                 | CLI       | `rustc`                | Nix                       |
-| Cargo                                | CLI       | `cargo`                | Nix                       |
+| rustup / Rust / Cargo                | CLI       | `rustup`               | Nix                       |
 | Caddy                                | CLI       | `caddy`                | Nix                       |
 | FFmpeg / ffprobe                     | CLI       | `ffmpeg` / `ffprobe`   | Nix                       |
 | Herdr                                | CLI       | `herdr`                | Nix                       |
@@ -128,12 +129,13 @@ Homebrew Python 是明确替换系统版本的工具，因此保留。RabbitPro 
 
 两台 Mac 共用以下设置，由 Home Manager 管理：
 
-| 工具   | 默认设置                                                                                    |
-| ------ | ------------------------------------------------------------------------------------------- |
-| PATH   | 加入 `~/.local/bin`、`~/.cargo/bin`，Homebrew 和 Nix 管理的工具保持优先                     |
-| uv     | `python-preference = "system"`，优先使用已安装且满足项目要求的 Python，仍允许下载缺少的版本 |
-| Gradle | `~/.gradle/gradle.properties` 启用 `org.gradle.caching=true`，复用构建产物                  |
-| fzf    | 普通搜索和 `Ctrl-T` 使用 fd，包含隐藏文件，遵守 `.gitignore` 并排除 `.git`                  |
+| 工具   | 默认设置                                                                                                                                                                                                 |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PATH   | 加入 `~/.local/bin`、`~/.cargo/bin`，Homebrew 和 Nix 管理的工具保持优先                                                                                                                                  |
+| uv     | `python-preference = "system"`，优先使用已安装且满足项目要求的 Python，仍允许下载缺少的版本                                                                                                              |
+| Gradle | `~/.gradle/gradle.properties` 启用 `org.gradle.caching=true`，复用构建产物                                                                                                                               |
+| Rust   | rustup 下载官方预编译工具链到 `~/.rustup`；激活时若没有默认工具链则安装 stable（默认 profile 含 clippy 和 rustfmt），`rebuild.sh --update` 运行 `rustup update`；项目可用 `rust-toolchain.toml` 固定版本 |
+| fzf    | 普通搜索和 `Ctrl-T` 使用 fd，包含隐藏文件，遵守 `.gitignore` 并排除 `.git`                                                                                                                               |
 
 Gradle 不额外开启全局并行或配置缓存；项目可用 `--no-build-cache` 临时禁用构建缓存。
 

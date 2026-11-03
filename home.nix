@@ -197,6 +197,15 @@ in
     };
   };
 
+  # Install the official stable toolchain once; `rebuild.sh --update` runs `rustup update`.
+  # Never override a default chosen locally, and warn instead of aborting when offline.
+  home.activation.rustToolchain = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    if ! ${pkgs.rustup}/bin/rustup default >/dev/null 2>&1; then
+      run ${pkgs.rustup}/bin/rustup default stable \
+        || warnEcho "Rust stable toolchain was not installed; rerun rebuild once the network works."
+    fi
+  '';
+
   # Shared activation makes bootstrap and rebuild preserve local Claude settings.
   # Invalid local JSON is left untouched and only skips the status line updates.
   home.activation.claudeSettings = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
