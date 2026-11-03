@@ -21,11 +21,13 @@
 新增文件映射、安装软件和系统设置需要 rebuild。目标位置已有未受管的普通文件时，
 Home Manager 会将其改名为 `*.hm-backup` 后再建立链接；同名备份已存在时仍会报错，需要手动处理。
 Claude 的 `home/.claude/settings.json` 在本机配置不存在时用作模板。bootstrap 和 rebuild 的
-Home Manager activation 会将 `statusLine` 合并为 CCometixLine，保留其他本机字段；
+Home Manager activation 会将 `statusLine` 和 `subagentStatusLine` 合并为 CCometixLine，保留其他本机字段；
 有变化时先将原文件覆盖备份为旁边权限为 0600 的 `settings.json.backup`（只保留一份）。
 本机文件不是合法 JSON 时保持原样，激活只打印警告并跳过 statusLine 更新。
 `home/.claude/ccline/config.toml` 管理两行状态栏：目录、分支、PR、增删行数；模型、上下文百分比、5 小时 / 7 天额度及重置倒计时，
-有后台任务时追加运行中的子代理和工具。样式为无背景色的 plain，配色跟随终端主题，通过软链接部署。
+有后台任务时追加运行中的子代理和工具。输入框下方原生 agent 面板的每行由 `ccline --subagent` 渲染，
+显示进度、模型和耗时；在面板中选中某行或用 `/tasks` 选择后回车，可打开该子代理的 transcript。
+样式为无背景色的 plain，配色跟随终端主题，通过软链接部署。
 修改样式可直接编辑该文件；配置器 `ccline` 保存也会写入这个仓库文件。
 Codex CLI 的底部状态栏只有一行，由 `home/.codex/tui.toml` 管理，按 Claude 状态栏的顺序显示
 项目、分支、模型与推理强度、上下文占用、5 小时 / 7 天额度。bootstrap 和 rebuild 只将其中的

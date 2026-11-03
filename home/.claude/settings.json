@@ -5,5 +5,9 @@
     "type": "command",
     "command": "ccline",
     "padding": 0
+  },
+  "subagentStatusLine": {
+    "type": "command",
+    "command": "ccline --subagent"
   }
 }
