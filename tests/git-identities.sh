@@ -8,7 +8,7 @@ trap 'rm -rf "$fixture"' EXIT
 # Evaluate with the real HOME before setting up isolated account fixtures.
 for profile in home work; do
   nix eval --json "$repo_dir#darwinConfigurations.$profile.config.home-manager.users.rich" \
-    --apply 'c: { git = c.home.file.".gitconfig".text; direnv = c.home.file.".config/direnv/direnvrc".text; zsh = c.programs.zsh.initContent; personal = c.home.file.".config/git/laozhu.inc".text; fragments = builtins.filter (p: builtins.match ".config/git/.*[.]inc" p != null && c.home.file.${p}.enable) (builtins.attrNames c.home.file); }' \
+    --apply 'c: { git = c.home.file.".gitconfig".text; direnv = c.home.file.".config/direnv/direnvrc".text; zsh = c.programs.zsh.initContent; personal = c.home.file.".config/git/laozhu.inc".text; fragments = builtins.filter (p: builtins.match ".config/git/.*[.]inc" p != null && c.home.file.${p}.enable) (builtins.attrNames c.home.file); orcaEnvrc = c.home.file ? "orca/workspaces/.envrc"; }' \
     >"$fixture/$profile.json"
   jq -er '.git | select(type == "string" and length > 0)' "$fixture/$profile.json" >"$fixture/$profile.gitconfig"
   jq -er '.direnv | select(type == "string" and length > 0)' "$fixture/$profile.json" >"$fixture/$profile.direnvrc"
@@ -337,5 +337,28 @@ for profile in home work; do
       fi
     )
   done
+
+  # Orca worktrees of work repositories load work secrets on work only, with the default account.
+  if [ "$profile" = work ]; then expected_orca=true; else expected_orca=false; fi
+  test "$(jq -r '.orcaEnvrc' "$fixture/$profile.json")" = "$expected_orca"
+  orca_project="$HOME/orca/workspaces/example/feature"
+  mkdir -p "$orca_project"
+  cp "$repo_dir/home/.config/direnv/github.envrc" "$HOME/orca/workspaces/.envrc"
+  direnv allow "$HOME/orca/workspaces/.envrc"
+  (
+    cd "$orca_project"
+    eval "$(direnv export bash)"
+    test "$GH_CONFIG_DIR" = "$DEFAULT_CONFIG"
+    test "$GITHUB_ACTOR" = "$DEFAULT_ACTOR"
+    test "$GITHUB_TOKEN" = "$DEFAULT_TOKEN"
+    if [ "$profile" = work ]; then
+      test "$WORK_SECRET_LOADED" = 1
+    else
+      test -z "${WORK_SECRET_LOADED+x}"
+    fi
+    cd "$HOME"
+    eval "$(direnv export bash)"
+    test -z "${WORK_SECRET_LOADED+x}"
+  )
 done
 printf '%s\n' 'Git and GitHub CLI profile identity tests passed.'
