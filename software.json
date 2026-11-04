@@ -111,6 +111,15 @@
     "apps": ["Keka.app"]
   },
   {
+    "id": "shottr",
+    "name": "Shottr",
+    "group": "shared",
+    "type": "GUI",
+    "manager": "Homebrew Cask",
+    "package": "shottr",
+    "apps": ["Shottr.app"]
+  },
+  {
     "id": "bitwarden",
     "name": "Bitwarden",
     "group": "shared",

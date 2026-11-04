@@ -27,6 +27,7 @@ Homebrew Python 是明确替换系统版本的工具，因此保留。RabbitPro 
 | 豆包输入法                           | GUI       | -                      | Homebrew Cask             |
 | ImageOptim                           | GUI       | -                      | Homebrew Cask             |
 | Keka                                 | GUI       | -                      | Homebrew Cask             |
+| Shottr                               | GUI       | -                      | Homebrew Cask             |
 | Bitwarden                            | GUI       | -                      | Homebrew Cask             |
 | 微信                                 | GUI       | -                      | Homebrew Cask             |
 | 微信开发者工具                       | GUI + CLI | `cli`                  | Homebrew Cask             |
