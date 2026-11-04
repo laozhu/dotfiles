@@ -109,6 +109,9 @@ in
     "/run/current-system/sw/bin"
     "$HOME/.local/bin"
     "$HOME/.cargo/bin"
+    # proto tools stay behind Nix and Homebrew; moon uses them through proto.
+    "$HOME/.proto/shims"
+    "$HOME/.proto/bin"
   ];
   home.sessionVariables.JAVA_HOME = "${javaPrefix}/libexec/openjdk.jdk/Contents/Home";
   programs.uv = {

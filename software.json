@@ -586,6 +586,15 @@
     "commands": ["rustup"]
   },
   {
+    "id": "proto",
+    "name": "proto",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "proto",
+    "commands": ["proto"]
+  },
+  {
     "id": "caddy",
     "name": "Caddy",
     "group": "shared",
