@@ -285,6 +285,10 @@ in
       config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/direnv/github.envrc";
     "Developer/beebat-dev/.envrc".source =
       config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/direnv/github.envrc";
+    # Orca worktrees of work repositories load the same secrets as ~/Developer/paid-inc.
+    "orca/workspaces/.envrc" = lib.mkIf (profile == "work") {
+      source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/direnv/github.envrc";
+    };
 
     # 基础应用配置
     ".config/wezterm".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.config/wezterm";

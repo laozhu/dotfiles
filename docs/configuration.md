@@ -48,8 +48,8 @@ home 全局使用 laozhu；work 默认使用 ritchie-paid，仅 `~/Developer/lao
 `~/Developer/beebat-dev/` 使用 laozhu。Git 的邮箱、签名和 SSH key、HTTPS credential
 helper，以及 Zsh/direnv 的 gh 账号选择保持一致。
 `~/.gitconfig` 和 `~/.config/direnv/direnvrc` 由 Nix 按 profile 生成，修改后需要 rebuild 并重新打开终端。
-本仓库为三个 `~/Developer/` 目录部署 `.envrc`，只有 work 的 `paid-inc` 目录自动加载
-本机 `~/.config/paid-inc/secrets.env`。自动选择账号时清除继承的 token，再读取所选 gh 登录；
+本仓库为三个 `~/Developer/` 目录部署 `.envrc`，work 还为 Orca 的 `~/orca/workspaces/` 部署一个；
+只有 work 的 `paid-inc` 和 Orca workspaces 目录自动加载本机 `~/.config/paid-inc/secrets.env`。自动选择账号时清除继承的 token，再读取所选 gh 登录；
 home 未登录个人账号时提示登录，不沿用工作 token。密钥和登录凭据仍只保存在本机。
 
 ## 工具来源与更新

@@ -109,12 +109,14 @@ Shell hook 已启用。首次使用需审查并允许相应文件：
 direnv allow ~/Developer/paid-inc/.envrc
 direnv allow ~/Developer/laozhu/.envrc
 direnv allow ~/Developer/beebat-dev/.envrc
+direnv allow ~/orca/workspaces/.envrc # 仅 work
 ```
 
 进入目录时 direnv 应用相同的账号选择，离开时恢复进入前的环境。
 子项目独立 `.envrc` 也会选择身份，但仍需单独审查和允许。
-只有 work 在 `~/Developer/paid-inc/` 下自动加载本机
-`~/.config/paid-inc/secrets.env`；home 即使进入该目录也不加载工作 secrets。
+只有 work 在 `~/Developer/paid-inc/` 和 Orca 的 `~/orca/workspaces/` 下自动加载本机
+`~/.config/paid-inc/secrets.env`（如 `JASYPT_ENCRYPTOR_PASSWORD`、`TEMPORAL_CLOUD_API_KEY`、`AWS_PROFILE`）；
+home 即使进入这些目录也不加载工作 secrets。Orca workspaces 使用 work 默认账号 ritchie-paid。
 
 `GH_TOKEN` 优先于 `GITHUB_TOKEN`，两者都优先于存储的登录凭据。
 自动选择身份时会清除继承的两个 token，再读取对应登录，避免另一个账号的 token 残留。
