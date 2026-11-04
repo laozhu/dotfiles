@@ -36,14 +36,20 @@ for profile in home work; do
     (.paths as $paths | .profileBin as $profileBin |
       ($paths | index("$HOME/.local/bin")) as $local |
       ($paths | index("$HOME/.cargo/bin")) as $cargo |
-      $local != null and $cargo != null and
+      ($paths | index("$HOME/.proto/shims")) as $protoShims |
+      ($paths | index("$HOME/.proto/bin")) as $protoBin |
+      $local != null and $cargo != null and $protoShims != null and $protoBin != null and
       ($paths | index($profileBin)) < $local and
       ($paths | index($profileBin)) < $cargo and
+      ($paths | index($profileBin)) < $protoShims and
+      ($paths | index($profileBin)) < $protoBin and
       ($paths | index("/opt/homebrew/bin")) < $local and
-      ($paths | index("/opt/homebrew/bin")) < $cargo) and
+      ($paths | index("/opt/homebrew/bin")) < $cargo and
+      ($paths | index("/opt/homebrew/bin")) < $protoShims and
+      ($paths | index("/opt/homebrew/bin")) < $protoBin) and
     (["python", "openjdk", "gradle", "k1low/tap/mo"] - .brews | length == 0) and
     (["bitwarden", "wechat", "wechatwebdevtools", "orbstack", "imageoptim", "keka", "deepseek-harness"] - .casks | length == 0) and
-    (["rustup", "tig", "yq-go", "caddy", "ffmpeg", "dsh"] - .packages | length == 0) and
+    (["rustup", "proto", "tig", "yq-go", "caddy", "ffmpeg", "dsh"] - .packages | length == 0) and
     (.casks | index("magnet") == null) and
     (if $profile == "home" then
       (["steam", "uu-booster", "logitech-g-hub", "tencent-meeting"] - .casks | length == 0) and

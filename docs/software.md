@@ -59,6 +59,7 @@ Homebrew Python 是明确替换系统版本的工具，因此保留。RabbitPro 
 | uv / uvx                             | CLI       | `uv` / `uvx`           | Nix                       |
 | Bitwarden Secrets Manager            | CLI       | `bws`                  | Nix                       |
 | rustup / Rust / Cargo                | CLI       | `rustup`               | Nix                       |
+| proto                                | CLI       | `proto`                | Nix                       |
 | Caddy                                | CLI       | `caddy`                | Nix                       |
 | FFmpeg / ffprobe                     | CLI       | `ffmpeg` / `ffprobe`   | Nix                       |
 | Herdr                                | CLI       | `herdr`                | Nix                       |
@@ -131,7 +132,7 @@ Homebrew Python 是明确替换系统版本的工具，因此保留。RabbitPro 
 
 | 工具   | 默认设置                                                                                                                                                                                                 |
 | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| PATH   | 加入 `~/.local/bin`、`~/.cargo/bin`，Homebrew 和 Nix 管理的工具保持优先                                                                                                                                  |
+| PATH   | 加入 `~/.local/bin`、`~/.cargo/bin`、`~/.proto/shims`、`~/.proto/bin`，Homebrew 和 Nix 管理的工具保持优先                                                                                                |
 | uv     | `python-preference = "system"`，优先使用已安装且满足项目要求的 Python，仍允许下载缺少的版本                                                                                                              |
 | Gradle | `~/.gradle/gradle.properties` 启用 `org.gradle.caching=true`，复用构建产物                                                                                                                               |
 | Rust   | rustup 下载官方预编译工具链到 `~/.rustup`；激活时若没有默认工具链则安装 stable（默认 profile 含 clippy 和 rustfmt），`rebuild.sh --update` 运行 `rustup update`；项目可用 `rust-toolchain.toml` 固定版本 |
