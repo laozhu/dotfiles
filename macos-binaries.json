@@ -15,14 +15,14 @@
     "version": "0.9.5"
   },
   "kimi-code": {
-    "sha256": "17f848e7b9b159aed9b2ad0df917c4be3c484393d924a6540171ede7b87cc66d",
-    "url": "https://github.com/MoonshotAI/kimi-code/releases/download/%40moonshot-ai/kimi-code%402.4.1/kimi-code-darwin-arm64.tar.gz",
-    "version": "2.4.1"
+    "sha256": "974500f5360f21c00fb73ab978b7d362f44d6acfdb7110b975b8d7a44ff0da9c",
+    "url": "https://github.com/MoonshotAI/kimi-code/releases/download/%40moonshot-ai/kimi-code%402.5.2/kimi-code-darwin-arm64.tar.gz",
+    "version": "2.5.2"
   },
   "pi": {
-    "sha256": "79d9979d76a2a5adb7c28e27e9b44629928ccd0dc9fbb6ae7217860bd5e8be5d",
-    "url": "https://github.com/earendil-works/pi/releases/download/v1.4.0/pi-darwin-arm64.tar.gz",
-    "version": "1.4.0"
+    "sha256": "a9bf0d82d58d2a7d337f4ae4171b5fc9ebffe42509527a831364c4b65adf2cdf",
+    "url": "https://github.com/earendil-works/pi/releases/download/v1.5.0/pi-darwin-arm64.tar.gz",
+    "version": "1.5.0"
   },
   "pnpm": {
     "sha256": "4dcea94654bc8f2189dfd591aea7af4adddd29243e4bfcc8d4c8b4289e7983ba",
