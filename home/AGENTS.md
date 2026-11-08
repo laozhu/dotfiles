@@ -3,7 +3,6 @@
 - Always reply to me in Chinese. Write code, comments, docs and commits in the repository's
   prevailing language; under `~/Developer/paid-inc`, always write them in English.
 - Use "-" instead of em dashes.
-- Never auto-add your agent name as a commit co-author.
 - Never manually edit CHANGELOG.md or files marked as auto-generated.
 - Prefer the simplest maintainable solution meeting requirements.
   Do not sacrifice correctness for speed or add abstractions or automation for hypothetical needs.
