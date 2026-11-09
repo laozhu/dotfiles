@@ -22,7 +22,7 @@ tests=(
   update-macos-binaries.sh
   repository-policy.sh
   non-shallow-git.sh
-  claude-statusline.sh
+  claude-settings.sh
   orbstack-docker.sh
   codex-statusline.sh
   pi-settings.sh

@@ -20,7 +20,8 @@
 大多数 dotfiles 通过 `~/.dotfiles` 链接到仓库，修改后应用可能立即读到变化；
 新增文件映射、安装软件和系统设置需要 rebuild。目标位置已有未受管的普通文件时，
 Home Manager 会将其改名为 `*.hm-backup` 后再建立链接；同名备份已存在时仍会报错，需要手动处理。
-Claude 的 `home/.claude/settings.json` 在本机配置不存在时用作模板。bootstrap 和 rebuild 的
+Claude 的 `home/.claude/settings.json` 在本机配置不存在时用作模板，模板中的权限（如放行 `docker` 命令）
+只在首次生成时写入，之后不覆盖本机的 `permissions`。bootstrap 和 rebuild 的
 Home Manager activation 会将 `statusLine` 和 `subagentStatusLine` 合并为 CCometixLine，保留其他本机字段；
 有变化时先将原文件覆盖备份为旁边权限为 0600 的 `settings.json.backup`（只保留一份）。
 本机文件不是合法 JSON 时保持原样，激活只打印警告并跳过 statusLine 更新。

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Merge only the managed status lines; preserve local Claude settings.
+# Seed Claude settings from the template, then merge only the managed status lines.
 set -euo pipefail
 settings="${1:?settings path required}"
 template="${2:?template path required}"
