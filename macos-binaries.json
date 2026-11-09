@@ -16,7 +16,7 @@
   },
   "kimi-code": {
     "sha256": "974500f5360f21c00fb73ab978b7d362f44d6acfdb7110b975b8d7a44ff0da9c",
-    "url": "https://github.com/MoonshotAI/kimi-code/releases/download/%40moonshot-ai/kimi-code%402.5.2/kimi-code-darwin-arm64.tar.gz",
+    "url": "https://github.com/MoonshotAI/kimi-code/releases/download/%40moonshot-ai%2Fkimi-code%402.5.2/kimi-code-darwin-arm64.tar.gz",
     "version": "2.5.2"
   },
   "pi": {

@@ -74,13 +74,16 @@ for name in pnpm uv sing-box bws herdr kimi-code pi ccometixline; do
   printf 'Pinning %s %s (official macOS binary)...\n' "$name" "$version" >&2
   encoded_tag="$(jq -rn --arg tag "$tag" '$tag | @uri')"
   release="$(gh api "repos/$repo/releases/tags/$encoded_tag")"
-  pin="$(jq -e --arg asset "$asset" --arg version "$version" --arg repo "$repo" '
+  # Pin a fully encoded tag: GitHub has served lasting 504s for the half-encoded
+  # browser_download_url of scoped tags such as @moonshot-ai/kimi-code@x.y.z.
+  url="https://github.com/$repo/releases/download/$encoded_tag/$asset"
+  pin="$(jq -e --arg asset "$asset" --arg version "$version" --arg repo "$repo" --arg url "$url" '
     if .draft or .prerelease then error("expected a stable release") else . end |
     [.assets[] | select(.name == $asset)] |
     if length != 1 then error("missing or ambiguous macOS release asset") else .[0] end |
     if (.digest // "" | test("^sha256:[0-9a-f]{64}$")) and
        (.browser_download_url | startswith("https://github.com/" + $repo + "/releases/download/"))
-    then {version: $version, url: .browser_download_url, sha256: (.digest | ltrimstr("sha256:"))}
+    then {version: $version, url: $url, sha256: (.digest | ltrimstr("sha256:"))}
     else error("release asset has no valid SHA-256 or official URL") end
   ' <<<"$release")"
   result="$(jq --arg name "$name" --argjson pin "$pin" '. + {($name): $pin}' <<<"$result")"
