@@ -4,9 +4,10 @@ repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 fixture="$(mktemp -d)"
 trap 'rm -rf "$fixture"' EXIT
 settings="$fixture/claude/settings.json"
-script="$repo_dir/scripts/sync-claude-statusline.sh"
+script="$repo_dir/scripts/sync-claude-settings.sh"
 bash "$script" "$settings" "$repo_dir/home/.claude/settings.json" /test/bin/ccline
 jq -e '.statusLine.command == "/test/bin/ccline" and .autoMemoryEnabled == false' "$settings" >/dev/null
+jq -e '.permissions.allow == ["Bash(docker *)"]' "$settings" >/dev/null
 jq -e '.subagentStatusLine == {type: "command", command: "/test/bin/ccline --subagent"}' "$settings" >/dev/null
 printf '{"permissions":{"allow":["Read"]},"statusLine":{"command":"old"},"theme":"local"}\n' >"$settings"
 cp "$settings" "$fixture/before.json"

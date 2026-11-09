@@ -1,6 +1,9 @@
 {
   "autoMemoryEnabled": false,
   "theme": "dark-ansi",
+  "permissions": {
+    "allow": ["Bash(docker *)"]
+  },
   "statusLine": {
     "type": "command",
     "command": "ccline",

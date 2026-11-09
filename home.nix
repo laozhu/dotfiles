@@ -213,7 +213,7 @@ in
   # Invalid local JSON is left untouched and only skips the status line updates.
   home.activation.claudeSettings = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
     run env PATH="${lib.makeBinPath [ pkgs.jq ]}:$PATH" \
-      ${pkgs.bash}/bin/bash ${./scripts/sync-claude-statusline.sh} \
+      ${pkgs.bash}/bin/bash ${./scripts/sync-claude-settings.sh} \
       "$HOME/.claude/settings.json" ${./home/.claude/settings.json} \
       "${pkgs.ccometixline}/bin/ccline" \
       || warnEcho "Claude statusLine not updated; fix ~/.claude/settings.json and rerun rebuild."
