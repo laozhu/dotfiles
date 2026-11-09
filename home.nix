@@ -227,6 +227,16 @@ in
       || warnEcho "Codex status line not updated; fix ~/.codex/config.toml and rerun rebuild."
   '';
 
+  # OrbStack edits docker.json from its settings UI, so only merge the registry mirrors.
+  # Restart the Docker engine in OrbStack to apply changes.
+  home.activation.orbstackDockerMirrors = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    run env PATH="${lib.makeBinPath [ pkgs.jq ]}:$PATH" \
+      ${pkgs.bash}/bin/bash ${./scripts/sync-orbstack-docker.sh} \
+      "$HOME/.orbstack/config/docker.json" \
+      https://docker.m.daocloud.io https://docker.1ms.run \
+      || warnEcho "OrbStack registry mirrors not updated; fix ~/.orbstack/config/docker.json and rerun rebuild."
+  '';
+
   # Convert a Pi settings link left by older generations before linkGeneration removes it.
   home.activation.piSettingsMigration =
     lib.hm.dag.entryBetween [ "linkGeneration" ] [ "writeBoundary" ]
@@ -242,6 +252,8 @@ in
     ".gradle/gradle.properties".text = ''
       org.gradle.caching=true
     '';
+    ".gradle/init.d/aliyun-mirrors.gradle".source = ./home/.gradle/init.d/aliyun-mirrors.gradle;
+    ".m2/settings.xml".source = ./home/.m2/settings.xml;
 
     # Public identity configuration only; private keys and gh OAuth stay local.
     # Keep the legacy out-of-store sources intact until old generations are replaced.

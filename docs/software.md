@@ -139,6 +139,11 @@ Homebrew Python 是明确替换系统版本的工具，因此保留。RabbitPro 
 | Rust   | rustup 下载官方预编译工具链到 `~/.rustup`；激活时若没有默认工具链则安装 stable（默认 profile 含 clippy 和 rustfmt），`rebuild.sh --update` 运行 `rustup update`；项目可用 `rust-toolchain.toml` 固定版本 |
 | fzf    | 普通搜索和 `Ctrl-T` 使用 fd，包含隐藏文件，遵守 `.gitignore` 并排除 `.git`                                                                                                                               |
 
+Gradle 通过 `~/.gradle/init.d/aliyun-mirrors.gradle` 把 Maven Central、Google 和插件门户的地址改写为阿里云镜像，
+项目自定义的仓库和顺序保持不变；Maven 的 `~/.m2/settings.xml` 只镜像 `central`，私有仓库不受影响。
+OrbStack 的 `~/.orbstack/config/docker.json` 在激活时合并 `registry-mirrors`（DaoCloud、毫秒镜像），
+保留应用内的其他设置；修改后需在 OrbStack 中重启 Docker 引擎。公共镜像可能限流或停止服务，失败时 Docker 会回退到 Docker Hub。
+
 Gradle 不额外开启全局并行或配置缓存；项目可用 `--no-build-cache` 临时禁用构建缓存。
 
 ## 检查本机安装状态
