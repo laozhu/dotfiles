@@ -23,6 +23,7 @@ tests=(
   repository-policy.sh
   non-shallow-git.sh
   claude-statusline.sh
+  orbstack-docker.sh
   codex-statusline.sh
   pi-settings.sh
   pi-config.sh

@@ -1,0 +1,31 @@
+// Point public repositories at Aliyun mirrors; projects keep their repository order.
+def mirrors = [
+  'https://repo.maven.apache.org/maven2': 'https://maven.aliyun.com/repository/central',
+  'https://repo1.maven.org/maven2': 'https://maven.aliyun.com/repository/central',
+  'https://dl.google.com/dl/android/maven2': 'https://maven.aliyun.com/repository/google',
+  'https://maven.google.com': 'https://maven.aliyun.com/repository/google',
+  'https://plugins.gradle.org/m2': 'https://maven.aliyun.com/repository/gradle-plugin',
+]
+def useMirrors = { RepositoryHandler repositories ->
+  repositories.withType(MavenArtifactRepository).configureEach { repository ->
+    def mirror = mirrors[repository.url.toString().replaceAll('/+$', '')]
+    if (mirror != null) {
+      repository.url = mirror
+    }
+  }
+}
+beforeSettings { settings ->
+  useMirrors(settings.buildscript.repositories)
+  useMirrors(settings.pluginManagement.repositories)
+  useMirrors(settings.dependencyResolutionManagement.repositories)
+}
+settingsEvaluated { settings ->
+  // Gradle otherwise falls back to the plugin portal outside the handler.
+  if (settings.pluginManagement.repositories.isEmpty()) {
+    settings.pluginManagement.repositories.gradlePluginPortal()
+  }
+}
+allprojects {
+  useMirrors(buildscript.repositories)
+  useMirrors(repositories)
+}

@@ -17,6 +17,9 @@ for profile in home work; do
       profileBin = "${home.home.profileDirectory}/bin";
       pythonPreference = home.programs.uv.settings.python-preference or null;
       gradleProperties = home.home.file.".gradle/gradle.properties".text or "";
+      gradleInit = builtins.readFile home.home.file.".gradle/init.d/aliyun-mirrors.gradle".source;
+      mavenSettings = builtins.readFile home.home.file.".m2/settings.xml".source;
+      orbstackMirrors = home.home.activation.orbstackDockerMirrors.data;
       fzfCommand = home.programs.fzf.defaultCommand;
       fzfFileCommand = home.programs.fzf.fileWidget.command;
       serviceNames = builtins.attrNames c.launchd.daemons
@@ -32,6 +35,9 @@ for profile in home work; do
     (.paths | index("/opt/homebrew/opt/python/libexec/bin") != null) and
     .pythonPreference == "system" and
     (.gradleProperties | contains("org.gradle.caching=true")) and
+    (.gradleInit | contains("maven.aliyun.com/repository/gradle-plugin")) and
+    (.mavenSettings | contains("<mirrorOf>central</mirrorOf>")) and
+    (.orbstackMirrors | contains("sync-orbstack-docker.sh") and contains("docker.m.daocloud.io") and contains("docker.1ms.run")) and
     .fzfCommand != null and .fzfCommand == .fzfFileCommand and
     (.paths as $paths | .profileBin as $profileBin |
       ($paths | index("$HOME/.local/bin")) as $local |
