@@ -80,13 +80,13 @@ SH
 
 以下行为来自仓库模板，运行时以导入 SFM 的那份配置为准：
 
-| 流量                                                                                                 | 去向                                                  |
-| ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| 私网 IP、代理服务器自身、未匹配其他规则的流量                                                        | 直连                                                  |
-| 公网 SSH 端口（22、54322）                                                                           | `🚀 proxy` 选择的出口                                 |
-| GitHub、Nix 缓存、NordPass 和 Logitech 下载等 `custom-proxy` 目标，以及 GFWList、OpenAI、Google Meet | `🚀 proxy` 选择的出口                                 |
-| Antigravity、Claude                                                                                  | `🇸🇬 singapore`，对应 DNS 也走新加坡                   |
-| 远程规则集下载                                                                                       | 经 `rule-set-download` HTTP client 固定走 `🇺🇸 us-hy2` |
+| 流量                                                                                         | 去向                                                  |
+| -------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| 私网 IP、代理服务器自身、未匹配其他规则的流量                                                | 直连                                                  |
+| 公网 SSH 端口（22、54322）                                                                   | `🚀 proxy` 选择的出口                                 |
+| GitHub、Nix 缓存、NordPass 和 Logitech 下载等 `custom-proxy` 目标，以及 GFWList、Google Meet | `🚀 proxy` 选择的出口                                 |
+| Antigravity、Claude、OpenAI（Codex）                                                         | `🇸🇬 singapore`，对应 DNS 也走新加坡                   |
+| 远程规则集下载                                                                               | 经 `rule-set-download` HTTP client 固定走 `🇺🇸 us-hy2` |
 
 custom-proxy 的近期直连测试和策略说明见 [2026-11-01 网络测评](proxy-audit-2026-11-01.md)。
 直连可达不代表大陆 IP 下的服务可用；这批服务继续保留显式代理策略。
@@ -137,7 +137,7 @@ curl --proxy http://127.0.0.1:7777 --connect-timeout 15 --max-time 30   -I https
 - **校验失败**：修复仓库模板或秘密，重新 rebuild。秘密用 `sops secrets/sing-box.yaml` 编辑。
 - **连接失败**：查看 SFM 错误，排除其他代理冲突，重新导入或重开应用，并检查系统授权。
 - **单个节点失败**：测试同地区其他节点，并检查规则集下载依赖的美国 HY2 是否可用。
-  全局 selector 的切换不会改变 Claude、Antigravity 和规则集下载各自固定的出口。
+  全局 selector 的切换不会改变 Claude、OpenAI、Antigravity 和规则集下载各自固定的出口。
 - **密钥检查失败**：运行 `bash scripts/check-sops-age-key.sh`，按提示恢复原有密钥或修正权限。
   脚本检查文件权限、仓库 recipient 匹配和解密能力，不会自动登录 Bitwarden 取回密钥。
 

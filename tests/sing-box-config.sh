@@ -30,7 +30,7 @@ jq -e '
 # Fixed regional routes must remain independent of the global selector.
 jq -e '
   . as $config |
-  ["claude", "antigravity.google"] | all(
+  ["claude", "openai", "antigravity.google"] | all(
     . as $tag |
     ([$config.route.rules[] | select(.rule_set == $tag) | .outbound] == ["🇸🇬 singapore"]) and
     ([$config.dns.rules[] | select(.rule_set == $tag) | .server] == ["singapore-dns"])
