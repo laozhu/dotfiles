@@ -56,7 +56,7 @@ home 未登录个人账号时提示登录，不沿用工作 token。密钥和登
 ## 工具来源与更新
 
 - 常规命令行工具由 Nix / Home Manager 管理；Claude Code、Antigravity CLI 来自 `llm-agents.nix`。
-- `pnpm`、`uv`、`bws`、Herdr、Kimi Code、Pi、CCometixLine 和 sing-box 使用官方 Apple Silicon 二进制，
+- `pnpm`、`proto`、`uv`、`bws`、Herdr、Kimi Code、Pi、CCometixLine 和 sing-box 使用官方 Apple Silicon 二进制，
   版本及 SHA-256 记录在 `macos-binaries.json`，Nix 负责校验、解包和链接。
 - 桌面应用及 Codex CLI 由 Homebrew cask 管理；im-select、mo、Atlassian CLI 和 NordPass CLI 使用上游 tap。
   Python、OpenJDK、Gradle 及工作机的 AWS、SAM、Temporal、Temporal Cloud CLI（`tcld`）和 OpenJDK 21 使用 Homebrew formula。
