@@ -303,6 +303,15 @@
     "commands": ["gradle"]
   },
   {
+    "id": "openssl@4",
+    "name": "OpenSSL",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Homebrew",
+    "package": "openssl@4",
+    "commands": ["openssl"]
+  },
+  {
     "id": "daipeihust/tap/im-select",
     "name": "im-select",
     "group": "shared",

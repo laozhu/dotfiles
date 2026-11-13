@@ -38,6 +38,7 @@ Homebrew Python 是明确替换系统版本的工具，因此保留。RabbitPro 
 | Python 3 / pip3                      | CLI       | `python3` / `pip3`     | Homebrew Formula          |
 | OpenJDK                              | CLI       | `java` / `javac`       | Homebrew Formula          |
 | Gradle                               | CLI       | `gradle`               | Homebrew Formula          |
+| OpenSSL                              | CLI       | `openssl`              | Homebrew Formula          |
 | im-select                            | CLI       | `im-select`            | Homebrew Formula          |
 | mo                                   | CLI       | `mo`                   | Homebrew Formula          |
 | ripgrep                              | CLI       | `rg`                   | Nix                       |
