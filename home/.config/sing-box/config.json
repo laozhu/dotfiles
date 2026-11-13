@@ -74,6 +74,10 @@
         "server": "singapore-dns"
       },
       {
+        "rule_set": "atlassian",
+        "server": "singapore-dns"
+      },
+      {
         "rule_set": ["custom-proxy", "gfwlist", "google-meet"],
         "server": "proxy-dns"
       },
@@ -287,6 +291,10 @@
         "outbound": "🇸🇬 singapore"
       },
       {
+        "rule_set": "atlassian",
+        "outbound": "🇸🇬 singapore"
+      },
+      {
         "rule_set": "google-meet",
         "network": "udp",
         "port": 3478,
@@ -402,6 +410,15 @@
               "storage.googleapis.com"
             ],
             "domain_suffix": ["antigravity.google", "antigravity.google.com"]
+          }
+        ]
+      },
+      {
+        "type": "inline",
+        "tag": "atlassian",
+        "rules": [
+          {
+            "domain_suffix": ["atlassian.net", "atlassian.com", "atl-paas.net"]
           }
         ]
       },
