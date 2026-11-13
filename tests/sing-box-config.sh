@@ -30,7 +30,7 @@ jq -e '
 # Fixed regional routes must remain independent of the global selector.
 jq -e '
   . as $config |
-  ["claude", "openai", "antigravity.google"] | all(
+  ["claude", "openai", "antigravity.google", "atlassian"] | all(
     . as $tag |
     ([$config.route.rules[] | select(.rule_set == $tag) | .outbound] == ["🇸🇬 singapore"]) and
     ([$config.dns.rules[] | select(.rule_set == $tag) | .server] == ["singapore-dns"])
@@ -152,6 +152,23 @@ for domain in example.com other.googleapis.com notantigravity.google antigravity
   result="$(sing-box rule-set match "$rule_fixture" "$domain" 2>&1)"
   if [ -n "$result" ]; then
     printf 'Antigravity rule unexpectedly matched %s\n' "$domain" >&2
+    exit 1
+  fi
+done
+
+atlassian_fixture="$config_test_root/atlassian.json"
+jq '{version: 3, rules: first(.route.rule_set[] |
+  select(.tag == "atlassian")).rules}' "$config" >"$atlassian_fixture"
+for domain in paid-inc.atlassian.net api.atlassian.com atlassian.com \
+  id-frontend.prod-east.frontend.public.atl-paas.net; do
+  if [ -z "$(sing-box rule-set match "$atlassian_fixture" "$domain" 2>&1)" ]; then
+    printf 'Atlassian rule did not match %s\n' "$domain" >&2
+    exit 1
+  fi
+done
+for domain in example.com notatlassian.net atlassian.net.evil.example; do
+  if [ -n "$(sing-box rule-set match "$atlassian_fixture" "$domain" 2>&1)" ]; then
+    printf 'Atlassian rule unexpectedly matched %s\n' "$domain" >&2
     exit 1
   fi
 done
