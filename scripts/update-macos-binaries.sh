@@ -13,6 +13,7 @@ versions="$(DOTFILES_BINARY_FLAKE="path:$repo_dir" nix eval --json --impure --ex
       if pkgs.lib.versionOlder version minimum then minimum else version;
   in {
     pnpm = atLeast "12.9.1" pkgs.pnpm.version;
+    proto = pkgs.proto.version;
     uv = atLeast "0.12.23" pkgs.uv.version;
     sing-box = atLeast "1.14.2" pkgs.sing-box.version;
     bws = pkgs.bws.version;
@@ -27,7 +28,7 @@ ccline_release="$(gh api repos/Haleclipse/CCometixLine/releases/latest)"
 ccline_version="$(jq -er 'select(.draft == false and .prerelease == false) | .tag_name | select(test("^v[0-9]+\\.[0-9]+\\.[0-9]+$")) | ltrimstr("v")' <<<"$ccline_release")"
 versions="$(jq --arg version "$ccline_version" '. + {ccometixline: $version}' <<<"$versions")"
 result='{}'
-for name in pnpm uv sing-box bws herdr kimi-code pi ccometixline; do
+for name in pnpm proto uv sing-box bws herdr kimi-code pi ccometixline; do
   version="$(jq -er --arg name "$name" '.[$name]' <<<"$versions")"
   case "$name" in
     ccometixline)
@@ -39,6 +40,11 @@ for name in pnpm uv sing-box bws herdr kimi-code pi ccometixline; do
       repo=pnpm/pnpm
       tag="v$version"
       asset=pnpm-darwin-arm64.tar.gz
+      ;;
+    proto)
+      repo=moonrepo/proto
+      tag="v$version"
+      asset=proto_cli-aarch64-apple-darwin.tar.xz
       ;;
     uv)
       repo=astral-sh/uv

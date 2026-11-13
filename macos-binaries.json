@@ -29,6 +29,11 @@
     "url": "https://github.com/pnpm/pnpm/releases/download/v12.9.1/pnpm-darwin-arm64.tar.gz",
     "version": "12.9.1"
   },
+  "proto": {
+    "sha256": "d2bb0da3afd121baf516b2e8ed7f549b2849243db91bca0a57b398392fba5e41",
+    "url": "https://github.com/moonrepo/proto/releases/download/v0.63.2/proto_cli-aarch64-apple-darwin.tar.xz",
+    "version": "0.63.2"
+  },
   "sing-box": {
     "sha256": "0d8c7f5ed5d587b0f1a5e9772a708ec3bfa4ac4c9329604b01d8d9c2ba406838",
     "url": "https://github.com/SagerNet/sing-box/releases/download/v1.14.4/sing-box-1.14.4-darwin-arm64.tar.gz",

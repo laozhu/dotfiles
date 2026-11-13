@@ -3,6 +3,7 @@
   stdenvNoCC,
   fetchurl,
   unzip,
+  xz,
   makeWrapper,
   fd,
   ripgrep,
@@ -21,7 +22,10 @@ let
       src = fetchurl { inherit (pin) url sha256; };
       dontUnpack = true;
       dontFixup = true; # Preserve upstream signatures and the complete release layout.
-      nativeBuildInputs = lib.optional (format == "zip") unzip ++ lib.optional (name == "pi") makeWrapper;
+      nativeBuildInputs =
+        lib.optional (format == "zip") unzip
+        ++ lib.optional (format == "tar.xz") xz
+        ++ lib.optional (name == "pi" || name == "proto") makeWrapper;
       installPhase = ''
         runHook preInstall
         release="$out/libexec/${name}"
@@ -38,7 +42,7 @@ let
             ''
           else
             ''
-              tar -xzf "$src" -C "$release"
+              tar -xf "$src" -C "$release"
             ''
         }
         # Releases may have a versioned top-level directory; keep all resources.
@@ -64,6 +68,14 @@ let
                     esac
                   fi
                 ''}
+            ''
+          else if name == "proto" then
+            ''
+              shim="$(dirname "$binary")/proto-shim"
+              test -f "$shim" && test -x "$shim"
+              ln -s "$shim" "$out/bin/proto-shim"
+              makeWrapper "$binary" "$out/bin/proto" \
+                --set PROTO_LOOKUP_DIR "$out/bin"
             ''
           else
             ''
@@ -92,6 +104,7 @@ let
 in
 {
   pnpm = package "pnpm" "pnpm" "tar";
+  proto = package "proto" "proto" "tar.xz";
   uv = package "uv" "uv" "tar";
   sing-box = package "sing-box" "sing-box" "tar";
   bws = package "bws" "bws" "zip";

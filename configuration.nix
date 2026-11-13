@@ -34,6 +34,7 @@ in
         inherit (binaries)
           ccometixline
           pnpm
+          proto
           uv
           sing-box
           bws
