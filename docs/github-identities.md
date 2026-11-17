@@ -9,6 +9,7 @@ Git、SSH、提交签名和 GitHub CLI 的默认身份由机器 profile 决定�
 | `~/Developer/paid-inc/`   | ritchie-paid | laozhu |
 | `~/Developer/laozhu/`     | laozhu       | laozhu |
 | `~/Developer/beebat-dev/` | laozhu       | laozhu |
+| `~/orca/workspaces/sdlc/` | laozhu       | laozhu |
 
 home 只需个人账号的密钥和 gh 登录，不需要准备工作账号。
 work 保留两个账号；目录名末尾的 `/` 保证规则不会匹配 `laozhu-other` 等相似名称。
