@@ -28,7 +28,7 @@ let
   ''
   + lib.optionalString (profile == "work") ''
     case "$PWD/" in
-      "$HOME/Developer/laozhu/"* | "$HOME/Developer/beebat-dev/"*)
+      "$HOME/Developer/laozhu/"* | "$HOME/Developer/beebat-dev/"* | "$HOME/orca/workspaces/sdlc/"*)
         export GH_CONFIG_DIR="$HOME/.config/gh-laozhu"
         export GITHUB_ACTOR=laozhu
         ;;
