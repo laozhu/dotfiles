@@ -168,6 +168,15 @@
     "apps": ["Orca.app"]
   },
   {
+    "id": "antiburn/tap/antiburn",
+    "name": "antiburn",
+    "group": "shared",
+    "type": "GUI",
+    "manager": "Homebrew Cask",
+    "package": "antiburn/tap/antiburn",
+    "apps": ["antiburn.app"]
+  },
+  {
     "id": "codex",
     "name": "Codex CLI",
     "group": "shared",

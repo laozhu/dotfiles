@@ -58,7 +58,7 @@ home 未登录个人账号时提示登录，不沿用工作 token。密钥和登
 - 常规命令行工具由 Nix / Home Manager 管理；Claude Code、Antigravity CLI 来自 `llm-agents.nix`。
 - `pnpm`、`proto`、`uv`、`bws`、Herdr、Kimi Code、Pi、CCometixLine 和 sing-box 使用官方 Apple Silicon 二进制，
   版本及 SHA-256 记录在 `macos-binaries.json`，Nix 负责校验、解包和链接。
-- 桌面应用及 Codex CLI 由 Homebrew cask 管理；im-select、mo、Atlassian CLI 和 NordPass CLI 使用上游 tap。
+- 桌面应用及 Codex CLI 由 Homebrew cask 管理；Orca、antiburn、im-select、mo、Atlassian CLI 和 NordPass CLI 使用上游 tap。
   Python、OpenJDK、Gradle 及工作机的 AWS、SAM、Temporal、Temporal Cloud CLI（`tcld`）和 OpenJDK 21 使用 Homebrew formula。
   `tcld` 来自官方 `temporalio/brew` tap。
   Brew 与 tap 源码由 `flake.lock` 锁定，核心配方从锁定的 tap 读取，不从 API 加载核心配方。

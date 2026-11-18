@@ -120,6 +120,7 @@ in
       "homebrew/core"
       "homebrew/cask"
       "stablyai/orca"
+      "antiburn/tap"
       "daipeihust/tap"
       "k1low/tap"
     ]

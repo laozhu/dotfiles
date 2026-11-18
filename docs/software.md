@@ -33,6 +33,7 @@ Homebrew Python 是明确替换系统版本的工具，因此保留。RabbitPro 
 | 微信开发者工具                       | GUI + CLI | `cli`                  | Homebrew Cask             |
 | OrbStack / Docker / Compose / buildx | GUI + CLI | `orb` / `docker`       | Homebrew Cask             |
 | Orca                                 | GUI + CLI | `orca`                 | Homebrew Cask             |
+| antiburn                             | GUI       | -                      | Homebrew Cask             |
 | Codex CLI                            | CLI       | `codex`                | Homebrew Cask             |
 | ngrok                                | CLI       | `ngrok`                | Homebrew Cask             |
 | Python 3 / pip3                      | CLI       | `python3` / `pip3`     | Homebrew Formula          |

@@ -35,6 +35,7 @@ nix eval --json \
   "$repo_dir#darwinConfigurations.mac.config.nix-homebrew.taps" |
   jq -e '
     keys == [
+      "antiburn/homebrew-tap",
       "daipeihust/homebrew-tap",
       "homebrew/homebrew-cask",
       "homebrew/homebrew-core",
