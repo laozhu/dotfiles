@@ -174,6 +174,11 @@ in
       ${githubZsh}
       # Apply after macOS path_helper and Home Manager's Nix profile setup.
       export PATH="/opt/homebrew/opt/python/libexec/bin:${javaPrefix}/bin:/opt/homebrew/bin:$PATH"
+
+      if [[ "''${TERM_PROGRAM:-}" == "Orca" ]]; then
+        export TERM=xterm-256color
+        export TERM_PROGRAM=WezTerm
+      fi
     '';
 
     shellAliases = {
