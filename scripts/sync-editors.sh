@@ -76,7 +76,15 @@ done
 
 status=0
 install_extensions() {
-  local cli="$1" extensions="$2" extension installed
+  local cli="$1" extensions="$2" extension id installed
+  # An editor list may pin `id@version`; the last entry for an ID wins, so pins
+  # appended after the shared list override it for that editor only.
+  extensions="$(awk '
+    { id = tolower($0); sub(/@.*/, "", id) }
+    !(id in spec) { order[++count] = id }
+    { spec[id] = $0 }
+    END { for (i = 1; i <= count; i++) print spec[order[i]] }
+  ' <<<"$extensions")"
   if ! installed="$(run_cli "$cli" --list-extensions)"; then
     printf 'Failed to list installed extensions with %s\n' "$cli" >&2
     status=1
@@ -91,8 +99,9 @@ install_extensions() {
   fi
   while IFS= read -r extension || [ -n "$extension" ]; do
     [ -n "$extension" ] || continue
-    if grep -Fxiq -- "$extension" <<<"$installed"; then
-      printf 'Already installed: %s\n' "$extension"
+    id="${extension%@*}"
+    if grep -Fxiq -- "$id" <<<"$installed"; then
+      printf 'Already installed: %s\n' "$id"
       continue
     fi
     if ! run_cli "$cli" --install-extension "$extension"; then
@@ -101,7 +110,7 @@ install_extensions() {
       continue
     fi
     # Extension packs install their members too; refresh to skip them below.
-    installed="$(run_cli "$cli" --list-extensions)" || installed+=$'\n'"$extension"
+    installed="$(run_cli "$cli" --list-extensions)" || installed+=$'\n'"$id"
   done <<<"$extensions"
 }
 

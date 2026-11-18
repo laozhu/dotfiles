@@ -35,7 +35,8 @@ case "$1" in
       echo 'attempted to reinstall an existing extension' >&2
       exit 25
     fi
-    printf '%s\n' "$2" >> "$EDITOR_TEST_STATE/$editor"
+    # Pinned installs (`id@version`) are listed by ID only.
+    printf '%s\n' "${2%@*}" >> "$EDITOR_TEST_STATE/$editor"
     # ms-toolsai.jupyter is an extension pack that installs its members too.
     if [ "$2" = ms-toolsai.jupyter ]; then
       printf 'ms-toolsai.jupyter-keymap\nms-toolsai.jupyter-renderers\n' >> "$EDITOR_TEST_STATE/$editor"
@@ -93,6 +94,13 @@ while IFS= read -r extension; do
 done < <(jq -r '.recommendations[]' "$fixture/repo/home/ide/extensions.json")
 grep -Fxq 'code --install-extension enkia.tokyo-night' "$EDITOR_TEST_LOG"
 grep -Fxq 'cursor --install-extension enkia.tokyo-night' "$EDITOR_TEST_LOG"
+# Cursor's pin replaces the shared unpinned entry; other editors stay unpinned.
+grep -Fxq 'cursor --install-extension rust-lang.rust-analyzer@0.3.3113' "$EDITOR_TEST_LOG"
+if grep -Fxq 'cursor --install-extension rust-lang.rust-analyzer' "$EDITOR_TEST_LOG"; then
+  echo 'sync installed the unpinned extension in Cursor' >&2
+  exit 1
+fi
+grep -Fxq 'code --install-extension rust-lang.rust-analyzer' "$EDITOR_TEST_LOG"
 : >"$EDITOR_TEST_LOG"
 bash "$fixture/repo/scripts/sync-editors.sh" >/dev/null
 if grep -Fq -- '--install-extension' "$EDITOR_TEST_LOG"; then
