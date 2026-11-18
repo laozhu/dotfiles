@@ -21,6 +21,7 @@ nix eval --json "$repo_dir#darwinConfigurations.mac.config" --apply '
     casks = map (cask: cask.name) config.homebrew.casks;
     brews = map (brew: brew.name) config.homebrew.brews;
     upgrade = config.homebrew.onActivation.upgrade;
+    greedyCasks = config.homebrew.greedyCasks;
     packages = builtins.concatLists (map
       (home: map (package: package.pname or package.name) home.home.packages)
       (builtins.attrValues config.home-manager.users));
@@ -29,6 +30,7 @@ nix eval --json "$repo_dir#darwinConfigurations.mac.config" --apply '
   (.casks | index("codex") != null) and
   (.brews | index("daipeihust/tap/im-select") != null) and
   .upgrade == true and
+  .greedyCasks == true and
   ([.packages[] | select(test("^codex($|-)"))] | length == 0)
 ' >/dev/null
 nix eval --json \
