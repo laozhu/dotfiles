@@ -191,12 +191,16 @@ TUI `0.18.0` 已在当前 CLI `0.2.1-rc.5` 下重新验证，交互界面和账�
 
 bootstrap 和 rebuild 均在系统应用安装成功后，以当前用户执行 `scripts/sync-editors.sh`：
 
-- 将 `home/ide/settings.json` 写入两个 IDE 的默认用户配置。
+- 将 `home/ide/settings.json` 写入 VS Code、Antigravity IDE 和 Cursor 的默认用户配置；
+  Cursor 额外用 `home/ide/cursor/settings.json` 覆盖其专属项。
   内容不同时，先将原文件备份为旁边的 `settings.json.backup.*`；相同则跳过。
 - 从 `home/ide/extensions.json` 的 `recommendations` 安装共享插件，
-  VS Code 额外读取 `home/ide/vscode/extensions.json`。
+  VS Code 和 Cursor 分别额外读取 `home/ide/vscode/extensions.json`、`home/ide/cursor/extensions.json`。
+  Cursor 与 Antigravity 从 Open VSX 安装插件，新增共享插件前确认那里也有发布。
 - 已安装的插件跳过，其他插件不卸载，插件版本不锁定。
   查询失败会跳过该 IDE 的插件安装；安装失败会继续其余项，最后返回失败。
+  每次安装后重新查询，插件包顺带安装的成员不会重复安装；只过滤 Cursor 运行时固定输出的 `url.parse()` 弃用提示。
+  `ms-toolsai.jupyter-keymap` 由 `ms-toolsai.jupyter` 插件包带入，Cursor 内置该插件，因此不单独列出。
 
 新增或删除推荐插件，直接编辑相应 JSON 清单。删除清单项不会自动卸载已装插件。
 如需查看 Antigravity 已装插件，使用与同步脚本相同的 Node 入口，避开 Electron 启动问题：
@@ -211,7 +215,7 @@ node "/Applications/Antigravity IDE.app/Contents/Resources/app/out/cli.js" --lis
 bash scripts/sync-editors.sh
 ```
 
-两个 IDE 及 Node、jq 必须已安装，插件下载需要网络；不处理命名 Profile。
+三个 IDE 及 Node、jq 必须已安装，插件下载需要网络；不处理命名 Profile。
 Pi 的扩展清单模板在 `home/.pi/agent/settings.json`，不属于 IDE 同步步骤；
 修改模板不会更新已有机器，需要手动合并到本机配置。
 `pi --help` / `pi -h` 禁止启动联网，正常启动和显式安装扩展仍使用原有网络行为。

@@ -1,0 +1,4 @@
+{
+  "cursor.composer.queueMessageDefaultBehavior": "steer",
+  "cursor.composer.queueManualSendBehavior2": "steer"
+}
