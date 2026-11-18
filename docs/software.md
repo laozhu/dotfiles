@@ -22,6 +22,7 @@ Homebrew Python 是明确替换系统版本的工具，因此保留。RabbitPro 
 | Google Chrome                        | GUI       | -                      | Homebrew Cask             |
 | Antigravity IDE                      | GUI + CLI | `antigravity-ide`      | Homebrew Cask             |
 | VS Code                              | GUI + CLI | `code`                 | Homebrew Cask             |
+| Cursor                               | GUI + CLI | `cursor`               | Homebrew Cask             |
 | WezTerm                              | GUI + CLI | `wezterm`              | Homebrew Cask             |
 | SFM                                  | GUI       | -                      | Homebrew Cask             |
 | 豆包输入法                           | GUI       | -                      | Homebrew Cask             |

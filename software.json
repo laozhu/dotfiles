@@ -65,6 +65,16 @@
     "commands": ["/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"]
   },
   {
+    "id": "cursor",
+    "name": "Cursor",
+    "group": "shared",
+    "type": "GUI + CLI",
+    "manager": "Homebrew Cask",
+    "package": "cursor",
+    "apps": ["Cursor.app"],
+    "commands": ["cursor"]
+  },
+  {
     "id": "wezterm",
     "name": "WezTerm",
     "group": "shared",
