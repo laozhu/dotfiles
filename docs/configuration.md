@@ -62,7 +62,8 @@ home 未登录个人账号时提示登录，不沿用工作 token。密钥和登
   Python、OpenJDK、Gradle 及工作机的 AWS、SAM、Temporal、Temporal Cloud CLI（`tcld`）和 OpenJDK 21 使用 Homebrew formula。
   `tcld` 来自官方 `temporalio/brew` tap。
   Brew 与 tap 源码由 `flake.lock` 锁定，核心配方从锁定的 tap 读取，不从 API 加载核心配方。
-  应用自动更新、在线安装器和未固定的下载地址仍可能影响实际安装结果。
+  `greedyCasks = true` 让激活时的升级不再跳过标记 `auto_updates` 的 cask，统一升级到锁定 tap 中的版本；
+  应用自带的更新器仍然存在，它、在线安装器和未固定的下载地址仍可能影响实际安装结果。
 
 应用当前配置：
 

@@ -105,6 +105,8 @@ in
 
   homebrew = {
     enable = true;
+    # Upgrade casks marked auto_updates too, so rebuild sets versions from the locked taps.
+    greedyCasks = true;
 
     # 🔄 支持自动化清洗、更新及底层应用升级
     onActivation = {
