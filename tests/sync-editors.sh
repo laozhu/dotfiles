@@ -28,17 +28,25 @@ case "$1" in
     ;;
   --install-extension)
     if [ "${EDITOR_TEST_FAIL:-}" = "$editor" ]; then exit 23; fi
+    # Mimic Cursor's runtime deprecation noise on marketplace calls.
+    echo "(node:123) [DEP0169] DeprecationWarning: \`url.parse()\` behavior is not standardized." >&2
+    echo '(Use `Cursor --trace-deprecation ...` to show where the warning was created)' >&2
     if grep -Fxiq -- "$2" "$EDITOR_TEST_STATE/$editor"; then
       echo 'attempted to reinstall an existing extension' >&2
       exit 25
     fi
     printf '%s\n' "$2" >> "$EDITOR_TEST_STATE/$editor"
+    # ms-toolsai.jupyter is an extension pack that installs its members too.
+    if [ "$2" = ms-toolsai.jupyter ]; then
+      printf 'ms-toolsai.jupyter-keymap\nms-toolsai.jupyter-renderers\n' >> "$EDITOR_TEST_STATE/$editor"
+    fi
     ;;
   *) exit 26 ;;
 esac
 CLI
 # Exercise the official launcher path rather than substituting system Node.
 cp "$fixture/bin/code" "$fixture/bin/antigravity-ide"
+cp "$fixture/bin/code" "$fixture/bin/cursor"
 ln -s "$jq_cli" "$fixture/bin/jq"
 chmod +x "$fixture/bin/"*
 export EDITOR_TEST_LOG="$fixture/calls"
@@ -47,25 +55,44 @@ mkdir -p "$EDITOR_TEST_STATE"
 # Real extension IDs are case insensitive.
 printf 'BRADLC.vscode-tailwindcss\n' >"$EDITOR_TEST_STATE/code"
 printf 'bradlc.vscode-tailwindcss\n' >"$EDITOR_TEST_STATE/antigravity-ide"
+printf 'anysphere.remote-ssh\n' >"$EDITOR_TEST_STATE/cursor"
 export HOME="$fixture/home"
 export PATH="$fixture/bin:/usr/bin:/bin"
 code_settings="$HOME/Library/Application Support/Code/User/settings.json"
 agy_settings="$HOME/Library/Application Support/Antigravity IDE/User/settings.json"
+cursor_settings="$HOME/Library/Application Support/Cursor/User/settings.json"
 mkdir -p "$(dirname "$code_settings")"
 printf '{"custom":true}\n' >"$code_settings"
 cp "$code_settings" "$fixture/original"
-ELECTRON_RUN_AS_NODE=1 bash "$fixture/repo/scripts/sync-editors.sh" >/dev/null
+ELECTRON_RUN_AS_NODE=1 bash "$fixture/repo/scripts/sync-editors.sh" >/dev/null 2>"$fixture/first.err"
+if grep -Eq 'DEP0169|trace-deprecation' "$fixture/first.err"; then
+  echo 'sync did not filter runtime deprecation warnings' >&2
+  exit 1
+fi
+# Pack members installed alongside ms-toolsai.jupyter must not be requested again.
+if grep -Eq ' --install-extension ms-toolsai\.jupyter-(keymap|renderers)$' "$EDITOR_TEST_LOG"; then
+  echo 'sync reinstalled extension pack members' >&2
+  exit 1
+fi
 cmp "$fixture/repo/home/ide/settings.json" "$code_settings"
 cmp "$code_settings" "$agy_settings"
 backups=("$code_settings".backup.*)
 test "${#backups[@]}" = 1
 cmp "$fixture/original" "${backups[0]}"
+# Cursor gets the shared settings plus its own overrides.
+jq -e --slurpfile shared "$fixture/repo/home/ide/settings.json" \
+  --slurpfile cursor "$fixture/repo/home/ide/cursor/settings.json" \
+  '. == ($shared[0] * $cursor[0])' "$cursor_settings" >/dev/null
+jq -e '."workbench.colorTheme" == "Tokyo Night" and
+  ."cursor.composer.queueMessageDefaultBehavior" == "steer"' "$cursor_settings" >/dev/null
 # Both editors must receive every shared plugin, and VS Code needs the theme.
 while IFS= read -r extension; do
   grep -Fxiq -- "$extension" "$EDITOR_TEST_STATE/code"
   grep -Fxiq -- "$extension" "$EDITOR_TEST_STATE/antigravity-ide"
+  grep -Fxiq -- "$extension" "$EDITOR_TEST_STATE/cursor"
 done < <(jq -r '.recommendations[]' "$fixture/repo/home/ide/extensions.json")
 grep -Fxq 'code --install-extension enkia.tokyo-night' "$EDITOR_TEST_LOG"
+grep -Fxq 'cursor --install-extension enkia.tokyo-night' "$EDITOR_TEST_LOG"
 : >"$EDITOR_TEST_LOG"
 bash "$fixture/repo/scripts/sync-editors.sh" >/dev/null
 if grep -Fq -- '--install-extension' "$EDITOR_TEST_LOG"; then
@@ -74,6 +101,7 @@ if grep -Fq -- '--install-extension' "$EDITOR_TEST_LOG"; then
 fi
 backups=("$code_settings".backup.*)
 test "${#backups[@]}" = 1
+test -z "$(find "$(dirname "$cursor_settings")" -name 'settings.json.backup.*')"
 # Replacing a symlink must preserve its old target and back up its contents.
 cp "$fixture/original" "$fixture/target"
 rm "$agy_settings"
