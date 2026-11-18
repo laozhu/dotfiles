@@ -12,6 +12,7 @@ home/.config/herdr/*.sock
 home/.config/herdr/herdr.sock.agent
 home/.config/herdr/.plugins.lock
 home/.config/herdr/session-snapshots/
+home/.config/herdr/sessions/
 
 # Local Git worktrees
 .worktrees/
