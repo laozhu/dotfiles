@@ -50,6 +50,10 @@
       url = "github:stablyai/homebrew-orca";
       flake = false;
     };
+    antiburn-tap = {
+      url = "github:antiburn/homebrew-tap";
+      flake = false;
+    };
     im-select-tap = {
       url = "github:daipeihust/homebrew-tap";
       flake = false;
@@ -125,6 +129,7 @@
               "homebrew/homebrew-core" = inputs.homebrew-core;
               "homebrew/homebrew-cask" = inputs.homebrew-cask;
               "stablyai/homebrew-orca" = inputs.orca-tap;
+              "antiburn/homebrew-tap" = inputs.antiburn-tap;
               "daipeihust/homebrew-tap" = inputs.im-select-tap;
               "k1low/homebrew-tap" = inputs.mo-tap;
             }

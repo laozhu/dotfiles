@@ -1,5 +1,21 @@
 {
   "nodes": {
+    "antiburn-tap": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1793234377,
+        "narHash": "sha256-Md/V5sHEKLXpa3iz6G2jnAhJhowxkl99Xo5PD8R2Jfk=",
+        "owner": "antiburn",
+        "repo": "homebrew-tap",
+        "rev": "038283b5e711262f3cd148528ecb994adfb3bfa9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "antiburn",
+        "repo": "homebrew-tap",
+        "type": "github"
+      }
+    },
     "atlassian-tap": {
       "flake": false,
       "locked": {
@@ -287,6 +303,7 @@
     },
     "root": {
       "inputs": {
+        "antiburn-tap": "antiburn-tap",
         "atlassian-tap": "atlassian-tap",
         "brew-src": "brew-src",
         "darwin": "darwin",
