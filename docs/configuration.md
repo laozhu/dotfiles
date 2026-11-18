@@ -201,6 +201,9 @@ bootstrap 和 rebuild 均在系统应用安装成功后，以当前用户执行 
   查询失败会跳过该 IDE 的插件安装；安装失败会继续其余项，最后返回失败。
   每次安装后重新查询，插件包顺带安装的成员不会重复安装；只过滤 Cursor 运行时固定输出的 `url.parse()` 弃用提示。
   `ms-toolsai.jupyter-keymap` 由 `ms-toolsai.jupyter` 插件包带入，Cursor 内置该插件，因此不单独列出。
+- 编辑器专属清单可写 `id@version`，覆盖共享清单中的同一插件，仅首次安装时生效，已装插件不按版本重装。
+  Cursor 3.30 基于 VS Code 1.128，rust-analyzer 0.3.3121 起要求 1.144，Cursor 市场因此报
+  “not available for the Mac Silicon”，故 Cursor 固定 0.3.3113；Cursor 跟进后删除该固定。
 
 新增或删除推荐插件，直接编辑相应 JSON 清单。删除清单项不会自动卸载已装插件。
 如需查看 Antigravity 已装插件，使用与同步脚本相同的 Node 入口，避开 Electron 启动问题：
