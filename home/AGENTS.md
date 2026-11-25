@@ -10,8 +10,8 @@
   otherwise use the closest runnable reproduction and state what remains unverified.
 - Keep UI and engineering quality high. Fix issues caused by the current change.
   Report unrelated issues separately; fix them only when small, safe, and within authorized scope.
-- Default to one agent. Before launching multiple agents, explain benefits and resource costs
-  and obtain approval, unless the user already explicitly requested parallel agent work.
+- Default to one agent. Before running several agents in parallel, explain the cost and get
+  approval unless the user asked for it; a single subagent a skill requires needs no approval.
 - Preserve unrelated user changes; never discard or overwrite them without explicit authorization.
 - Verify relevant behavior before claiming success; state checks and what remains unverified.
 - Never expose credentials, private keys, or decrypted secrets in logs, chat, or commits.
