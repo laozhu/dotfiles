@@ -219,7 +219,7 @@ for profile in home work; do
   # account elsewhere, and cd within one account must not reread the token.
   if [ "$profile" = work ]; then
     (
-      mkdir -p "$HOME/Developer/laozhu/a" "$HOME/Developer/beebat-dev/b" "$HOME/orca/workspaces/sdlc/c" "$HOME/elsewhere"
+      mkdir -p "$HOME/Developer/laozhu/a" "$HOME/Developer/beebat-dev/b" "$HOME/orca/workspaces/sdlc/c" "$HOME/orca/workspaces/skills/d" "$HOME/elsewhere"
       cd "$HOME/Developer/laozhu/a"
       export GH_FIXTURE_LOG="$fixture/gh-calls" GH_FIXTURE_BIN="$fixture/bin"
       : >"$GH_FIXTURE_LOG"
@@ -234,6 +234,9 @@ for profile in home work; do
         test "$GITHUB_ACTOR" = laozhu
         test "$(wc -l <"$GH_FIXTURE_LOG" | tr -d " ")" = 1
         cd "$HOME/orca/workspaces/sdlc/c"
+        test "$GITHUB_ACTOR" = laozhu
+        test "$(wc -l <"$GH_FIXTURE_LOG" | tr -d " ")" = 1
+        cd "$HOME/orca/workspaces/skills/d"
         test "$GITHUB_ACTOR" = laozhu
         test "$(wc -l <"$GH_FIXTURE_LOG" | tr -d " ")" = 1
         cd "$HOME/elsewhere"
