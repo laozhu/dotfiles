@@ -15,9 +15,9 @@
     "version": "0.9.5"
   },
   "kimi-code": {
-    "sha256": "0e198ee3ac1d40964a8dc1da08cdf55f80e5a26d28dfa7a0967cd5a645ec32be",
-    "url": "https://github.com/MoonshotAI/kimi-code/releases/download/%40moonshot-ai%2Fkimi-code%402.6.2/kimi-code-darwin-arm64.tar.gz",
-    "version": "2.6.2"
+    "sha256": "2f65c94f666b02641a20d305d84a3f5513938bf21d4884c82f9e479ffebccc00",
+    "url": "https://github.com/MoonshotAI/kimi-code/releases/download/%40moonshot-ai%2Fkimi-code%402.6.3/kimi-code-darwin-arm64.tar.gz",
+    "version": "2.6.3"
   },
   "pi": {
     "sha256": "56b5e194d485ced555667b8ba3276157a8272e9ecde9e001e428af80985bdd9b",
@@ -30,9 +30,9 @@
     "version": "12.9.1"
   },
   "proto": {
-    "sha256": "d2bb0da3afd121baf516b2e8ed7f549b2849243db91bca0a57b398392fba5e41",
-    "url": "https://github.com/moonrepo/proto/releases/download/v0.63.2/proto_cli-aarch64-apple-darwin.tar.xz",
-    "version": "0.63.2"
+    "sha256": "05f6fbeb1064a7181adfa9c4a331e290f6e1d89cb2f5dcfce542b33cd4b7b220",
+    "url": "https://github.com/moonrepo/proto/releases/download/v0.64.0/proto_cli-aarch64-apple-darwin.tar.xz",
+    "version": "0.64.0"
   },
   "sing-box": {
     "sha256": "0d8c7f5ed5d587b0f1a5e9772a708ec3bfa4ac4c9329604b01d8d9c2ba406838",
@@ -40,8 +40,8 @@
     "version": "1.14.4"
   },
   "uv": {
-    "sha256": "81b811b57e4624df7ed3aac148e0359100d9962f3d9dce00aec533dc2e086731",
-    "url": "https://github.com/astral-sh/uv/releases/download/0.13.7/uv-aarch64-apple-darwin.tar.gz",
-    "version": "0.13.7"
+    "sha256": "5aeca67f2283f75235de40d0bd9c0a5bbc5fce23b6d48b3bf9fa1b2db08382ca",
+    "url": "https://github.com/astral-sh/uv/releases/download/0.13.9/uv-aarch64-apple-darwin.tar.gz",
+    "version": "0.13.9"
   }
 }
