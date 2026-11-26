@@ -43,6 +43,10 @@ rebuild 和 Home Manager activation 均不创建或覆盖 Pi settings。已有�
 
 `configuration.nix` 在 home/work 两组中均将 AirDrop 设为对所有人可见，
 并开启触摸板“轻点以点按”。这些设置由首次 bootstrap 和后续 rebuild 应用。
+work 还在插电时禁止系统睡眠（显示器照常关闭），并用 `pmset repeat` 每天 00:55 唤醒或开机；
+该计划会替换手动设置的其他重复唤醒。删除配置不会恢复原值，需要手动执行
+`pmset -c sleep <分钟>` 和 `pmset repeat cancel`。合盖且未接外接显示器时仍会睡眠。
+home 保持系统的睡眠设置，不设定时唤醒。
 
 GitHub 身份由机器 profile 决定，详见 [GitHub 身份](github-identities.md)。
 home 全局使用 laozhu；work 默认使用 ritchie-paid，仅 `~/Developer/laozhu/` 和

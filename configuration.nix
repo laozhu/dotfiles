@@ -144,6 +144,16 @@ in
     ''
   );
 
+  # Stay awake on AC power for overnight jobs; displays still sleep. power.sleep.computer
+  # would also change battery sleep. The repeat schedule replaces any other repeat event.
+  # Removing these lines does not restore the previous settings.
+  system.activationScripts.power.text = lib.mkIf (profile == "work") (
+    lib.mkAfter ''
+      pmset -c sleep 0
+      pmset repeat wakeorpoweron MTWRFSU 00:55:00
+    ''
+  );
+
   # Register the JDKs with /usr/libexec/java_home as recommended by Homebrew.
   system.activationScripts.postActivation.text = ''
     mkdir -p /Library/Java/JavaVirtualMachines
