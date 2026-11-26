@@ -46,6 +46,10 @@ rebuild 和 Home Manager activation 均不创建或覆盖 Pi settings。已有�
 work 还在插电时禁止系统睡眠（显示器照常关闭），并用 `pmset repeat` 每天 00:55 唤醒或开机；
 该计划会替换手动设置的其他重复唤醒。删除配置不会恢复原值，需要手动执行
 `pmset -c sleep <分钟>` 和 `pmset repeat cancel`。合盖且未接外接显示器时仍会睡眠。
+为了让 agent 通过 Computer Use 操作图形界面，work 关闭屏保（Home Manager 设置
+`idleTime = 0`）。锁屏密码不区分电源，且 `sysadminctl` 需要登录密码，因此不由 rebuild 管理；
+在 work 上手动执行一次 `sysadminctl -screenLock off -password -`，离开时用 `Ctrl+Cmd+Q` 锁屏。
+恢复时执行 `sysadminctl -screenLock immediate -password -`。
 home 保持系统的睡眠设置，不设定时唤醒。
 
 GitHub 身份由机器 profile 决定，详见 [GitHub 身份](github-identities.md)。

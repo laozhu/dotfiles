@@ -76,6 +76,12 @@ in
 
   home.packages = software.packages pkgs llmPkgs;
 
+  # Keep the screen saver from covering windows that GUI agents drive on work.
+  # The screen lock itself needs sysadminctl and a password; see docs/configuration.md.
+  targets.darwin.currentHostDefaults."com.apple.screensaver".idleTime = lib.mkIf (
+    profile == "work"
+  ) 0;
+
   # Shared by bootstrap and rebuild; profiles and credentials remain writable/local.
   # Installs need the network, so a failure warns instead of aborting the whole switch.
   home.activation.dshPlugins = lib.hm.dag.entryAfter [ "linkGeneration" ] (
