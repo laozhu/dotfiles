@@ -135,4 +135,8 @@ echo "==> Step 7: sync IDE settings and extensions"
 PATH="/etc/profiles/per-user/$REAL_USER/bin:/run/current-system/sw/bin:$PATH" \
   bash "$DIR/scripts/sync-editors.sh"
 
+if [ "$PROFILE" = work ]; then
+  bash "$DIR/scripts/disable-screen-lock.sh"
+fi
+
 echo "==> Done. Open a new terminal to load Python/Java PATH and shell settings. Use ./rebuild.sh for future changes."

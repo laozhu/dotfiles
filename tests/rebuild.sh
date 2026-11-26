@@ -68,6 +68,10 @@ cat >"$rebuild_test_root/scripts/sync-editors.sh" <<'SH'
 printf 'editor sync\n' >>"$REBUILD_TEST_LOG"
 exit "${REBUILD_EDITOR_STATUS:-0}"
 SH
+cat >"$rebuild_test_root/scripts/disable-screen-lock.sh" <<'SH'
+#!/usr/bin/env bash
+printf 'screen lock\n' >>"$REBUILD_TEST_LOG"
+SH
 cat >"$rebuild_fixture_bin/nix" <<'SH'
 #!/usr/bin/env bash
 case "${NIX_CONFIG:-}" in
@@ -223,6 +227,7 @@ printf 'work\n' >"$rebuild_fixture_home/.config/dotfiles/profile"
 HOME="$rebuild_fixture_home" PATH="$rebuild_test_path" bash "$rebuild_fixture" >/dev/null
 grep -Fq "$rebuild_fixture_real#work" "$rebuild_log"
 grep -Fq 'darwinConfigurations.work.pkgs.sing-box' "$rebuild_log"
+test "$(tail -n 2 "$rebuild_log")" = "$(printf 'editor sync\nscreen lock')"
 if grep -Eq 'UU prefetch|nix eval' "$rebuild_log"; then
   echo 'work must skip UU prefetch and its tap lookup' >&2
   exit 1

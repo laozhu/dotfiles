@@ -77,7 +77,7 @@ in
   home.packages = software.packages pkgs llmPkgs;
 
   # Keep the screen saver from covering windows that GUI agents drive on work.
-  # The screen lock itself needs sysadminctl and a password; see docs/configuration.md.
+  # The screen lock needs a password, so scripts/disable-screen-lock.sh handles it.
   targets.darwin.currentHostDefaults."com.apple.screensaver".idleTime = lib.mkIf (
     profile == "work"
   ) 0;

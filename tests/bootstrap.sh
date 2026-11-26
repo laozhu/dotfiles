@@ -48,6 +48,10 @@ esac
 printf 'editor sync\n' >>"$BOOTSTRAP_TEST_LOG"
 exit "${BOOTSTRAP_EDITOR_STATUS:-0}"
 SH
+cat >"$bootstrap_test_root/scripts/disable-screen-lock.sh" <<'SH'
+#!/usr/bin/env bash
+printf 'screen lock\n' >>"$BOOTSTRAP_TEST_LOG"
+SH
 cat >"$bootstrap_fixture_bin/whoami" <<'SH'
 #!/usr/bin/env bash
 printf '%s\n' 'fixture-user'
@@ -305,6 +309,7 @@ test ! -s "$bootstrap_log"
 HOME="$bootstrap_fixture_home" PATH="$bootstrap_test_path" bash "$bootstrap_fixture" --profile work >/dev/null
 test "$(cat "$bootstrap_fixture_home/.config/dotfiles/profile")" = work
 grep -Fq "$bootstrap_fixture_real#work" "$bootstrap_log"
+test "$(tail -n 2 "$bootstrap_log")" = "$(printf 'editor sync\nscreen lock')"
 : >"$bootstrap_log"
 if HOME="$bootstrap_fixture_home" PATH="$bootstrap_test_path" bash "$bootstrap_fixture" --profile home >/dev/null 2>&1; then exit 1; fi
 test ! -s "$bootstrap_log"

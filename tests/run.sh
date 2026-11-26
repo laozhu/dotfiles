@@ -19,6 +19,7 @@ tests=(
   prefetch-uu-booster.sh
   rebuild.sh
   sync-editors.sh
+  disable-screen-lock.sh
   update-macos-binaries.sh
   repository-policy.sh
   non-shallow-git.sh
