@@ -331,6 +331,15 @@
     "commands": ["openssl"]
   },
   {
+    "id": "vale",
+    "name": "Vale",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Homebrew",
+    "package": "vale",
+    "commands": ["vale"]
+  },
+  {
     "id": "daipeihust/tap/im-select",
     "name": "im-select",
     "group": "shared",
