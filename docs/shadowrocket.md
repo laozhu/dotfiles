@@ -4,6 +4,10 @@ iPhone 上的 Shadowrocket 使用与 [sing-box](sing-box.md) 相同的节点和�
 需要 Shadowrocket 2.2.53 或更高版本：VLESS REALITY 从 2.2.30、Hysteria2 从 2.2.35 开始支持，
 2.2.53 修复了 REALITY Short ID 解析。旧版本会拒绝 `hysteria2://` 链接，或忽略 REALITY 参数而无法连接。
 
+> 当前状态（2026-11-28）：尚未在升级后的 Shadowrocket 上完成真机测试。
+> 2.2.18 上 HY2 链接无法导入、VLESS 导入后无法连接，规则可通过 `serve-once.sh` 导入；
+> 升级后仍需验证四个节点的导入与连接，以及规则集下载和分流是否生效。
+
 | 文件                                          | 内容                                             |
 | --------------------------------------------- | ------------------------------------------------ |
 | `home/.config/shadowrocket/shadowrocket.conf` | 分组、分流规则和 DNS；不含秘密，经局域网扫码导入 |
