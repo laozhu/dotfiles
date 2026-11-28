@@ -59,6 +59,7 @@ target_sing_box="$(
     "$DIR#darwinConfigurations.$PROFILE.pkgs.sing-box"
 )"
 PATH="$target_sing_box/bin:$PATH" "$DIR/scripts/check-sing-box-config.sh"
+"$DIR/scripts/check-shadowrocket-config.sh"
 
 if [ "$PROFILE" = home ]; then
   homebrew_cask_source="$(

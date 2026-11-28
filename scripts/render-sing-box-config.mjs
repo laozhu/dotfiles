@@ -1,6 +1,6 @@
 import fs from "node:fs";
 
-function getPath(object, path) {
+export function getPath(object, path) {
   return path.split("/").reduce((value, key) => {
     if (value === null || typeof value !== "object" || !(key in value)) {
       throw new Error(`missing SOPS key path: ${path}`);

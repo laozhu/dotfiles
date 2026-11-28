@@ -43,6 +43,8 @@ SFM 的 Local Profile 是导入副本，不会自动读取仓库后续修改：
 4. 连接；首次使用时按 macOS 提示批准网络扩展和 VPN 权限。
 
 每次修改模板、规则或秘密并发布新配置后，都要重新导入。
+修改分流规则或节点时，同步修改 `home/.config/shadowrocket/` 中的 Shadowrocket 模板；
+`tests/shadowrocket-config.sh` 会检查两者是否一致，手机导入见 [Shadowrocket](shadowrocket.md)。
 不要直接修改 SFM 的私有容器；应用内临时修改也不会同步回仓库。
 Homebrew 安装或升级 SFM 可能中断代理连接，操作前保留可离线使用的安装包和配置。
 

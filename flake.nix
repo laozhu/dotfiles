@@ -102,6 +102,7 @@
       sharedModules = profile: [
         ./configuration.nix
         ./sing-box.nix
+        ./shadowrocket.nix
 
         sops-nix.darwinModules.sops
 

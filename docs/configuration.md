@@ -4,14 +4,15 @@
 
 ## 修改哪里
 
-| 文件                                         | 用途                                                   |
-| -------------------------------------------- | ------------------------------------------------------ |
-| `flake.nix` / `flake.lock`                   | 用户名、系统架构、依赖来源及锁定版本                   |
-| `configuration.nix`                          | macOS 设置、Homebrew 激活、包覆盖                      |
-| `home.nix`                                   | 用户软件接入、Shell、Git 和 dotfiles 映射              |
-| `macos-binaries.json` / `macos-binaries.nix` | 官方 macOS 二进制的版本、下载地址、校验值及安装方式    |
-| `home/ide/`                                  | VS Code、Antigravity 的共享设置与插件清单              |
-| `sing-box.nix` / `home/.config/sing-box/`    | 代理配置渲染、校验与发布，详见 [SFM 指南](sing-box.md) |
+| 文件                                              | 用途                                                                     |
+| ------------------------------------------------- | ------------------------------------------------------------------------ |
+| `flake.nix` / `flake.lock`                        | 用户名、系统架构、依赖来源及锁定版本                                     |
+| `configuration.nix`                               | macOS 设置、Homebrew 激活、包覆盖                                        |
+| `home.nix`                                        | 用户软件接入、Shell、Git 和 dotfiles 映射                                |
+| `macos-binaries.json` / `macos-binaries.nix`      | 官方 macOS 二进制的版本、下载地址、校验值及安装方式                      |
+| `home/ide/`                                       | VS Code、Antigravity 的共享设置与插件清单                                |
+| `sing-box.nix` / `home/.config/sing-box/`         | 代理配置渲染、校验与发布，详见 [SFM 指南](sing-box.md)                   |
+| `shadowrocket.nix` / `home/.config/shadowrocket/` | iPhone Shadowrocket 规则与节点链接，详见 [Shadowrocket](shadowrocket.md) |
 
 `software.json` / `software.nix` 维护 shared、home、work 的软件清单及安装来源；
 `scripts/software-inventory.mjs` 使用同一清单检测安装状态。`inventory: false` 只隐藏基础工具的
@@ -250,5 +251,6 @@ nix build --no-link .#darwinConfigurations.home.system .#darwinConfigurations.wo
 `tests/homebrew-formulae.sh` 在临时前缀中使用实际锁定的 Brew 与 core tap 解析 Java 依赖，
 覆盖 Nix 构建本身不会执行的配方兼容性检查，不安装 Homebrew 软件。
 G HUB 补装测试用替身覆盖应用存在、缺失、安装失败及假成功；域名测试验证 sing-box 匹配和 DNS/路由引用。
-这些测试不验证真实服务器连通性、厂商安装器退出行为、SFM 导入或系统授权。
+Shadowrocket 测试检查规则与节点和 sing-box 模板一致；二维码测试解码生成的图片，局域网分享测试在本机回环地址上运行。
+这些测试不验证真实服务器连通性、厂商安装器退出行为、SFM 或 Shadowrocket 导入、手机网络访问或系统授权。
 官方选项和命令说明见 README 的 [参考资料](../README.md#参考资料)。

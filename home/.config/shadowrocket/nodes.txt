@@ -1,0 +1,4 @@
+vless://__SOPS_SG_VLESS_UUID__@__SOPS_SG_SERVER_HOSTNAME__:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=__SOPS_SG_VLESS_TLS_SERVER_NAME__&fp=chrome&pbk=__SOPS_SG_VLESS_REALITY_PUBLIC_KEY__&sid=__SOPS_SG_VLESS_REALITY_SHORT_ID__&type=tcp#sg-vless
+hysteria2://__SOPS_SG_HY2_PASSWORD__@__SOPS_SG_SERVER_HOSTNAME__:443?sni=__SOPS_SG_HY2_TLS_SERVER_NAME__&obfs=salamander&obfs-password=__SOPS_SG_HY2_OBFS_PASSWORD__#sg-hy2
+vless://__SOPS_US_VLESS_UUID__@__SOPS_US_SERVER_HOSTNAME__:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=__SOPS_US_VLESS_TLS_SERVER_NAME__&fp=chrome&pbk=__SOPS_US_VLESS_REALITY_PUBLIC_KEY__&sid=__SOPS_US_VLESS_REALITY_SHORT_ID__&type=tcp#us-vless
+hysteria2://__SOPS_US_HY2_PASSWORD__@__SOPS_US_SERVER_HOSTNAME__:8443?sni=__SOPS_US_HY2_TLS_SERVER_NAME__&obfs=salamander&obfs-password=__SOPS_US_HY2_OBFS_PASSWORD__#us-hy2

@@ -45,6 +45,8 @@ Homebrew Python 是明确替换系统版本的工具，因此保留。RabbitPro 
 | im-select                            | CLI       | `im-select`            | Homebrew Formula          |
 | mo                                   | CLI       | `mo`                   | Homebrew Formula          |
 | ripgrep                              | CLI       | `rg`                   | Nix                       |
+| miniserve                            | CLI       | `miniserve`            | Nix                       |
+| qrtool                               | CLI       | `qrtool`               | Nix                       |
 | fd                                   | CLI       | `fd`                   | Nix                       |
 | fzf                                  | CLI       | `fzf`                  | Nix                       |
 | jq                                   | CLI       | `jq`                   | Nix                       |

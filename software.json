@@ -430,6 +430,24 @@
     "commands": ["rg"]
   },
   {
+    "id": "miniserve",
+    "name": "miniserve",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "miniserve",
+    "commands": ["miniserve"]
+  },
+  {
+    "id": "qrtool",
+    "name": "qrtool",
+    "group": "shared",
+    "type": "CLI",
+    "manager": "Nix",
+    "package": "qrtool",
+    "commands": ["qrtool"]
+  },
+  {
     "id": "fd",
     "name": "fd",
     "group": "shared",

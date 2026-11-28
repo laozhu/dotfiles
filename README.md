@@ -200,6 +200,15 @@ CI 分别执行 `format:check` 和 `test`；本地运行测试使用 `bash tests
 其中的 sops-nix 上游缓存可减少首次安装的源码编译。详见 [配置维护](docs/configuration.md#二进制优先与缓存)。
 若软件下载失败，导致新代理规则也无法发布，见 [独立生成代理配置](docs/sing-box.md#rebuild-被软件下载卡住时)。
 
+把文件显示为终端二维码（`--lines` 每行一个码），或在局域网临时分享一个不含凭据的文件并显示其网址二维码：
+
+```bash
+bash scripts/qr.sh [--lines] FILE
+bash scripts/serve-once.sh FILE
+```
+
+两者都只在交互终端运行，按回车结束；手机导入 Shadowrocket 配置的用法见 [Shadowrocket](docs/shadowrocket.md)。
+
 ## 参考资料
 
 项目指南：
@@ -208,19 +217,20 @@ CI 分别执行 `format:check` 和 `test`；本地运行测试使用 `bash tests
 - [配置维护](docs/configuration.md)：配置文件分工、依赖更新、IDE 同步与验证。
 - [多 GitHub 账号自动切换](docs/github-identities.md)：按目录选择 Git、SSH、GitHub CLI 身份及提交签名。
 - [sing-box 与 SFM](docs/sing-box.md)：配置发布、导入、分流与故障恢复。
+- [Shadowrocket](docs/shadowrocket.md)：iPhone 上使用同一套节点和分流规则，扫码导入。
 
 官方文档与上游说明：
 
-| 主题             | 参考资料                                                                                                                                                                            |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Nix 安装与使用   | [Determinate Nix](https://docs.determinate.systems/)、[Nix 手册](https://nix.dev/manual/nix/latest/)                                                                                |
-| macOS 与用户配置 | [nix-darwin 配置选项](https://nix-darwin.github.io/nix-darwin/manual/)、[Home Manager 手册](https://nix-community.github.io/home-manager/)                                          |
-| Homebrew 管理    | [Homebrew 命令手册](https://docs.brew.sh/Manpage)、[nix-homebrew](https://github.com/zhaofengli/nix-homebrew)                                                                       |
-| 秘密与密钥       | [SOPS](https://getsops.io/docs/)、[age](https://github.com/FiloSottile/age)、[sops-nix](https://github.com/Mic92/sops-nix)                                                          |
-| 代理与客户端     | [SFM 下载与说明](https://sing-box.sagernet.org/clients/apple/)、[sing-box 配置](https://sing-box.sagernet.org/configuration/)、[版本迁移](https://sing-box.sagernet.org/migration/) |
-| IDE 插件管理     | [VS Code 命令行](https://code.visualstudio.com/docs/configure/command-line)                                                                                                         |
-| AI 工具打包      | [llm-agents.nix](https://github.com/numtide/llm-agents.nix)                                                                                                                         |
-| GitHub 认证      | [配置 SSH](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)                                                                                                 |
+| 主题             | 参考资料                                                                                                                                                                                                                                                                                                       |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Nix 安装与使用   | [Determinate Nix](https://docs.determinate.systems/)、[Nix 手册](https://nix.dev/manual/nix/latest/)                                                                                                                                                                                                           |
+| macOS 与用户配置 | [nix-darwin 配置选项](https://nix-darwin.github.io/nix-darwin/manual/)、[Home Manager 手册](https://nix-community.github.io/home-manager/)                                                                                                                                                                     |
+| Homebrew 管理    | [Homebrew 命令手册](https://docs.brew.sh/Manpage)、[nix-homebrew](https://github.com/zhaofengli/nix-homebrew)                                                                                                                                                                                                  |
+| 秘密与密钥       | [SOPS](https://getsops.io/docs/)、[age](https://github.com/FiloSottile/age)、[sops-nix](https://github.com/Mic92/sops-nix)                                                                                                                                                                                     |
+| 代理与客户端     | [SFM 下载与说明](https://sing-box.sagernet.org/clients/apple/)、[sing-box 配置](https://sing-box.sagernet.org/configuration/)、[版本迁移](https://sing-box.sagernet.org/migration/)、[Shadowrocket](https://apps.apple.com/app/id932747118)、[Shadowrocket 社区手册](https://github.com/LOWERTOP/Shadowrocket) |
+| IDE 插件管理     | [VS Code 命令行](https://code.visualstudio.com/docs/configure/command-line)                                                                                                                                                                                                                                    |
+| AI 工具打包      | [llm-agents.nix](https://github.com/numtide/llm-agents.nix)                                                                                                                                                                                                                                                    |
+| GitHub 认证      | [配置 SSH](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)                                                                                                                                                                                                                            |
 
 配置学习参考：[kunchenguid/dotfiles](https://github.com/kunchenguid/dotfiles/)。
 本项目的许多配置思路学习自该仓库，感谢作者的分享。

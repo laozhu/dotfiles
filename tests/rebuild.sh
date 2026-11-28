@@ -57,6 +57,11 @@ fi
 printf 'config check %s\n' "$fixture_dir" >>"$REBUILD_TEST_LOG"
 exit "${REBUILD_CONFIG_STATUS:-0}"
 SH
+cat >"$rebuild_test_root/scripts/check-shadowrocket-config.sh" <<'SH'
+#!/usr/bin/env bash
+printf 'shadowrocket check\n' >>"$REBUILD_TEST_LOG"
+exit "${REBUILD_SHADOWROCKET_STATUS:-0}"
+SH
 cat >"$rebuild_test_root/scripts/prefetch-uu-booster.sh" <<'SH'
 #!/usr/bin/env bash
 fixture_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
@@ -116,6 +121,7 @@ chmod 0755 \
   "$rebuild_sing_box/bin/sing-box" \
   "$rebuild_test_root/scripts/check-sops-age-key.sh" \
   "$rebuild_test_root/scripts/check-sing-box-config.sh" \
+  "$rebuild_test_root/scripts/check-shadowrocket-config.sh" \
   "$rebuild_test_root/scripts/prefetch-uu-booster.sh" \
   "$rebuild_fixture_bin/nix" \
   "$rebuild_fixture_bin/git" \
@@ -153,6 +159,7 @@ printf '%s\n' \
   "identity preflight $rebuild_fixture_real" \
   "nix build --no-link --print-out-paths $rebuild_fixture_real#darwinConfigurations.home.pkgs.sing-box" \
   "config check $rebuild_fixture_real" \
+  "shadowrocket check" \
   "nix eval --raw --impure --expr (builtins.getFlake (builtins.getEnv \"DOTFILES_REBUILD_FLAKE\")).inputs.homebrew-cask.outPath" \
   "UU prefetch $rebuild_fixture_real $rebuild_cask_source/Casks/u/uu-booster.rb" \
   "sudo --preserve-env=NIX_CONFIG darwin-rebuild switch --flake $rebuild_fixture_real#home" \
@@ -174,6 +181,7 @@ printf '%s\n' \
   "binary pins update" \
   "nix build --no-link --print-out-paths $rebuild_fixture_real#darwinConfigurations.home.pkgs.sing-box" \
   "config check $rebuild_fixture_real" \
+  "shadowrocket check" \
   "nix eval --raw --impure --expr (builtins.getFlake (builtins.getEnv \"DOTFILES_REBUILD_FLAKE\")).inputs.homebrew-cask.outPath" \
   "UU prefetch $rebuild_fixture_real $rebuild_cask_source/Casks/u/uu-booster.rb" \
   "sudo --preserve-env=NIX_CONFIG darwin-rebuild switch --flake $rebuild_fixture_real#home" \
@@ -206,10 +214,11 @@ assert_rebuild_failure REBUILD_NIX_STATUS 33 "$expected_update_rebuild" 2 -u
 assert_rebuild_failure REBUILD_NIX_STATUS 36 "$expected_rebuild" 2
 assert_rebuild_failure REBUILD_BINARY_STATUS 37 "$expected_update_rebuild" 3 -u
 assert_rebuild_failure REBUILD_CONFIG_STATUS 32 "$expected_update_rebuild" 5 -u
-assert_rebuild_failure REBUILD_UU_STATUS 34 "$expected_rebuild" 5
-assert_rebuild_failure REBUILD_DARWIN_STATUS 38 "$expected_rebuild" 6
-assert_rebuild_failure REBUILD_EDITOR_STATUS 39 "$expected_rebuild" 7
-assert_rebuild_failure REBUILD_RUSTUP_STATUS 40 "$expected_update_rebuild" 10 -u
+assert_rebuild_failure REBUILD_SHADOWROCKET_STATUS 41 "$expected_update_rebuild" 6 -u
+assert_rebuild_failure REBUILD_UU_STATUS 34 "$expected_rebuild" 6
+assert_rebuild_failure REBUILD_DARWIN_STATUS 38 "$expected_rebuild" 7
+assert_rebuild_failure REBUILD_EDITOR_STATUS 39 "$expected_rebuild" 8
+assert_rebuild_failure REBUILD_RUSTUP_STATUS 40 "$expected_update_rebuild" 11 -u
 
 multiple_rebuild_output="$rebuild_test_root/multiple-output"
 : >"$rebuild_log"

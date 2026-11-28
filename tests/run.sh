@@ -30,6 +30,9 @@ tests=(
   pi-config.sh
   pi-help.sh
   sing-box-config.sh
+  shadowrocket-config.sh
+  qr.sh
+  serve-once.sh
   render-sing-box-config.sh
   publish-sing-box-config.sh
 )
