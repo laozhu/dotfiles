@@ -40,10 +40,11 @@ warning="$(run_lock_script </dev/null 2>&1)"
 test "$(cat "$lock_log")" = '-screenLock status'
 case "$warning" in *'screen lock is still on'*) ;; *) exit 1 ;; esac
 
-# Still on with a terminal: turns it off, then rechecks.
+# Still on with a terminal: turns it off, then rechecks. macOS script(1) ends the
+# session early once its stdin hits EOF, so keep stdin open while the script runs.
 if script -q /dev/null true </dev/null >/dev/null 2>&1; then
   : >"$lock_log"
-  PATH="$lock_test_root/bin:/usr/bin:/bin" script -q /dev/null \
+  sleep 2 | PATH="$lock_test_root/bin:/usr/bin:/bin" script -q /dev/null \
     bash "$repo_dir/scripts/disable-screen-lock.sh" >/dev/null 2>&1
   test "$(cat "$lock_log")" = "$(printf '%s\n' '-screenLock status' '-screenLock off -password -' '-screenLock status')"
   test "$(cat "$LOCK_TEST_STATE")" = off
